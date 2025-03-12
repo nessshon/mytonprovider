@@ -61,6 +61,7 @@ restart_yourself_via_root
 
 
 # Continue the installation
+DEFAULT_COMMAND_LAUNCHER=./tonutils-storage
 user=${input_user}
 echo "Using user: ${user}"
 
