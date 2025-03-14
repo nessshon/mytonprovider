@@ -2,6 +2,7 @@ from src.schemas import TonStorageScheme
 from src.dialog import utils_selection, storage_cost, storage_path, storage_disk_space, install_ton_storage, traffic_cost
 from src.utils import ton_storage_installed
 
+from mypylib import add2systemd
 import inquirer
 
 
@@ -30,7 +31,7 @@ def main():
         case "ton_tunnel_provider":
             answers.append(inquirer.prompt([traffic_cost]))
 
-    print(answers)
+
 
 
 if __name__ == "__main__":
