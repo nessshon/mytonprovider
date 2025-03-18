@@ -1,5 +1,6 @@
 from inquirer import Confirm, Text, List, Path
 from src.utils import get_disk_free_space
+import os
 
 utils_selection = List(
     name="utils_selection",
@@ -8,8 +9,8 @@ utils_selection = List(
 )
 storage_path = Path(
     name="storage_path",
-    message="Ввод места хранения файлов ton_storage (по умолчанию: ./ton_storage)",
-    default="./ton_storage",
+    message=f"Ввод места хранения файлов ton_storage (по умолчанию: {os.environ.get('DEFAULT_STORAGE_PATH')})",
+    default=os.environ.get('DEFAULT_STORAGE_PATH'),
 )
 storage_disk_space = Text(
     name="storage_disk_space",
@@ -19,11 +20,6 @@ storage_disk_space = Text(
 storage_cost = Text(
     name="storage_cost",
     message="Сколько будет стоить хранения 1 Гб/мес ?"
-)
-install_ton_storage = Confirm(
-    name="install_ton_storage",
-    message="Необходимо установить ton_storage",
-    default=True
 )
 traffic_cost = Text(
     name="traffic_cost",
