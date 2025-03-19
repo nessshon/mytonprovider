@@ -27,6 +27,3 @@ def generate_password() -> str:
     pass
 
 
-def start_service():
-    pass
-

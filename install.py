@@ -1,5 +1,4 @@
 from src.questions import utils_selection, storage_cost, storage_path, storage_disk_space, install_ton_storage, traffic_cost
-from src.utils import ton_storage_installed
 from src import ton_storage, ton_storage_provider, ton_tunnel_provider
 
 from typing import Any
