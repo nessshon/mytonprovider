@@ -15,10 +15,6 @@ def get_head_path(file):
     return cwd.split("mytonprovider")[0] + "mytonprovider"
 
 
-def get_cur_dt() -> str:
-    return str(datetime.now(timezone.utc))
-
-
 def generate_login() -> str:
     pass
 
