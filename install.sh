@@ -74,21 +74,6 @@ install_option_utils() {
   apt install git -y
 }
 
-check_python_version () {
-  major=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 1)
-  minor=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 2)
-  echo ${major}
-  if [ "${major}" != "3" ]; then
-    install_python311
-    echo ${major}
-  fi
-  echo ${minor}
-  if [ ${minor} -lt 11 ]; then
-    install_python311
-    echo ${minor}
-  fi
-}
-
 install_python311() {
   system_name=$(echo uname | cut -d " " -f 1)
   if [ "${system_name}" = "Ubuntu" ]; then
@@ -145,8 +130,8 @@ install_mtp() {
   echo -e "${COLOR}[1/6]${ENDC} Installing utils"
   install_option_utils
 
-  echo -e "${COLOR}[2/6]${ENDC} Check python version"
-  check_python_version
+  echo -e "${COLOR}[2/6]${ENDC} Installing python"
+  install_python311
 
   echo -e "${COLOR}[3/6]${ENDC} Activating virtual environment"
   activate_venv "${current_dir}"
