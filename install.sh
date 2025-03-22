@@ -1,7 +1,8 @@
 #!/bin/bash
 set -e
 
-author=igroman787
+#author=igroman787
+author=seroburomalinoviy
 repo=mytonprovider
 current_dir=$(pwd)
 
