@@ -139,7 +139,7 @@ install_mtp() {
   install_requirements "${current_dir}"
 
   echo -e "${COLOR}[6/6]${ENDC} Launching MyTonProvider"
-  lauch_mtp "${current_dir}"
+  launch_mtp "${current_dir}"
 }
 
 install_mtp
