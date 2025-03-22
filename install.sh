@@ -79,9 +79,11 @@ check_python_version () {
   minor=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 2)
   if [ "${major}" != "3" ]; then
     install_python311
+    echo ${major}
   fi
   if [ ${minor} -lt 11 ]; then
     install_python311
+    echo ${minor}
   fi
 }
 
