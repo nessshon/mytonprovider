@@ -2,7 +2,8 @@ from src.schemas import StorageScheme
 from src.utils import generate_login, generate_password, get_head_path
 
 from random import randint
-from mypylib import add2systemd
+import mypylib
+# from mypylib import add2systemd
 import json
 
 
@@ -20,7 +21,7 @@ def install(storage_path: str = None, storage_disk_space: int = None, **kwargs):
 
     cmd = f"{st.cmd} --api {st.host}:{st.port} --api-login {st.login} --api-port {st.port}"
 
-    add2systemd(
+    mypylib.add2systemd(
         name=st.name,
         start=cmd,
         pre=...,
