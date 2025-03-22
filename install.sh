@@ -76,8 +76,10 @@ install_option_utils() {
 
 install_python311() {
   system_name=$(echo uname | cut -d " " -f 1)
+  echo ${system_name}
   if [ "${system_name}" = "Ubuntu" ]; then
     version=$(echo uname | cut -d " " -f 2 | cut -d "." -f 1)
+    echo ${version}
     if [ "${version}" -ge 22 ] ; then
       apt update
       apt install python3.11
