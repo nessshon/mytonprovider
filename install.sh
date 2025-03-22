@@ -77,10 +77,12 @@ install_option_utils() {
 check_python_version () {
   major=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 1)
   minor=$(python3 --version | cut -d " " -f 2 | cut -d "." -f 2)
+  echo ${major}
   if [ "${major}" != "3" ]; then
     install_python311
     echo ${major}
   fi
+  echo ${minor}
   if [ ${minor} -lt 11 ]; then
     install_python311
     echo ${minor}
