@@ -93,10 +93,10 @@ install_python311() {
       apt update
     fi
   fi
-  apt install python3.11
-  apt install python3-pip
+  apt install -y python3.11
+  apt install -y python3-pip
 #  python3.11 -m ensurepip --default-pip
-  apt install python3.11-venv
+  apt install -y python3.11-venv
 
 }
 
