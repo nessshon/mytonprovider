@@ -3,7 +3,7 @@ from src import ton_storage, ton_storage_provider, ton_tunnel_provider
 
 from typing import Any
 import inquirer
-from mypylib import Dict
+from src.mypylib import Dict
 
 
 def ask() -> dict[str, Any]:

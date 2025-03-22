@@ -2,9 +2,8 @@ from src.schemas import StorageScheme
 from src.utils import generate_login, generate_password, get_head_path
 
 from random import randint
-from mypylib import add2systemd
+from src.mypylib import add2systemd
 import json
-import subprocess
 
 
 def install(storage_path: str = None, storage_disk_space: int = None, **kwargs):
