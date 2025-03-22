@@ -7,7 +7,7 @@ load_dotenv()
 
 
 class StorageScheme(BaseModel):
-    name = "TonStorage"
+    name: str = "TonStorage"
     cmd: str = os.environ.get('STORAGE_CMD')
     host: str
     port: int
@@ -18,7 +18,7 @@ class StorageScheme(BaseModel):
 
 
 class StorageProviderScheme(BaseModel):
-    name = "TonStorageProvider"
+    name: str = "TonStorageProvider"
     cmd: str = os.environ.get('STORAGE_PROVIDER_CMD')
     # host: str
     # port: int
@@ -29,7 +29,7 @@ class StorageProviderScheme(BaseModel):
 
 
 class TunnelProviderScheme(BaseModel):
-    name = "TonTunnelProvider"
+    name: str = "TonTunnelProvider"
     cmd: str = os.environ.get('TUNNEL_PROVIDER_CMD')
     # host: str
     # port: int
