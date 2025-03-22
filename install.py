@@ -43,6 +43,6 @@ def main():
 
 
 if __name__ == "__main__":
-    setup(packages=find_packages('.',include=['mypylib','mypyconsole']))
+    # setup(packages=find_packages('.',include=['mypylib','mypyconsole']))
     main()
 
