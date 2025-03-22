@@ -111,6 +111,10 @@ install_requirements() {
   pip install -r "${1}/mytonprovider/src/requirements.txt"
 }
 
+install_dependencies() {
+  python "${1}/mytonprovider/setup.py" install
+}
+
 download_mytonprovider() {
   cd "${1}"
   git clone --recurse-submodules "https://github.com/${author}/${repo}"
@@ -123,22 +127,25 @@ launch_mtp() {
 install_mtp() {
   cd "/home/${user}"
 
-  echo -e "${COLOR}[1/6]${ENDC} Installing utils"
+  echo -e "${COLOR}[1/7]${ENDC} Installing utils"
   install_option_utils
 
-  echo -e "${COLOR}[2/6]${ENDC} Installing python"
+  echo -e "${COLOR}[2/7]${ENDC} Installing python"
   install_python311
 
-  echo -e "${COLOR}[3/6]${ENDC} Activating virtual environment"
+  echo -e "${COLOR}[3/7]${ENDC} Activating virtual environment"
   activate_venv "${current_dir}"
 
-  echo -e "${COLOR}[4/6]${ENDC} Downloading MyTonProvider"
+  echo -e "${COLOR}[4/7]${ENDC} Downloading MyTonProvider"
   download_mytonprovider "${current_dir}"
 
-  echo -e "${COLOR}[5/6]${ENDC} Installing requirements"
+  echo -e "${COLOR}[5/7]${ENDC} Installing requirements"
   install_requirements "${current_dir}"
 
-  echo -e "${COLOR}[6/6]${ENDC} Launching MyTonProvider"
+  echo -e "${COLOR}[6/7]${ENDC} Installing requirements"
+  install_dependencies "${current_dir}"
+
+  echo -e "${COLOR}[7/7]${ENDC} Launching MyTonProvider"
   launch_mtp "${current_dir}"
 }
 
