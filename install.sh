@@ -93,8 +93,9 @@ install_python311() {
       add-apt-repository ppa:deadsnakes/ppa -y
       apt update
     fi
+    apt install -y python3.11
   fi
-  apt install -y python3.11
+
   apt install -y python3-pip
   apt install -y python3.11-venv
 
@@ -103,10 +104,6 @@ install_python311() {
 activate_venv() {
   python3.11 -m venv "${1}/venv"
   source "${1}/venv/bin/activate"
-}
-
-deactivate_venv() {
-  deactivate
 }
 
 install_requirements() {
