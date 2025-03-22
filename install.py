@@ -4,7 +4,6 @@ from src import ton_storage, ton_storage_provider, ton_tunnel_provider
 from typing import Any
 import inquirer
 from mypylib import Dict
-from setuptools import find_packages, setup
 
 
 def ask() -> dict[str, Any]:
@@ -43,6 +42,5 @@ def main():
 
 
 if __name__ == "__main__":
-    # setup(packages=find_packages('.',include=['mypylib','mypyconsole']))
     main()
 
