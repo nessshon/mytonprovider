@@ -100,7 +100,7 @@ install_python311() {
 }
 
 activate_venv() {
-  python3.11 -m "${1}/venv" venv
+  python3.11 -m venv "${1}/venv"
   source "${1}/venv/bin/activate"
 }
 
