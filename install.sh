@@ -112,8 +112,7 @@ install_requirements() {
 }
 
 install_dependencies() {
-  cd "${1}/mytonprovider/mypylib"
-  pip install .
+  pip install -r "${1}/mytonprovider/mypylib/requirements.txt"
 }
 
 download_mytonprovider() {
