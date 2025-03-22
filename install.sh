@@ -80,11 +80,13 @@ install_python311() {
   dist_version=$(echo "${dist_info}" | cut -d " " -f 2 | cut -d "." -f 1)
   py_version=$(python3.11 --version | cut -d " " -f 2)
 
+  apt update
+
   echo "Current Python version: ${py_version}"
 
   if [[ "${py_version}" != "3.11"*  ]]; then
     if [[ ("${dist_name}" == "Ubuntu" && "${dist_version}" -ge 22) || (("${dist_name}" == "Debian" && "${dist_version}" -ge 12)) ]]; then
-      apt update && sudo apt install -y python3.11
+      apt install -y python3.11
     else
       apt install software-properties-common -y
       add-apt-repository ppa:deadsnakes/ppa -y
