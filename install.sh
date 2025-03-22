@@ -92,7 +92,8 @@ install_python311() {
     if [ "${version}" -ge 22 ] ; then
       apt update
       apt install python3.11
-      apt install python3-pip
+      apt install python3.11-pip
+      apt install python3.11-venv
     else
       apt install software-properties-common -y
       add-apt-repository ppa:deadsnakes/ppa -y
