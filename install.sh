@@ -69,38 +69,32 @@ user=${input_user}
 echo "Using user: ${user}"
 
 install_option_utils() {
-  apt install curl -y
-  apt install wget -y
-  apt install git -y
+  apt install -y curl
+  apt install -y wget
+  apt install -y git
 }
 
 install_python311() {
-  system_name=$(echo uname | cut -d " " -f 1)
-  echo ${system_name}
-  if [ "${system_name}" = "Ubuntu" ]; then
-    version=$(echo uname | cut -d " " -f 2 | cut -d "." -f 1)
-    echo ${version}
-    if [ "${version}" -ge 22 ] ; then
-      apt update
-      apt install python3.11
-      apt install python3.11-pip
-      apt install python3.11-venv
+  dist_info=$(grep "^PRETTY_NAME=" /etc/os-release | cut -d= -f2 | tr -d '"')
+  dist_name=$(echo ${dist_info} | cut -d " " -f 1)
+  dist_version=$(echo ${dist_info} | cut -d " " -f 2 | cut -d "." -f 1)
+  py_version=$(python3.11 --version | cut -d " " -f 2)
+
+  echo "Current Python version: ${py_version}"
+
+  if [[ "${py_version}" != "3.11"*  ]]; then
+    if [[ ("${dist_name}" == "Ubuntu" && "${dist_version}" -ge 22) || (("${dist_name}" == "Debian" && "${dist_version}" -ge 12)) ]]; then
+      apt update && sudo apt install -y python3.11
     else
       apt install software-properties-common -y
       add-apt-repository ppa:deadsnakes/ppa -y
       apt update
-      apt install python3.11
-      apt install python3.11-pip
-      apt install python3.11-venv
     fi
-  elif [ "${system_name}" = "Debian" ]; then
-      apt install software-properties-common -y
-      add-apt-repository ppa:deadsnakes/ppa -y
-      apt update
-      apt install python3.11
-      apt install python3.11-pip
-      apt install python3.11-venv
   fi
+  apt install python3.11
+  apt install python3.11-pip
+  apt install python3.11-venv
+
 }
 
 activate_venv() {
