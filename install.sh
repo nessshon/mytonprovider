@@ -133,7 +133,7 @@ launch_mtp() {
 }
 
 install_mtp() {
-  cd "${user}"
+  cd "/home/${user}"
 
   echo -e "${COLOR}[1/6]${ENDC} Installing utils"
   install_option_utils
