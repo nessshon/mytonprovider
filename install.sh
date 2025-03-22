@@ -95,13 +95,12 @@ install_python311() {
   fi
   apt install -y python3.11
   apt install -y python3-pip
-#  python3.11 -m ensurepip --default-pip
   apt install -y python3.11-venv
 
 }
 
 activate_venv() {
-  python3.11 -m venv venv
+  python3.11 -m "${1}/venv" venv
   source "${1}/venv/bin/activate"
 }
 
