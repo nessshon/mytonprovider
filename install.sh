@@ -112,7 +112,8 @@ install_requirements() {
 }
 
 install_dependencies() {
-  python "${1}/mytonprovider/setup.py" install
+  cd "${1}/mytonprovider/mypylib"
+  pip install .
 }
 
 download_mytonprovider() {
@@ -142,7 +143,7 @@ install_mtp() {
   echo -e "${COLOR}[5/7]${ENDC} Installing requirements"
   install_requirements "${current_dir}"
 
-  echo -e "${COLOR}[6/7]${ENDC} Installing requirements"
+  echo -e "${COLOR}[6/7]${ENDC} Installing dependencies"
   install_dependencies "${current_dir}"
 
   echo -e "${COLOR}[7/7]${ENDC} Launching MyTonProvider"
