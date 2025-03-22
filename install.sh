@@ -76,8 +76,8 @@ install_option_utils() {
 
 install_python311() {
   dist_info=$(grep "^PRETTY_NAME=" /etc/os-release | cut -d= -f2 | tr -d '"')
-  dist_name=$(echo ${dist_info} | cut -d " " -f 1)
-  dist_version=$(echo ${dist_info} | cut -d " " -f 2 | cut -d "." -f 1)
+  dist_name=$(echo "${dist_info}" | cut -d " " -f 1)
+  dist_version=$(echo "${dist_info}" | cut -d " " -f 2 | cut -d "." -f 1)
   py_version=$(python3.11 --version | cut -d " " -f 2)
 
   echo "Current Python version: ${py_version}"
