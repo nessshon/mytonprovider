@@ -113,7 +113,7 @@ install_requirements() {
 
 download_mytonprovider() {
   cd "${1}"
-  git clone "https://github.com/${author}/${repo}"
+  git clone --recurse-submodules "https://github.com/${author}/${repo}"
 }
 
 launch_mtp() {
