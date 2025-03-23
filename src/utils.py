@@ -1,8 +1,8 @@
 import shutil
 from pathlib import Path
 from functools import lru_cache
-from datetime import datetime, timezone
-
+import random
+from string import digits, ascii_letters
 
 def get_disk_free_space() -> int:
     total, used, free = shutil.disk_usage("/")
@@ -10,16 +10,18 @@ def get_disk_free_space() -> int:
 
 
 @lru_cache
-def get_head_path(file):
-    cwd = str(Path(file).resolve())
+def get_package_path():
+    cwd = str(Path(__file__).resolve())
     return cwd.split("mytonprovider")[0] + "mytonprovider"
 
 
 def generate_login() -> str:
-    pass
+    return r''.join(random.choices(population=ascii_letters, k=10))
 
 
 def generate_password() -> str:
-    pass
+    punctuation = r"""!#$%&()*+,-./:;<=>?@[\]^_{|}~"""
+    symbols = ascii_letters + digits + punctuation
+    return r''.join(random.choices(population=symbols, k=10))
 
 
