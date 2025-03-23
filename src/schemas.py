@@ -28,7 +28,7 @@ class Storage(Mixins):
     login: str
     password: str
     path: str
-    space: int
+    size: int
 
 
 @dataclass
