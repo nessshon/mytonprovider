@@ -1,14 +1,28 @@
-from pydantic import BaseModel
+import json
+
 import os
+from dataclasses import dataclass
 from dotenv import load_dotenv
+
+from src.utils import get_package_path
 
 
 load_dotenv()
 
+class Mixins:
+    @property
+    def name(self) -> str:
+        return "Ton" + str(self.__class__.__name__)
 
-class StorageScheme(BaseModel):
-    name: str = "TonStorage"
-    cmd: str = os.environ.get('STORAGE_CMD')
+    @property
+    def cmd(self):
+        with open(get_package_path() + "/defaults.json") as f:
+            data = json.load(f)
+        data.get(self.name.lower() + "_cmd")
+        return data.get( self.name.lower() + "_cmd")
+
+@dataclass
+class Storage(Mixins):
     host: str
     port: int
     login: str
@@ -17,23 +31,22 @@ class StorageScheme(BaseModel):
     space: int
 
 
-class StorageProviderScheme(BaseModel):
-    name: str = "TonStorageProvider"
-    cmd: str = os.environ.get('STORAGE_PROVIDER_CMD')
-    # host: str
-    # port: int
-    # login: str
-    # password: str
+@dataclass
+class StorageProvider(Mixins):
+    host: str
+    port: int
+    login: str
+    password: str
     cost: str | int
-    is_storage: bool
+
+@dataclass
+class TunnelProvider(Mixins):
+    host: str
+    port: int
+    login: str
+    password: str
+    cost: str | int
 
 
-class TunnelProviderScheme(BaseModel):
-    name: str = "TonTunnelProvider"
-    cmd: str = os.environ.get('TUNNEL_PROVIDER_CMD')
-    # host: str
-    # port: int
-    # login: str
-    # password: str
-    cost: str | int
+
 
