@@ -1,13 +1,14 @@
-from src.schemas import StorageScheme
-from src.utils import generate_login, generate_password, get_head_path
+from src.schemas import Storage
+from src.utils import generate_login, generate_password, get_package_path
 
 from random import randint
 from mypylib import add2systemd
 import json
+import subprocess
 
 
 def install(storage_path: str = None, storage_disk_space: int = None, **kwargs):
-    st = StorageScheme(
+    st = Storage(
         host="localhost",
         port=randint(1024, 49151),
         login=generate_login(),
@@ -15,21 +16,14 @@ def install(storage_path: str = None, storage_disk_space: int = None, **kwargs):
         path=storage_path,
         space=storage_disk_space
     )
-    with open(get_head_path(__file__) + "/credentials.json") as f:
-        json.dump({"login": st.login, "password": st.password}, f, indent=4)
+    with open(get_package_path() + "/config.json", "w") as f:
+        json.dump({"login": st.login, "config": st.password}, f, indent=4)
 
     cmd = f"{st.cmd} --api {st.host}:{st.port} --api-login {st.login} --api-port {st.port}"
-
     add2systemd(
         name=st.name,
         start=cmd,
-        pre=...,
-        workdir=get_head_path(__file__),
+        workdir=get_package_path(),
     )
 
-    # запускаем инстал сш скрипт # start_service()  # взять из мтк ? дефолтные переменные из файла
-
-
-    # storage_path и storage_disk_space - прописывается в конфиг ton-storage
-
-
+    subprocess.run(["bash", get_package_path() + "scripts/ton_storage_install.sh", "--path", st.path, "--space", st.space])
