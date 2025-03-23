@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+# install parameters
 #author=igroman787
 author=seroburomalinoviy
 repo=mytonprovider
