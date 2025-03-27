@@ -3,9 +3,9 @@ set -e
 
 # install parameters
 src_path=/usr/src
+bin_path=/usr/bin
 
 storage_path=$1
-storage_size=$2
 
 author=xssnick
 repo=tonutils-storage
@@ -58,23 +58,13 @@ install_options() {
 }
 
 compilation() {
-  db_path="/var/${bin_name}"
-  mkdir -p ${db_path}
+  mkdir -p ${bin_path}
   cd ${package_src_path}
-  #entry_point=$(find ${package_src_path} -name "main.go" | head -n 1)
-  CGO_ENABLED=1 ${go_path} build -o ${db_path}/${bin_name} ${package_src_path}/cli/main.go
-}
-
-configuration() {
-  cd ${package_src_path}
-  # rewrite downloads path
-  sed -e '/DownloadsPath/d' -e "1a/\"DownloadsPath\": \"${storage_path}\"," tonutils-storage-db/config.json
-  # set storage size
-
+  CGO_ENABLED=1 ${go_path} build -o ${bin_path} ${package_src_path}/cli/main.go
 }
 
 setup_policy() {
-  chown -R ${user}:${user} ${db_path}
+  chown -R "${USER}:${USER}" "${storage_path}"
 }
 
 ton_storage_setup(){
@@ -86,9 +76,6 @@ ton_storage_setup(){
 
   echo -e "${COLOR}[3/6]${ENDC} Source compilation"
   compilation
-
-  echo -e "${COLOR}[4/6]${ENDC} Configuration"
-  configuration
 
   echo -e "${COLOR}[5/6]${ENDC} ${bin_name} Setting policy"
   setup_policy
