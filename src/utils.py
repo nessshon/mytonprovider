@@ -1,8 +1,9 @@
 import shutil
-from pathlib import Path
-from functools import lru_cache
 import random
 from string import digits, ascii_letters
+from functools import lru_cache
+from pathlib import Path
+
 
 def get_disk_free_space() -> int:
     total, used, free = shutil.disk_usage("/")
