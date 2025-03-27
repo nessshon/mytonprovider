@@ -13,12 +13,9 @@ def ask() -> dict[str, Any]:
     match util["utils_selection"]:
 
         case "ton_storage":
-
             answers.append(inquirer.prompt([storage_path]))
-            answers.append(inquirer.prompt([storage_disk_space]))
 
         case "ton_storage_provider":
-
             answers.append(inquirer.prompt([storage_cost]))
             answers.append(inquirer.prompt([storage_path]))
             answers.append(inquirer.prompt([storage_disk_space]))
