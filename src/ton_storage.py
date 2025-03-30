@@ -13,7 +13,7 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     login = generate_login()
     password = generate_password()
     path = storage_path
-    bin_path = "/usr/bin/"
+    bin_path = "/usr/bin/tonutils-storage"
 
     subprocess.run(["bash", get_package_path() + "scripts/ton_storage_install.sh", path])
 
@@ -25,7 +25,7 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
         workdir=storage_path,
     )
 
-    local = MyPyClass("./mypyclass.py")
+    local = MyPyClass("./tonstorage-control.py")
     local.start_service(name)
     local.stop_service(name)
 
