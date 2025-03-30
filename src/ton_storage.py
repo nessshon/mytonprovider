@@ -30,15 +30,13 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     local.stop_service(name)
 
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
-    mconfig = read_config_from_file(config_path=mconfig_path)
     ton_storage = Dict()
     ton_storage.api.port = port
     ton_storage.api.host = host
     ton_storage.api.login = login
     ton_storage.api.password = password
     ton_storage.api.path = path
-    mconfig.ton_storage = ton_storage
-    write_config_to_file(config_path=mconfig_path, data=mconfig)
+    write_config_to_file(config_path=mconfig_path, data=ton_storage)
 
 
 
