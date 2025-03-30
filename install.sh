@@ -87,14 +87,9 @@ install_python311() {
   echo "Current Python version: ${py_version}"
 
   if [[ "${py_version}" != "3.11"*  ]]; then
-    if [[ ("${dist_name}" == "Ubuntu" && "${dist_version}" -ge 22) || (("${dist_name}" == "Debian" && "${dist_version}" -ge 12)) ]]; then
-      apt install -y python3.11
-    else
       apt install software-properties-common -y
       add-apt-repository ppa:deadsnakes/ppa -y
-      apt update
-    fi
-    apt install -y python3.11
+      apt install -y python3.11
   fi
 
   apt install -y python3-pip
@@ -116,7 +111,7 @@ install_dependencies() {
   pip install -r "${1}/mytonprovider/mypylib/requirements.txt"
 }
 
-download_mytonprovider() {
+download_mtp() {
   cd "${1}"
   git clone --recurse-submodules "https://github.com/${author}/${repo}"
 }
@@ -138,7 +133,7 @@ install_mtp() {
   activate_venv "${current_dir}"
 
   echo -e "${COLOR}[4/7]${ENDC} Downloading MyTonProvider"
-  download_mytonprovider "${current_dir}"
+  download_mtp "${current_dir}"
 
   echo -e "${COLOR}[5/7]${ENDC} Installing requirements"
   install_requirements "${current_dir}"
