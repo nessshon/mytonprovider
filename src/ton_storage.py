@@ -1,3 +1,6 @@
+import os
+from os.path import exists
+
 from .utils import generate_login, generate_password, get_package_path
 
 from random import randint
@@ -30,12 +33,14 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     local.stop_service(name)
 
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
-    ton_storage = Dict({"api": {}})
-    ton_storage["api"]["port"] = port
-    ton_storage["api"]["host"] = host
-    ton_storage["api"]["login"] = login
-    ton_storage["api"]["password"] = password
-    ton_storage["api"]["path"] = path
+    os.makedirs(f'/home/{user}/.local/share/mytonprovider/',exist_ok=True)
+    ton_storage = Dict()
+    ton_storage.api = Dict()
+    ton_storage.api.port = port
+    ton_storage.api.host = host
+    ton_storage.api.login = login
+    ton_storage.api.password = password
+    ton_storage.path = path
     write_config_to_file(config_path=mconfig_path, data=ton_storage)
 
 
