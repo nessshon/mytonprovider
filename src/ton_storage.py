@@ -2,7 +2,7 @@ from .utils import generate_login, generate_password, get_package_path
 
 from random import randint
 from mypylib import add2systemd, Dict, MyPyClass
-from mypylib import read_config_from_file, write_config_to_file
+from mypylib import write_config_to_file, read_config_from_file
 import subprocess
 
 
@@ -31,12 +31,14 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
 
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
     ton_storage = Dict()
-    ton_storage.api.port = port
-    ton_storage.api.host = host
-    ton_storage.api.login = login
-    ton_storage.api.password = password
-    ton_storage.api.path = path
+    ton_storage["api"]["port"] = port
+    ton_storage["api"]["host"] = host
+    ton_storage["api"]["login"] = login
+    ton_storage["api"]["password"] = password
+    ton_storage["api"]["path"] = path
     write_config_to_file(config_path=mconfig_path, data=ton_storage)
+
+
 
 
 
