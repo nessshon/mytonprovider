@@ -7,5 +7,6 @@ RUN apt install git -y
 RUN cd /home/testuser/
 RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 USER testuser
+RUN cd mytonprovider
 
 CMD ["bash"]
