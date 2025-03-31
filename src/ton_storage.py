@@ -30,7 +30,7 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     local.stop_service(name)
 
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
-    ton_storage = Dict()
+    ton_storage = Dict({"api": {}})
     ton_storage["api"]["port"] = port
     ton_storage["api"]["host"] = host
     ton_storage["api"]["login"] = login
