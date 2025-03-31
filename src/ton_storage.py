@@ -22,6 +22,7 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
 
     cmd = f"{bin_path}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
+    os.makedirs(storage_path, exist_ok=True)
     add2systemd(
         name=name,
         start=cmd,
