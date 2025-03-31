@@ -76,18 +76,18 @@ install_option_utils() {
   apt install -y git
 }
 
-install_python311() {
+install_python() {
   python_path=$(which python3)
   if [[ ${python_path} == "" ]]; then
       apt update
       apt install -y python3
       apt install -y python3-pip
-      apt install -y python3.11-venv
+      apt install -y python3-venv
   fi
 }
 
 activate_venv() {
-  python3.11 -m venv "${1}/venv"
+  python3 -m venv "${1}/venv"
   source "${1}/venv/bin/activate"
 }
 
@@ -116,7 +116,7 @@ install_mtp() {
   install_option_utils
 
   echo -e "${COLOR}[2/7]${ENDC} Installing python"
-  install_python311
+  install_python
 
   echo -e "${COLOR}[3/7]${ENDC} Activating virtual environment"
   activate_venv "${current_dir}"
