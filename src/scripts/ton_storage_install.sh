@@ -63,9 +63,9 @@ compilation() {
   CGO_ENABLED=1 ${go_path} build -o ${bin_path} ${package_src_path}/cli/main.go
 }
 
-setup_policy() {
-  chown -R "${USER}:${USER}" "${storage_path}"
-}
+#setup_policy() {
+#  chown -R "${USER}:${USER}" "${storage_path}"
+#}
 
 ton_storage_setup(){
   echo -e "${COLOR}[1/6]${ENDC} Cloning github repository"
@@ -77,8 +77,8 @@ ton_storage_setup(){
   echo -e "${COLOR}[3/6]${ENDC} Source compilation"
   compilation
 
-  echo -e "${COLOR}[5/6]${ENDC} ${bin_name} Setting policy"
-  setup_policy
+#  echo -e "${COLOR}[5/6]${ENDC} ${bin_name} Setting policy"
+#  setup_policy
 
   echo -e "${COLOR}[6/6]${ENDC} ${bin_name} Installation complete"
 }
