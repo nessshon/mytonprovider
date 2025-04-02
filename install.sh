@@ -77,6 +77,7 @@ install_option_utils() {
 }
 
 install_python() {
+  export DEBIAN_FRONTEND=noninteractive  # to do not ask the timezone
   python_path=$(which python3)
   if [[ ${python_path} == "" ]]; then
       apt update

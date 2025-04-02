@@ -10,6 +10,5 @@ RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 RUN mkdir -p /home/root
 WORKDIR /mytonprovider
 RUN chmod +x ./install.sh
-RUN export DEBIAN_FRONTEND=noninteractive
 
 CMD ["bash","-c","./install.sh; sleep infinity"]
