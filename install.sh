@@ -77,9 +77,8 @@ install_option_utils() {
 }
 
 install_python() {
-  export DEBIAN_FRONTEND=noninteractive
-  python_path=$(command -v python3 || true)
-  if [[ ${python_path} == "" ]]; then
+  python_path=$(which python3 || echo 1)
+  if [[ ${python_path} == "1" ]]; then
       apt update
       apt install -y python3
       apt install -y python3-pip
