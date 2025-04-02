@@ -132,6 +132,8 @@ install_mtp() {
 
   echo -e "${COLOR}[7/7]${ENDC} Launching MyTonProvider"
   launch_mtp "${current_dir}"
+
+  # удалить venv
 }
 
 install_mtp
