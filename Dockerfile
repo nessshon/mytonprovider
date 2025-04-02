@@ -10,4 +10,4 @@ RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 RUN cd mytonprovider
 RUN chmod +x /mytonprovider/install.sh
 
-CMD ["./install.sh"]
+CMD ["/mytonprovider/install.sh"]
