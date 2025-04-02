@@ -7,7 +7,8 @@ RUN apt install git -y
 RUN #cd /home/testuser/
 RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 #USER testuser
-RUN cd mytonprovider
-RUN chmod +x /mytonprovider/install.sh
+RUN mkdir -p /home/root
+WORKDIR mytonprovider
+RUN chmod +x ./install.sh
 
-CMD ["/mytonprovider/install.sh"]
+CMD ["./install.sh"]
