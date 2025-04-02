@@ -8,7 +8,7 @@ RUN #cd /home/testuser/
 RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 #USER testuser
 RUN mkdir -p /home/root
-WORKDIR mytonprovider
+WORKDIR /mytonprovider
 RUN chmod +x ./install.sh
 
 CMD ["./install.sh"]
