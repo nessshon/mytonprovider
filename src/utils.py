@@ -21,8 +21,8 @@ def generate_login() -> str:
 
 
 def generate_password() -> str:
-    punctuation = r"""!#$%&()*+,-./:;<=>?@[\]^_{|}~"""
-    symbols = ascii_letters + digits + punctuation
+    # punctuation = r"""!#$%&()*+,-./:;<=>?@[\]^_{|}~"""
+    symbols = ascii_letters + digits #+ punctuation
     return r''.join(random.choices(population=symbols, k=10))
 
 
