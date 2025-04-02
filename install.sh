@@ -30,11 +30,11 @@ restart_yourself_via_root() {
 	user_id=$(id -u)
 	user_groups=$(groups ${user})
 
-	# Check is running as a normal user
-	if [[ ${user_id} == 0 ]]; then
-		echo "Please run script as non-root user"
-		exit 1
-	fi
+#	# Check is running as a normal user
+#	if [[ ${user_id} == 0 ]]; then
+#		echo "Please run script as non-root user"
+#		exit 1
+#	fi
 	# Using sudo or su
 	cmd="bash ${0} -u ${user}"
 	if [[ ${user_groups} == *"sudo"* ]]; then
