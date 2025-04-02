@@ -8,6 +8,6 @@ RUN #cd /home/testuser/
 RUN git clone https://github.com/seroburomalinoviy/mytonprovider.git
 #USER testuser
 RUN cd mytonprovider
-RUN chmod +x ./install.sh
+RUN chmod +x /mytonprovider/install.sh
 
 CMD ["./install.sh"]
