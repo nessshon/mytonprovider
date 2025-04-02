@@ -11,4 +11,4 @@ RUN mkdir -p /home/root
 WORKDIR /mytonprovider
 RUN chmod +x ./install.sh
 
-CMD ["./install.sh"]
+CMD ["bash","-c","./install.sh; sleep infinity"]
