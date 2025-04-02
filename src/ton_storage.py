@@ -18,9 +18,9 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     path = storage_path
     bin_path = "/usr/bin"
 
-    subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
+    result = subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
 
-    print("here")
+    print(f"here {result.returncode}")
 
     cmd = f"{bin_path}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
