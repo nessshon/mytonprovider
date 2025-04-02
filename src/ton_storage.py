@@ -1,12 +1,10 @@
-import os
-from os.path import exists
-
 from .utils import generate_login, generate_password, get_package_path
 
 from random import randint
 from mypylib import add2systemd, Dict, MyPyClass
 from mypylib import write_config_to_file, read_config_from_file
 import subprocess
+import os
 
 
 def install(util: str = None, storage_path: str = None, user: str ="root", **kwargs):
