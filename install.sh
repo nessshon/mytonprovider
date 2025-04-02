@@ -109,6 +109,10 @@ launch_mtp() {
   python "${1}/mytonprovider/install.py"
 }
 
+remove_venv() {
+  rm -rf "${1}/venv"
+}
+
 install_mtp() {
   cd "/home/${user}"
 
@@ -133,7 +137,7 @@ install_mtp() {
   echo -e "${COLOR}[7/7]${ENDC} Launching MyTonProvider"
   launch_mtp "${current_dir}"
 
-  # удалить venv
+  remove_venv "${current_dir}"
 }
 
 install_mtp
