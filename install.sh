@@ -1,11 +1,12 @@
 #!/bin/bash
 set -e
 
-# install parameters
-#author=igroman787
-author=seroburomalinoviy
-repo=mytonprovider
-current_dir=$(pwd)
+# Default args
+#author="igroman787"
+author="seroburomalinoviy"
+repo="mytonprovider"
+branch="master"
+ignore=false
 
 # colors
 COLOR='\033[92m'
@@ -15,6 +16,10 @@ ENDC='\033[0m'
 show_help_and_exit() {
 	echo 'Supported arguments:'
 	echo ' -u  USER         Specify the user to be used for MyTonProvider installation'
+	echo ' -a               Set MyTonProvider git repo author'
+	echo ' -r               Set MyTonProvider git repo'
+	echo ' -b               Set MyTonProvider git repo branch'
+	echo ' -i               Ignore non-root user checking'
 	echo ' -h               Show this help'
 	exit
 }
@@ -30,11 +35,12 @@ restart_yourself_via_root() {
 	user_id=$(id -u)
 	user_groups=$(groups ${user})
 
-#	# Check is running as a normal user
-#	if [[ ${user_id} == 0 ]]; then
-#		echo "Please run script as non-root user"
-#		exit 1
-#	fi
+	# Check is running as a normal user
+	if [[ ${user_id} == 0 ]] && [[ ${ignore} == false ]]; then
+		echo "Please run script as non-root user. You can create a new non-root user with command 'sudo adduser'. Or use flag '-i' to ignore this check."
+		exit 1
+	fi
+
 	# Using sudo or su
 	cmd="bash ${0} -u ${user}"
 	if [[ ${user_groups} == *"sudo"* ]]; then
@@ -52,9 +58,13 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "u:h" flag; do
+while getopts "u:a:r:b:ih" flag; do
 	case "${flag}" in
 		u) input_user=${OPTARG};;
+		a) author=${OPTARG};;
+		r) repo=${OPTARG};;
+		b) branch=${OPTARG};;
+		i) ignore=true;;
 		h) show_help_and_exit;;
 		*)
 			echo "Flag -${flag} is not recognized. Aborting"
@@ -65,84 +75,40 @@ done
 # Reboot yourself via root to continue the installation
 restart_yourself_via_root
 
-
 # Continue the installation
 user=${input_user}
 echo "Using user: ${user}"
 
-install_option_utils() {
-  apt install -y curl
-  apt install -y wget
-  apt install -y git
-}
+# install parameters
+src_dir="/usr/src"
+bin_dir="/usr/bin"
+venvs_dir="/home/${user}/.local/venv"
+venv_path="${venvs_dir}/${repo}"
+src_path="${src_dir}/${repo}"
 
-install_python() {
-  python_path=$(which python3 || echo 1)
-  if [[ ${python_path} == "1" ]]; then
-      apt update
-      apt install -y python3
-      apt install -y python3-pip
-      apt install -y python3-venv
-  fi
-}
+echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
+apt install git virtualenv python3 python3-pip
 
-activate_venv() {
-  python3 -m venv "${1}/venv"
-  source "${1}/venv/bin/activate"
-}
+echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
+virtualenv ${venv_path}
+source ${venv_path}/bin/activate
 
-install_requirements() {
-  pip install --upgrade pip
-  pip install -r "${1}/mytonprovider/src/requirements.txt"
-}
+# remove previous installation
+rm -rf ${src_path}
 
-install_dependencies() {
-  pip install -r "${1}/mytonprovider/mypylib/requirements.txt"
-}
+echo -e "${COLOR}[3/7]${ENDC} Downloading MyTonProvider"
+echo "https://github.com/${author}/${repo}.git -> ${branch}"
+git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
+git config --global --add safe.directory ${src_path}
 
-download_mtp() {
-  cd "${1}"
-  git clone --recurse-submodules "https://github.com/${author}/${repo}"
-}
+echo -e "${COLOR}[4/7]${ENDC} Installing requirements"
+pip3 install -r ${src_path}/requirements.txt
 
-launch_mtp() {
-  python "${1}/mytonprovider/install.py"
-}
+echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
+pip3 install -r ${src_path}/mypylib/requirements.txt
 
-remove_venv() {
-  rm -rf "${1}/venv"
-}
+echo -e "${COLOR}[6/7]${ENDC} Launching MyTonProvider installer"
+python3 ${src_path}/install.py --user ${user} --src_dir ${src_dir} --bin_dir ${bin_dir} --venvs_dir ${venvs_dir} --venv_path ${venv_path} --src_path ${src_path}
 
-install_mtp() {
-  cd "/home/${user}"
-
-  echo -e "${COLOR}[1/7]${ENDC} Installing utils"
-  install_option_utils
-
-  echo -e "${COLOR}[2/7]${ENDC} Installing python"
-  install_python
-
-  echo -e "${COLOR}[3/7]${ENDC} Activating virtual environment"
-  activate_venv "${current_dir}"
-
-  echo -e "${COLOR}[4/7]${ENDC} Downloading MyTonProvider"
-  download_mtp "${current_dir}"
-
-  echo -e "${COLOR}[5/7]${ENDC} Installing requirements"
-  install_requirements "${current_dir}"
-
-  echo -e "${COLOR}[6/7]${ENDC} Installing dependencies"
-  install_dependencies "${current_dir}"
-
-  echo -e "${COLOR}[7/7]${ENDC} Launching MyTonProvider"
-  launch_mtp "${current_dir}"
-
-  remove_venv "${current_dir}"
-}
-
-install_mtp
+echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
 exit 0
-
-
-
-
