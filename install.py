@@ -5,6 +5,7 @@ from inquirer import Text, List, Path
 from typing import Any
 import inquirer
 from mypylib import Dict
+import sys
 
 
 def ask() -> dict[str, Any]:
@@ -56,13 +57,14 @@ def ask() -> dict[str, Any]:
 
 
 def main():
+    args = sys.argv
     answers: dict = ask()
     if answers.get("util") == "TonStorage":
-        return ton_storage.install(**answers)
+        return ton_storage.install(*args, **answers)
     elif answers.get("util") == "TonStorageProvider":
-        return ton_storage_provider.install(**answers)
+        return ton_storage_provider.install(*args, **answers)
     elif answers.get("util") == "TonTunnelProvider":
-        return ton_tunnel_provider.install(**answers)
+        return ton_tunnel_provider.install(*args, **answers)
 
 
 if __name__ == "__main__":

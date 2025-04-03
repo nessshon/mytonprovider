@@ -7,20 +7,27 @@ import subprocess
 import os
 
 
-def install(util: str = None, storage_path: str = None, user: str ="root", **kwargs):
+def install(
+        user,
+        src_dir,
+        bin_dir,
+        venvs_dir,
+        venv_path,
+        src_path,
+        util: str = None,
+        storage_path: str = None,
+        **kwargs
+            ):
     name = util.lower()
     host = "localhost"
     port = randint(1024, 49151)
     login = generate_login()
     password = generate_password()
     path = storage_path
-    bin_path = "/usr/bin"
 
-    result = subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
+    subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
 
-    print(f"status {result.returncode}")
-
-    cmd = f"{bin_path}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
+    cmd = f"{bin_dir}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
     os.makedirs(storage_path, exist_ok=True)
     add2systemd(

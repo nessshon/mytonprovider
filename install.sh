@@ -108,7 +108,8 @@ echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
 pip3 install -r ${src_path}/mypylib/requirements.txt
 
 echo -e "${COLOR}[6/7]${ENDC} Launching MyTonProvider installer"
-python3 ${src_path}/install.py --user ${user} --src_dir ${src_dir} --bin_dir ${bin_dir} --venvs_dir ${venvs_dir} --venv_path ${venv_path} --src_path ${src_path}
+python3 ${src_path}/install.py ${user} ${src_dir} ${bin_dir} ${venvs_dir} ${venv_path} ${src_path}
 
 echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
+
 exit 0
