@@ -58,7 +58,6 @@ def main():
     args: list = sys.argv[1:]
     answers: dict = ask()
     utils = answers.pop("utils")
-    print(answers)
 
     if "TonStorage" in utils:
         ton_storage.install(*args, **answers)
