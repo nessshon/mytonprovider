@@ -1,24 +1,28 @@
 from src.utils import get_disk_free_space
 from src import ton_storage, ton_storage_provider, ton_tunnel_provider
 
-from inquirer import Text, List, Path
+from inquirer import Text, List, Path, Checkbox
 from typing import Any
 import inquirer
 from mypylib import Dict
+import sys
 
 
 def ask() -> dict[str, Any]:
-    util = inquirer.prompt([
-        List(
-            name="util",
-            message="Выберете утилиту",
+    utils_q = []
+    storage_ans = []
+    provider_ans = []
+    tunnel_ans = []
+    utils_q.append(inquirer.prompt([
+        Checkbox(
+            name="utils",
+            message="Выберете утилиты",
             choices=["TonStorage", "TonStorageProvider", "TonTunnelProvider"]
         )
-    ])
-    answers = [util]
-    if  util["util"] == "TonStorage":
+    ]))
+    if  "TonStorage" in utils_q[0]["utils"]:
 
-        answers.append(inquirer.prompt([
+        storage_ans.append(inquirer.prompt([
             Path(
                 name="storage_path",
                 message=f"Ввод места хранения файлов ton_storage (по умолчанию: /var/tonstorage/)",
@@ -26,16 +30,11 @@ def ask() -> dict[str, Any]:
             )
         ]))
 
-    elif util["util"] == "TonStorageProvider":
-        answers.append(inquirer.prompt([
+    if "TonStorageProvider" in utils_q[0]["utils"]:
+        provider_ans.append(inquirer.prompt([
             Text(
                 name="storage_cost",
                 message="Сколько будет стоить хранения 1 Гб/мес ?"
-            ),
-            Path(
-                name="storage_path",
-                message=f"Ввод места хранения файлов ton_storage (по умолчанию: /var/tonstorage/)",
-                default="/var/tonstorage",
             ),
             Text(
                 name="storage_disk_space",
@@ -44,25 +43,30 @@ def ask() -> dict[str, Any]:
             )
         ]))
 
-    elif util["util"] == "TonTunnelProvider":
-        answers.append(inquirer.prompt([
+    if "TonTunnelProvider" in utils_q[0]["utils"]:
+        tunnel_ans.append(inquirer.prompt([
             Text(
                 name="traffic_cost",
                 message="Сколько будет стоить 1 Гб трафика сети?"
             )
         ]))
 
-    return Dict(*answers)
+    return Dict(*utils_q, *storage_ans, *provider_ans, *tunnel_ans)
 
 
 def main():
+    args: list = sys.argv[1:]
     answers: dict = ask()
-    if answers.get("util") == "TonStorage":
-        return ton_storage.install(**answers)
-    elif answers.get("util") == "TonStorageProvider":
-        return ton_storage_provider.install(**answers)
-    elif answers.get("util") == "TonTunnelProvider":
-        return ton_tunnel_provider.install(**answers)
+    utils = answers.pop("utils")
+
+    if "TonStorage" in utils:
+        ton_storage.install(*args, **answers)
+
+    if "TonStorageProvider" in utils:
+        ton_storage_provider.install(*args, **answers)
+
+    if "TonTunnelProvider" in utils:
+        ton_tunnel_provider.install(*args, **answers)
 
 
 if __name__ == "__main__":

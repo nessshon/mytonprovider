@@ -7,20 +7,26 @@ import subprocess
 import os
 
 
-def install(util: str = None, storage_path: str = None, user: str ="root", **kwargs):
+def install(
+        user,
+        src_dir,
+        bin_dir,
+        venvs_dir,
+        venv_path,
+        src_path,
+        util: str = "TonStorage",
+        storage_path: str = None,
+        **kwargs
+            ):
     name = util.lower()
     host = "localhost"
     port = randint(1024, 49151)
     login = generate_login()
     password = generate_password()
-    path = storage_path
-    bin_path = "/usr/bin"
 
-    result = subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
+    subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", storage_path])
 
-    print(f"status {result.returncode}")
-
-    cmd = f"{bin_path}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
+    cmd = f"{bin_dir}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
     os.makedirs(storage_path, exist_ok=True)
     add2systemd(
@@ -36,12 +42,21 @@ def install(util: str = None, storage_path: str = None, user: str ="root", **kwa
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
     os.makedirs(f'/home/{user}/.local/share/mytonprovider/',exist_ok=True)
     ton_storage = Dict()
+
     ton_storage.api = Dict()
     ton_storage.api.port = port
     ton_storage.api.host = host
     ton_storage.api.login = login
     ton_storage.api.password = password
-    ton_storage.path = path
+
+    ton_storage.storage_path = storage_path
+    ton_storage.user = user
+    ton_storage.src_dir = src_dir
+    ton_storage.bin_dir = bin_dir
+    ton_storage.venvs_dir = venvs_dir
+    ton_storage.venv_path = venv_path
+    ton_storage.src_path = src_path
+
     write_config_to_file(config_path=mconfig_path, data=ton_storage)
 
 

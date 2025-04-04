@@ -87,7 +87,7 @@ venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
 echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
-apt install git virtualenv python3 python3-pip
+apt install -y git curl wget virtualenv python3 python3-pip
 
 echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
 virtualenv ${venv_path}
@@ -108,7 +108,8 @@ echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
 pip3 install -r ${src_path}/mypylib/requirements.txt
 
 echo -e "${COLOR}[6/7]${ENDC} Launching MyTonProvider installer"
-python3 ${src_path}/install.py --user ${user} --src_dir ${src_dir} --bin_dir ${bin_dir} --venvs_dir ${venvs_dir} --venv_path ${venv_path} --src_path ${src_path}
+python3 ${src_path}/install.py ${user} ${src_dir} ${bin_dir} ${venvs_dir} ${venv_path} ${src_path}
 
 echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
+
 exit 0
