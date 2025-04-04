@@ -61,11 +61,11 @@ def main():
     answers: dict = ask()
     print(answers)
     if "TonStorage" in answers.get("util"):
-        ton_storage.install(*args, **answers)
+        ton_storage.install(*args, util="TonStorage", **answers)
     if "TonStorageProvider" in answers.get("util"):
-        ton_storage_provider.install(*args, **answers)
+        ton_storage_provider.install(*args, util="TonStorageProvider", **answers)
     if "TonTunnelProvider" in answers.get("util"):
-        ton_tunnel_provider.install(*args, **answers)
+        ton_tunnel_provider.install(*args, util="TonTunnelProvider", **answers)
 
 
 if __name__ == "__main__":

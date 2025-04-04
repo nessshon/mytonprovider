@@ -43,19 +43,21 @@ def install(
     mconfig_path = f"/home/{user}/.local/share/mytonprovider/mytonprovider.db"
     os.makedirs(f'/home/{user}/.local/share/mytonprovider/',exist_ok=True)
     ton_storage = Dict()
+
     ton_storage.api = Dict()
     ton_storage.api.port = port
     ton_storage.api.host = host
     ton_storage.api.login = login
     ton_storage.api.password = password
+
     ton_storage.storage_path = path
     ton_storage.user = user
     ton_storage.src_dir = src_dir
     ton_storage.bin_dir = bin_dir
     ton_storage.venvs_dir = venvs_dir
     ton_storage.venv_path = venv_path
-    ton_storage.storage_path = path
-    ton_storage.src_path = path
+    ton_storage.src_path = src_path
+
     write_config_to_file(config_path=mconfig_path, data=ton_storage)
 
 
