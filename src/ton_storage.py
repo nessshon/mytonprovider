@@ -23,9 +23,8 @@ def install(
     port = randint(1024, 49151)
     login = generate_login()
     password = generate_password()
-    path = storage_path
 
-    subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", path])
+    subprocess.run(["bash", get_package_path() + "/src/scripts/ton_storage_install.sh", storage_path])
 
     cmd = f"{bin_dir}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
@@ -50,7 +49,7 @@ def install(
     ton_storage.api.login = login
     ton_storage.api.password = password
 
-    ton_storage.storage_path = path
+    ton_storage.storage_path = storage_path
     ton_storage.user = user
     ton_storage.src_dir = src_dir
     ton_storage.bin_dir = bin_dir

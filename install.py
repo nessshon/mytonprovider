@@ -55,7 +55,7 @@ def ask() -> dict[str, Any]:
 
 
 def main():
-    args: list = sys.argv
+    args: list = sys.argv[1:]
     answers: dict = ask()
     utils = answers.pop("utils")
     print(answers)
