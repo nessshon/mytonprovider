@@ -35,7 +35,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "a:r:b:e:" flag; do
+while getopts "a:r:b:e:h" flag; do
 	case "${flag}" in
 		a) author=${OPTARG};;
 		r) repo=${OPTARG};;
