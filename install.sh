@@ -86,30 +86,55 @@ venvs_dir="/home/${user}/.local/venv"
 venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
-echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
-apt install -y git curl wget virtualenv python3 python3-pip
+install_required() {
+	apt install -y git curl wget virtualenv python3 python3-pip
+}
 
-echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
-virtualenv ${venv_path}
-source ${venv_path}/bin/activate
+activate_venv() {
+	virtualenv ${venv_path}
+	source ${venv_path}/bin/activate
+}
 
-# remove previous installation
-rm -rf ${src_path}
+clone_repository() {
+	echo "https://github.com/${author}/${repo}.git -> ${branch}"
+	rm -rf ${src_path}
+	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
+	git config --global --add safe.directory ${src_path}
+}
 
-echo -e "${COLOR}[3/7]${ENDC} Downloading MyTonProvider"
-echo "https://github.com/${author}/${repo}.git -> ${branch}"
-git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
-git config --global --add safe.directory ${src_path}
+install_requirements() {
+	pip3 install -r ${src_path}/requirements.txt
+}
 
-echo -e "${COLOR}[4/7]${ENDC} Installing requirements"
-pip3 install -r ${src_path}/requirements.txt
+install_dependencies() {
+	pip3 install -r ${src_path}/mypylib/requirements.txt
+}
 
-echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
-pip3 install -r ${src_path}/mypylib/requirements.txt
+launch_installer() {
+	python3 ${src_path}/install.py ${user} ${src_dir} ${bin_dir} ${venvs_dir} ${venv_path} ${src_path}
+}
 
-echo -e "${COLOR}[6/7]${ENDC} Launching MyTonProvider installer"
-python3 ${src_path}/install.py ${user} ${src_dir} ${bin_dir} ${venvs_dir} ${venv_path} ${src_path}
+mytonprovider_setup() {
+	echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
+	install_required
 
-echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
+	echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
+	activate_venv
 
+	echo -e "${COLOR}[3/7]${ENDC} Cloning MyTonProvider repository"
+	clone_repository
+
+	echo -e "${COLOR}[4/7]${ENDC} Installing requirements"
+	install_requirements
+
+	echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
+	install_dependencies
+
+	echo -e "${COLOR}[6/7]${ENDC} Launching UI/UX installer"
+	launch_installer
+
+	echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
+}
+
+mytonprovider_setup
 exit 0
