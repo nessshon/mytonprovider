@@ -8,11 +8,6 @@ my_dir=$(dirname $(realpath ${0}))
 # Check sudo
 check_superuser
 
-# Default args
-author="xssnick"
-repo="tonutils-storage-provider"
-branch="master"
-
 # Install parameters
 src_dir="/usr/src"
 bin_dir="/usr/bin"
@@ -24,7 +19,37 @@ go_path="/usr/local/go/bin/go"
 COLOR='\033[95m'
 ENDC='\033[0m'
 
+# functions
+show_help_and_exit() {
+	echo 'Supported arguments:'
+	echo ' -a               Set git repo author'
+	echo ' -r               Set git repo'
+	echo ' -b               Set git repo branch'
+	echo ' -e               Set entry point for compilation'
+	echo ' -h               Show this help'
+	exit
+}
 
+# Show help for --help
+if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
+	show_help_and_exit
+fi
+
+# Input args
+while getopts "a:r:b:e:" flag; do
+	case "${flag}" in
+		a) author=${OPTARG};;
+		r) repo=${OPTARG};;
+		b) branch=${OPTARG};;
+		e) entry_point=${OPTARG};;
+		h) show_help_and_exit;;
+		*)
+			echo "Flag -${flag} is not recognized. Aborting"
+		exit 1 ;;
+	esac
+done
+
+# functions
 clone_repository() {
 	echo "https://github.com/${author}/${repo}.git -> ${branch}"
 	rm -rf ${src_path}
@@ -40,11 +65,11 @@ compilation() {
 	echo "${src_path} -> ${bin_path}"
 	cd ${src_path}
 	#entry_point=$(find ${package_src_path} -name "main.go" | head -n 1)
-	CGO_ENABLED=1 ${go_path} build -o ${bin_path} ${src_path}/cmd/main.go
+	CGO_ENABLED=1 ${go_path} build -o ${bin_path} ${src_path}/${entry_point}
 }
 
-ton_storage_provider_setup(){
-	echo -e "${COLOR}[1/4]${ENDC} Cloning Ton-Storage-Provider repository"
+setup_go_package(){
+	echo -e "${COLOR}[1/4]${ENDC} Cloning ${repo} repository"
 	clone_repository
 
 	echo -e "${COLOR}[2/4]${ENDC} Installing required packages"
@@ -53,8 +78,8 @@ ton_storage_provider_setup(){
 	echo -e "${COLOR}[3/4]${ENDC} Source compilation"
 	compilation
 
-	echo -e "${COLOR}[4/4]${ENDC} Ton-Storage-Provider installation complete"
+	echo -e "${COLOR}[4/4]${ENDC} ${repo} installation complete"
 }
 
-ton_storage_provider_setup
+setup_go_package
 exit 0
