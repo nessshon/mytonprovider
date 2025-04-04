@@ -87,7 +87,7 @@ venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
 echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
-apt install git virtualenv python3 python3-pip
+apt install -y git virtualenv python3 python3-pip
 
 echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
 virtualenv ${venv_path}
