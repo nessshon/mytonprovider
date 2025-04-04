@@ -1,6 +1,7 @@
 FROM ubuntu:latest
 
-RUN apt update && apt install -y sudo
+RUN apt update && apt install -y sudo && apt install -y systemd systemd-sysv
+RUN /usr/sbin/init &
 #RUN useradd -m -s /bin/bash testuser && echo 'testuser:password123' | chpasswd
 #RUN usermod -aG sudo testuser
 RUN apt install git -y
