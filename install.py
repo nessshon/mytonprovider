@@ -59,12 +59,12 @@ def ask() -> dict[str, Any]:
 def main():
     args = sys.argv
     answers: dict = ask()
-    print(answers)
-    if "TonStorage" in answers.get("util"):
+    util = answers.pop("util")
+    if "TonStorage" in util:
         ton_storage.install(*args, util="TonStorage", **answers)
-    if "TonStorageProvider" in answers.get("util"):
+    if "TonStorageProvider" in util:
         ton_storage_provider.install(*args, util="TonStorageProvider", **answers)
-    if "TonTunnelProvider" in answers.get("util"):
+    if "TonTunnelProvider" in util:
         ton_tunnel_provider.install(*args, util="TonTunnelProvider", **answers)
 
 
