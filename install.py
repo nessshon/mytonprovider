@@ -1,7 +1,7 @@
 from src.utils import get_disk_free_space
 from src import ton_storage, ton_storage_provider, ton_tunnel_provider
 
-from inquirer import Text, List, Path
+from inquirer import Text, List, Path, Checkbox
 from typing import Any
 import inquirer
 from mypylib import Dict
@@ -10,7 +10,7 @@ import sys
 
 def ask() -> dict[str, Any]:
     util = inquirer.prompt([
-        List(
+        Checkbox(
             name="util",
             message="Выберете утилиту",
             choices=["TonStorage", "TonStorageProvider", "TonTunnelProvider"]
