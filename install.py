@@ -12,7 +12,7 @@ def ask() -> dict[str, Any]:
     util = inquirer.prompt([
         Checkbox(
             name="util",
-            message="Выберете утилиту",
+            message="Выберете утилиты",
             choices=["TonStorage", "TonStorageProvider", "TonTunnelProvider"]
         )
     ])
@@ -59,12 +59,13 @@ def ask() -> dict[str, Any]:
 def main():
     args = sys.argv
     answers: dict = ask()
-    if answers.get("util") == "TonStorage":
-        return ton_storage.install(*args, **answers)
-    elif answers.get("util") == "TonStorageProvider":
-        return ton_storage_provider.install(*args, **answers)
-    elif answers.get("util") == "TonTunnelProvider":
-        return ton_tunnel_provider.install(*args, **answers)
+    print(answers)
+    if "TonStorage" in answers.get("util"):
+        ton_storage.install(*args, **answers)
+    if "TonStorageProvider" in answers.get("util"):
+        ton_storage_provider.install(*args, **answers)
+    if "TonTunnelProvider" in answers.get("util"):
+        ton_tunnel_provider.install(*args, **answers)
 
 
 if __name__ == "__main__":
