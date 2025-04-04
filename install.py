@@ -61,13 +61,13 @@ def main():
     print(answers)
 
     if "TonStorage" in utils:
-        ton_storage.install(*args, util="TonStorage", **answers)
+        ton_storage.install(*args, **answers)
 
     if "TonStorageProvider" in utils:
-        ton_storage_provider.install(*args, util="TonStorageProvider", **answers)
+        ton_storage_provider.install(*args, **answers)
 
     if "TonTunnelProvider" in utils:
-        ton_tunnel_provider.install(*args, util="TonTunnelProvider", **answers)
+        ton_tunnel_provider.install(*args, **answers)
 
 
 if __name__ == "__main__":

@@ -14,7 +14,7 @@ def install(
         venvs_dir,
         venv_path,
         src_path,
-        util: str = None,
+        util: str = "TonStorage",
         storage_path: str = None,
         **kwargs
             ):
