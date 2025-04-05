@@ -8,7 +8,7 @@ import os
 
 
 def install(
-        params: dict,
+        args: dict,
         author="xssnick",
         repo="tonutils-storage",
         branch="master",
@@ -28,7 +28,7 @@ def install(
         "-a", author, "-r", repo, "-b", branch, "-e", entry_point
     ])
 
-    cmd = f"{params['bin_dir']}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
+    cmd = f"{args['bin_dir']}/tonutils-storage --api {host}:{port} --api-login {login} --api-password {password}"
 
     os.makedirs(storage_path, exist_ok=True)
     add2systemd(
@@ -41,8 +41,8 @@ def install(
     local.start_service(name)
     local.stop_service(name)
 
-    mconfig_path = f"/home/{params['user']}/.local/share/mytonprovider/mytonprovider.db"
-    os.makedirs(f"/home/{params['user']}/.local/share/mytonprovider/",exist_ok=True)
+    mconfig_path = f"/home/{args['user']}/.local/share/mytonprovider/mytonprovider.db"
+    os.makedirs(f"/home/{args['user']}/.local/share/mytonprovider/",exist_ok=True)
     ton_storage = Dict()
 
     ton_storage.api = Dict()
@@ -52,12 +52,12 @@ def install(
     ton_storage.api.password = password
 
     ton_storage.storage_path = storage_path
-    ton_storage.user = params['user']
-    ton_storage.src_dir = params['src_dir']
-    ton_storage.bin_dir = params['bin_dir']
-    ton_storage.venvs_dir = params['venvs_dir']
-    ton_storage.venv_path = params['venv_path']
-    ton_storage.src_path = params['src_path']
+    ton_storage.user = args['user']
+    ton_storage.src_dir = args['src_dir']
+    ton_storage.bin_dir = args['bin_dir']
+    ton_storage.venvs_dir = args['venvs_dir']
+    ton_storage.venv_path = args['venv_path']
+    ton_storage.src_path = args['src_path']
 
     write_config_to_file(config_path=mconfig_path, data=ton_storage)
 
