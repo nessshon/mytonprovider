@@ -35,7 +35,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "a:r:b:e:" flag; do
+while getopts "a:r:b:e:h" flag; do
 	case "${flag}" in
 		a) author=${OPTARG};;
 		r) repo=${OPTARG};;
@@ -77,7 +77,7 @@ check_go_version() {
 install_go() {
 	echo "start install_go function"
 	arc=$(dpkg --print-architecture)
-	go_version_url=https://go.dev/VERSION?m=text
+	go_version_url="https://go.dev/VERSION?m=text"
 	go_version=$(curl -s ${go_version_url} | head -n 1)
 	go_url=https://go.dev/dl/${go_version}.linux-${arc}.tar.gz
 	rm -rf /usr/local/go

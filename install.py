@@ -1,7 +1,7 @@
-from src.utils import get_disk_free_space
-from src import ton_storage, ton_storage_provider, ton_tunnel_provider
+from utils import get_disk_free_space
+from installers import ton_storage, ton_storage_provider, ton_tunnel_provider
 
-from inquirer import Text, List, Path, Checkbox
+from inquirer import Text, Path, Checkbox
 from typing import Any
 import inquirer
 from mypylib import Dict
@@ -55,18 +55,25 @@ def ask() -> dict[str, Any]:
 
 
 def main():
-    args: list = sys.argv[1:]
+
+    q: list = sys.argv[1:]
+    args = {}
+    for i in range(0, len(q), 2):
+        if q[i].startswith("--"):
+            key = q[i].lstrip("--")
+            args[key] = q[i+1]
+        else:
+            print("Unknown schema of args")
+            sys.exit(1)
+
     answers: dict = ask()
     utils = answers.pop("utils")
-
     if "TonStorage" in utils:
-        ton_storage.install(*args, **answers)
-
+        ton_storage.install(args, **answers)
     if "TonStorageProvider" in utils:
-        ton_storage_provider.install(*args, **answers)
-
+        ton_storage_provider.install(args, **answers)
     if "TonTunnelProvider" in utils:
-        ton_tunnel_provider.install(*args, **answers)
+        ton_tunnel_provider.install(args, **answers)
 
 
 if __name__ == "__main__":
