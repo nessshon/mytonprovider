@@ -2,10 +2,9 @@
 set -e
 
 # Default args
-#author="igroman787"
-author="seroburomalinoviy"
+author="igroman787"
 repo="mytonprovider"
-branch="master"
+branch="dev"
 ignore=false
 
 # colors
