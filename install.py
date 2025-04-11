@@ -1,81 +1,104 @@
 from utils import get_disk_free_space
-from installers import ton_storage, ton_storage_provider, ton_tunnel_provider
+from modules import (
+	main,
+	ton_storage,
+	ton_storage_provider,
+	ton_tunnel_provider
+)
 
-from inquirer import Text, Path, Checkbox
+#from inquirer import Text, Path, Checkbox
 from typing import Any
 import inquirer
 from mypylib import Dict
 import sys
 
 
-def ask() -> dict[str, Any]:
-    utils_q = []
-    storage_ans = []
-    provider_ans = []
-    tunnel_ans = []
-    utils_q.append(inquirer.prompt([
-        Checkbox(
-            name="utils",
-            message="Выберете утилиты",
-            choices=["TonStorage", "TonStorageProvider", "TonTunnelProvider"]
-        )
-    ]))
-    if  "TonStorage" in utils_q[0]["utils"]:
-
-        storage_ans.append(inquirer.prompt([
-            Path(
-                name="storage_path",
-                message=f"Ввод места хранения файлов ton_storage (по умолчанию: /var/tonstorage/)",
-                default="/var/tonstorage",
-            )
-        ]))
-
-    if "TonStorageProvider" in utils_q[0]["utils"]:
-        provider_ans.append(inquirer.prompt([
-            Text(
-                name="storage_cost",
-                message="Сколько будет стоить хранения 1 Гб/мес ?"
-            ),
-            Text(
-                name="storage_disk_space",
-                message="Какой размер от свободного размера диска может занять ton_storage в ГБ? (по умолчанию 90% от диска)",
-                default=get_disk_free_space() * 0.9
-            )
-        ]))
-
-    if "TonTunnelProvider" in utils_q[0]["utils"]:
-        tunnel_ans.append(inquirer.prompt([
-            Text(
-                name="traffic_cost",
-                message="Сколько будет стоить 1 Гб трафика сети?"
-            )
-        ]))
-
-    return Dict(*utils_q, *storage_ans, *provider_ans, *tunnel_ans)
+default_storage_path = "/var/storage"
+default_storage_cost = 10
+default_traffic_cost = 1
 
 
-def main():
 
-    q: list = sys.argv[1:]
-    args = {}
-    for i in range(0, len(q), 2):
-        if q[i].startswith("--"):
-            key = q[i].lstrip("--")
-            args[key] = q[i+1]
-        else:
-            print("Unknown schema of args")
-            sys.exit(1)
+def parse_input_args():
+	input_args: list = sys.argv[1:]
+	args = Dict()
+	for i in range(0, len(input_args), 2):
+		if input_args[i].startswith("--"):
+			key = input_args[i].lstrip("--")
+			args[key] = input_args[i+1]
+		else:
+			print("Unknown schema of args")
+			sys.exit(1)
+	return args
+#end define
 
-    answers: dict = ask()
-    utils = answers.pop("utils")
-    if "TonStorage" in utils:
-        ton_storage.install(args, **answers)
-    if "TonStorageProvider" in utils:
-        ton_storage_provider.install(args, **answers)
-    if "TonTunnelProvider" in utils:
-        ton_tunnel_provider.install(args, **answers)
+def ignore_storage(answers):
+	if "TonStorage" in answers["utils"]:
+		return False
+	return True
+#end define
+
+def ignore_provider(answers):
+	if "TonStorageProvider" in answers["utils"]:
+		return False
+	return True
+#end define
+
+def ignore_tunnel(answers):
+	if "TonTunnelProvider" in answers["utils"]:
+		return False
+	return True
+#end define
+
+def calculate_space_to_provide(answers):
+	storage_path = answers.get("storage_path")
+	free_space = get_disk_free_space(storage_path)
+	available_space = int(free_space * 0.9)
+	return str(available_space)
+#end define
 
 
-if __name__ == "__main__":
-    main()
+questions = [
+	inquirer.Checkbox(
+		name="utils",
+		message="Выберете утилиты",
+		choices=["TonStorage", "TonStorageProvider", "TonTunnelProvider"]
+	),
+	inquirer.Path(
+		name="storage_path",
+		message=f"Ввод места хранения файлов провайдера",
+		default=default_storage_path,
+		ignore=ignore_storage
+	),
+	inquirer.Text(
+		name="storage_cost",
+		message=f"Сколько TON будет стоить хранение 200 GB/month",
+		default=default_storage_cost,
+		ignore=ignore_provider
+	),
+	inquirer.Text(
+		name="space_to_provide_megabytes",
+		message=f"Какой размер от свободного размера диска может занять ton-storage в MB",
+		default=calculate_space_to_provide,
+		ignore=ignore_provider
+	),
+	inquirer.Text(
+		name="traffic_cost",
+		message=f"Сколько будет стоить 10 GB трафика сети",
+		default=default_traffic_cost,
+		ignore=ignore_tunnel
+	)
+]
 
+
+args = parse_input_args()
+answers = inquirer.prompt(questions)
+utils = answers.pop("utils")
+main.install(args, **answers)
+if "TonStorage" in utils:
+	ton_storage.install(args, **answers)
+if "TonStorageProvider" in utils:
+	ton_storage_provider.install(args, **answers)
+if "TonTunnelProvider" in utils:
+	ton_tunnel_provider.install(args, **answers)
+#end if

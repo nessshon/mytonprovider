@@ -7,13 +7,6 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
-# Install parameters
-src_dir="/usr/src"
-bin_dir="/usr/bin"
-src_path="${src_dir}/${repo}"
-bin_path="${bin_dir}/${repo}"
-go_path="/usr/local/go/bin/go"
-
 # Colors
 COLOR='\033[95m'
 ENDC='\033[0m'
@@ -47,6 +40,13 @@ while getopts "a:r:b:e:h" flag; do
 		exit 1 ;;
 	esac
 done
+
+# Install parameters
+src_dir="/usr/src"
+bin_dir="/usr/bin"
+src_path="${src_dir}/${repo}"
+bin_path="${bin_dir}/${repo}"
+go_path="/usr/local/go/bin/go"
 
 # functions
 check_go_version() {
