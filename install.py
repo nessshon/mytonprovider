@@ -11,6 +11,7 @@ from typing import Any
 import inquirer
 from mypylib import Dict
 import sys
+import os
 
 
 default_storage_path = "/var/storage"
@@ -52,6 +53,7 @@ def ignore_tunnel(answers):
 
 def calculate_space_to_provide(answers):
 	storage_path = answers.get("storage_path")
+	os.makedirs(storage_path, exist_ok=True)
 	free_space = get_disk_free_space(storage_path)
 	available_space = int(free_space * 0.9)
 	return str(available_space)
