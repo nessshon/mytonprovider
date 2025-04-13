@@ -4,6 +4,7 @@ from random import randint
 from mypylib import (
 	Dict,
 	MyPyClass,
+	color_print,
 	add2systemd,
 	read_config_from_file,
 	write_config_to_file,
@@ -11,7 +12,35 @@ from mypylib import (
 )
 import subprocess
 import os
+import requests
 
+
+class ConsoleModule():
+	def __init__(self, local):
+		self.local = local
+		self.local.add_log("ton_storage console module init done")
+	#end define
+
+	# def get_console_commands(self):
+	# 	return list()
+	# #end define
+
+	def status(self, args):
+		data = self.get_api_data()
+		color_print("{cyan}===[ Local storage status ]==={endc}")
+		print(f"Количество хранимых контейнеров: {data}")
+		print(f"Пространство хранилища: занято/свободно")
+	#end define
+
+	def get_api_data(self):
+		api = self.local.db.ton_storage.api
+		api_url = f"http://{api.host}:{api.port}/api/v1/list"
+		resp = requests.get(api_url, timeout=0.3)
+		if resp.status_code != 200:
+			raise Exception(f"Failed to get provider api data from {api_url}")
+		return Dict(resp.json())
+	#end define
+#end class
 
 def install(
 		args: Dict,
