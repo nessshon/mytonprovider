@@ -17,9 +17,12 @@ from mypylib import (
 	add2systemd,
 	read_config_from_file,
 	write_config_to_file,
-	get_own_ip
+	get_own_ip,
+	get_git_hash,
+	get_git_branch
 )
 from adnl_over_tcp import get_messages
+from utils import get_module_by_name, convert_to_required_decimal, fix_git_config
 
 
 
@@ -92,9 +95,10 @@ class Module():
 	#end define
 
 	async def get_provider_wallet(self):
-		provider = self.local.db.ton_storage.provider
+		#provider = self.local.db.ton_storage.provider
+		provider_config = self.get_provider_config()
 		client = tonutils.client.LiteserverClient(is_testnet=True)
-		private_key = base64.b64decode(provider.privkey)
+		private_key = base64.b64decode(provider_config.ProviderKey)
 		wallet = Dict()
 		wallet.obj = tonutils.wallet.WalletV3R2.from_private_key(client, private_key)
 		wallet.addr = wallet.obj.address.to_str()
@@ -116,13 +120,62 @@ class Module():
 	async def status(self, args):
 		provider = self.local.db.ton_storage.provider
 		wallet = await self.get_provider_wallet()
+		storage_cost = self.get_storage_cost()
+		maximum_profit = self.get_maximum_profit()
+		ton_storage_module = get_module_by_name(self.local, "ton-storage")
+		api_data = ton_storage_module.get_api_data()
+		used_provider_space = ton_storage_module.get_bags_size(api_data)
+		total_provider_space = self.get_total_provider_space()
+		git_hash, git_branch = self.get_my_git_hash_and_branch()
 		color_print("{cyan}===[ Local provider status ]==={endc}")
 		print(f"Название модуля: {self.name}")
 		print(f"Публичный ключ провайдера: {provider.pubkey}")
-		print(f"Кошелек провайдера: {wallet.addr}")
+		print(f"Адрес кошелька провайдера: {wallet.addr}")
 		print(f"Баланс кошелька провайдера: {wallet.balance}")
-		print(f"Пространство провайдера: занято/свободно")
-		print(f"Версия провайдера: git_version (git_branch)")
+		print(f"Цена хранения за 200 GB в месяц: {storage_cost} TON")
+		print(f"Максимальный профит в месяц: {maximum_profit} TON")
+		
+		print(f"Пространство провайдера: {used_provider_space} /{total_provider_space} GB")
+		print(f"Версия провайдера: {git_hash} ({git_branch})")
+	#end define
+
+	def get_total_provider_space(self, decimal_size=3):
+		# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
+		provider_config = self.get_provider_config()
+		result_megabytes = provider_config.Storages[0].SpaceToProvideMegabytes
+		result_int = result_megabytes *1024**2
+		result = convert_to_required_decimal(result_int, decimal_size)
+		return result
+	#end define
+
+	def get_provider_config(self):
+		provider = self.local.db.ton_storage.provider
+		return read_config_from_file(provider.config_path)
+	#en define
+
+	def get_my_git_hash_and_branch(self):
+		provider = self.local.db.ton_storage.provider
+		git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		fix_git_config(git_path)
+		git_hash = get_git_hash(git_path, short=True)
+		git_branch = get_git_branch(git_path)
+		return git_hash, git_branch
+	#end define
+
+	def get_storage_cost(self):
+		# 1_mb_per_day --> 200_gb_per_month
+		provider_config = self.get_provider_config()
+		min_rate_per_mb_day = float(provider_config.MinRatePerMBDay)
+		storage_cost = min_rate_per_mb_day *200 *1024 *30
+		return round(storage_cost, 2)
+	#end define
+
+	def get_maximum_profit(self):
+		provider_config = self.get_provider_config()
+		total_provider_space = self.get_total_provider_space(decimal_size=2)
+		min_rate_per_mb_day = float(provider_config.MinRatePerMBDay)
+		maximum_profit = round(total_provider_space * min_rate_per_mb_day, 2)
+		return maximum_profit
 	#end define
 
 	def get_upgrade_args(self, src_path):
@@ -142,11 +195,9 @@ class Module():
 			install_args: dict,
 			storage_path: str = None,
 			storage_cost: int = None,
-			space_to_provide_megabytes: int = None,
+			space_to_provide_gigabytes: int = None,
 			**kwargs
 		):
-		
-
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		udp_port = randint(1024, 65000)
 
@@ -188,7 +239,7 @@ class Module():
 		provider_config.ExternalIP = get_own_ip()
 		provider_config.MinRatePerMBDay = self.calulate_MinRatePerMBDay(storage_cost)
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
-		provider_config.Storages[0].SpaceToProvideMegabytes = int(space_to_provide_megabytes)
+		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
 
 		# write ton-storage-provider config
@@ -196,15 +247,16 @@ class Module():
 
 		# get provider pubkey
 		key_bytes = base64.b64decode(provider_config.ProviderKey)
-		privkey_bytes = key_bytes[0:32]
+		#privkey_bytes = key_bytes[0:32]
 		pubkey_bytes = key_bytes[32:64]
 
 		# edit mytoncore config file
 		provider = Dict()
 		provider.udp_port = udp_port
 		provider.config_path = config_path
-		provider.privkey = base64.b64encode(privkey_bytes).decode("utf-8")
+		#provider.privkey = base64.b64encode(privkey_bytes).decode("utf-8")
 		provider.pubkey = pubkey_bytes.hex().upper()
+		provider.src_dir = install_args.src_dir
 		mconfig.ton_storage.provider = provider
 
 		# write mconfig
@@ -215,8 +267,17 @@ class Module():
 
 	#end define
 
+	def calculate_space_to_provide(self, input_space):
+		# convert gigabytes to megabytes
+		input_space_int = int(input_space)
+		result_int = input_space_int*1024
+		result = int(result_int)
+		return result
+	#end define
+
 	def calulate_MinRatePerMBDay(self, storage_cost):
-		data = int(storage_cost) /200 /1000 /30
+		# 200_gb_per_month --> 1_mb_per_day
+		data = int(storage_cost) /200 /1024 /30
 		return f"{data:.9f}"
 	#end define
 #end class

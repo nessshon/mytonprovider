@@ -12,7 +12,7 @@ from utils import (
 	import_modules,
 	get_modules_names,
 	get_module_by_name,
-	get_disk_free_space
+	get_disk_space
 )
 
 
@@ -40,19 +40,19 @@ def parse_input_args():
 #end define
 
 def ignore_storage(answers):
-	if "TonStorage" in answers["utils"]:
+	if "ton-storage" in answers["utils"]:
 		return False
 	return True
 #end define
 
 def ignore_provider(answers):
-	if "TonStorageProvider" in answers["utils"]:
+	if "ton-storage-provider" in answers["utils"]:
 		return False
 	return True
 #end define
 
 def ignore_tunnel(answers):
-	if "TonTunnelProvider" in answers["utils"]:
+	if "ton-tunnel-provider" in answers["utils"]:
 		return False
 	return True
 #end define
@@ -60,16 +60,10 @@ def ignore_tunnel(answers):
 def calculate_space_to_provide(answers):
 	storage_path = answers.get("storage_path")
 	os.makedirs(storage_path, exist_ok=True)
-	free_space = get_disk_free_space(storage_path)
+	total_space, used_space, free_space = get_disk_space(storage_path)
 	available_space = int(free_space * 0.9)
 	return str(available_space)
 #end define
-
-
-
-
-
-
 
 def create_questions():
 	questions = [
@@ -86,13 +80,13 @@ def create_questions():
 		),
 		inquirer.Text(
 			name="storage_cost",
-			message=f"Сколько TON будет стоить хранение 200 GB/month",
+			message=f"Сколько TON будет стоить хранение 200 GB в месяц",
 			default=default_storage_cost,
 			ignore=ignore_provider
 		),
 		inquirer.Text(
-			name="space_to_provide_megabytes",
-			message=f"Какой размер от свободного размера диска может занять ton-storage в MB",
+			name="space_to_provide_gigabytes",
+			message=f"Какой размер диска может занять ton-storage в GB",
 			default=calculate_space_to_provide,
 			ignore=ignore_provider
 		),

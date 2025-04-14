@@ -9,11 +9,14 @@ from mypylib import (
 	add2systemd,
 	read_config_from_file,
 	write_config_to_file,
-	get_own_ip
+	get_own_ip,
+	get_git_hash,
+	get_git_branch
 )
 import subprocess
 import os
 import requests
+from utils import convert_to_required_decimal, get_disk_space, fix_git_config
 
 
 class Module():
@@ -34,12 +37,17 @@ class Module():
 	# #end define
 
 	def status(self, args):
-		data = self.get_api_data()
+		api_data = self.get_api_data()
+		bags_num = self.get_bags_num(api_data)
+		ton_storage = self.local.db.ton_storage
+		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path)
+		used_provider_space = self.get_bags_size(api_data)
+		git_hash, git_branch = self.get_my_git_hash_and_branch()
 		color_print("{cyan}===[ Local storage status ]==={endc}")
 		print(f"Название модуля: {self.name}")
-		print(f"Количество хранимых контейнеров: {data}")
-		print(f"Пространство хранилища: занято/свободно")
-		print(f"Версия хранилища: git_version (git_branch)")
+		print(f"Количество хранимых контейнеров, размер: {bags_num} -> {used_provider_space} GB")
+		print(f"Дисковое пространство: {used_disk_space} /{total_disk_space}")
+		print(f"Версия хранилища: {git_hash} ({git_branch})")
 	#end define
 
 	def get_api_data(self):
@@ -49,6 +57,31 @@ class Module():
 		if resp.status_code != 200:
 			raise Exception(f"Failed to get provider api data from {api_url}")
 		return Dict(resp.json())
+	#end define
+
+	def get_bags_num(self, api_data):
+		if api_data.bags == None:
+			return 0
+		return len(api_data.bags)
+	#end define
+
+	def get_bags_size(self, api_data, decimal_size=3):
+		if api_data.bags == None:
+			return 0
+		used = 0
+		for bag in api_data.bags:
+			used += bag.size
+		used_space = convert_to_required_decimal(used, decimal_size)
+		return 
+	#end define
+
+	def get_my_git_hash_and_branch(self):
+		ton_storage = self.local.db.ton_storage
+		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		fix_git_config(git_path)
+		git_hash = get_git_hash(git_path, short=True)
+		git_branch = get_git_branch(git_path)
+		return git_hash, git_branch
 	#end define
 
 	def get_upgrade_args(self, src_path):
@@ -119,7 +152,7 @@ class Module():
 		ton_storage.storage_path = storage_path
 		ton_storage.port = udp_port
 		#ton_storage.user = install_args.user
-		#ton_storage.src_dir = install_args.src_dir
+		ton_storage.src_dir = install_args.src_dir
 		#ton_storage.bin_dir = install_args.bin_dir
 		#ton_storage.venvs_dir = install_args.venvs_dir
 		#ton_storage.venv_path = install_args.venv_path

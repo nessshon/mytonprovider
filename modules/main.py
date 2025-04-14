@@ -18,9 +18,10 @@ from utils import (
 
 
 
-def install(args: Dict, **kwargs):
+def install(install_args: Dict, **kwargs):
+	# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 	# Проверить конфигурацию
-	mconfig_dir = f"/home/{args.user}/.local/share/mytonprovider"
+	mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 	mconfig_path = f"{mconfig_dir}/mytonprovider.db"
 	if os.path.isfile(mconfig_path):
 		print(f"{mconfig_path} already exist. Break mytonprovider install")
@@ -43,8 +44,15 @@ def install(args: Dict, **kwargs):
 	# Поменять права с root на user
 	subprocess.run([
 		"chown",
-		args.user + ':' + args.user,
+		install_args.user + ':' + install_args.user,
 		mconfig_dir,
 		mconfig_path
 	])
+
+	# Создать ссылки
+	file_path = "/usr/bin/mytonprovider"
+	file_text = f"{install_args.venv_path}/bin/python3 {src_path}/mytonprovider.py $@"
+	with open(file_path, 'wt') as file:
+		file.write(file_text)
+	#end with
 #end define

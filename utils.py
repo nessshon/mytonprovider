@@ -7,13 +7,41 @@ import importlib
 from os import listdir
 import sys
 from mypylib import Dict
+import subprocess
 
 
-def get_disk_free_space(disk_path) -> int:
+def get_disk_space(disk_path, decimal_size=3) -> int:
+	# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
 	total, used, free = shutil.disk_usage(disk_path)
-	free_megabytes = int(free /1024 /1024)
-	return free_megabytes
+	total_space = convert_to_required_decimal(total, decimal_size)
+	used_space = convert_to_required_decimal(used, decimal_size)
+	free_space = convert_to_required_decimal(free, decimal_size)
+	return total_space, used_space, free_space
 #end define
+
+def convert_to_required_decimal(input_int, decimal_size=3):
+	round_size = 0
+	if decimal_size > 2:
+		round_size = 2
+	result_int = input_int /1024**decimal_size
+	result = round(result_int, round_size)
+	return result
+#end define
+
+def fix_git_config(git_path: str):
+    args = ["git", "status"]
+    try:
+        process = subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_path, timeout=3)
+        err = process.stderr.decode("utf-8")
+    except Exception as e:
+        err = str(e)
+    if err:
+        if 'git config --global --add safe.directory' in err:
+            args = ["git", "config", "--global", "--add", "safe.directory", git_path]
+            subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
+        else:
+            raise Exception(f'Failed to check git status: {err}')
+# end define
 
 @lru_cache
 def get_package_path():
