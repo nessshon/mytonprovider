@@ -14,9 +14,9 @@ ENDC='\033[0m'
 # functions
 show_help_and_exit() {
 	echo 'Supported arguments:'
-	echo ' -a               Set git repo author'
+	echo ' -a               Set git author'
 	echo ' -r               Set git repo'
-	echo ' -b               Set git repo branch'
+	echo ' -b               Set git branch'
 	echo ' -e               Set entry point for compilation'
 	echo ' -h               Show this help'
 	exit

@@ -1,12 +1,14 @@
 # добавить alias в bashrc
 
-import types
 
-import importlib
-from sys import path
-from os import listdir
-from mypylib import MyPyClass, Dict
+
+from mypylib import MyPyClass, Dict, run_as_root, color_print
 from mypyconsole.mypyconsole import MyPyConsole
+from utils import (
+	import_commands,
+	import_modules,
+	run_module_method_if_exist
+)
 
 
 local = MyPyClass(__file__)
@@ -17,65 +19,62 @@ console = MyPyConsole()
 def init():
 	console.name = "MyTonProvider"
 	#console.startFunction = None
-	console.debug = True
+	#console.debug = True
 	console.local = local
 
-	import_console_modules()
-	import_commands()
+	import_modules(local)
+	import_commands(local, console)
 #end define
 
-def import_commands():
-	for console_module in local.buffer.console_modules:
-		method = getattr(console_module, "get_console_commands", None)
-		if type(method) != types.MethodType:
-			continue
-		commands = console_module.get_console_commands()
-		do_import_commands(commands)
-#end define
 
-def do_import_commands(commands):
-	for command in commands:
-		console.AddItem(command.cmd, command.func, command.desc)
-#end define
-
-def import_console_modules():
-	local.buffer.console_modules = list()
-	modules_dir = f"{local.buffer.my_dir}/modules"
-	path.append(modules_dir)
-	modules_names = get_modules_names(modules_dir)
-	for module_name in modules_names:
-		module = importlib.import_module(module_name)
-		if "ConsoleModule" not in module.__dict__:
-			continue
-		console_module = module.ConsoleModule(local)
-		local.buffer.console_modules.append(console_module)
-#end define
-
-def get_modules_names(search_dir):
-	modules_names = list()
-	for item in listdir(search_dir):
-		if not item.endswith(".py"):
-			continue
-		module_name, file_type = item.split('.')
-		modules_names.append(module_name)
-	return modules_names
-#end define
 
 def main():
-	#console.AddItem("команда", func, "Название команды")
+	#console.AddItem("команда", func, "Описание команды")
 	console.AddItem("status", status, "Показать статус")
+	console.AddItem("update", update, "Обновить MyTonProvider")
+	console.AddItem("upgrade", upgrade, "Обновить модуль")
 	console.Run()
 #end define
 
 def status(args):
-	for console_module in local.buffer.console_modules:
-		method = getattr(console_module, "status", None)
-		#print(f"{console_module} --> {type(method)}")
-		#if type(method) != types.MethodType:
+	count = 1
+	for module in local.buffer.modules:
+		method = getattr(module, "status", None)
 		if method == None:
 			continue
-		console_module.status(args)
-		print()
+		module.status(args)
+		if count < len(local.buffer.modules):
+			count += 1
+			print()
+#end define
+
+def update(args):
+	# https://github.com/ton-blockchain/mytonctrl/blob/e85a541b762f916a67c02ae83dbef6a2ce9121d7/mytonctrl/mytonctrl.py#L337
+	script_path = f"{local.buffer.my_dir}/scripts/update.sh"
+	exit_code = run_as_root(["bash", script_path])
+	if exit_code == 0:
+		text = "Update MyTonProvider - {green}OK{endc}"
+	else:
+		text = "Update MyTonProvider - {red}Error{endc}"
+	color_print(text)
+	local.exit()
+#end define
+
+def upgrade(args):
+	try:
+		module_name = args[0]
+	except:
+		color_print("{red}Bad args. Usage:{endc} upgrade <module-name>")
+		return
+	#end try
+
+	upgrade_args = run_module_method_if_exist(local, module_name, "get_upgrade_args", src_path=local.buffer.my_dir)
+	exit_code = run_as_root(upgrade_args)
+	if exit_code == 0:
+		text = f"Upgrade {module_name} - {{green}}OK{{endc}}"
+	else:
+		text = f"Upgrade {module_name} - {{red}}Error{{endc}}"
+	color_print(text)
 #end define
 
 

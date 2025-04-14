@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf_8 -*-
+
 from utils import generate_login, generate_password, get_package_path
 
 from random import randint

@@ -110,7 +110,7 @@ install_dependencies() {
 }
 
 launch_installer() {
-	python3 ${src_path}/install.py --user ${user} --src_dir ${src_dir} --bin_dir ${bin_dir} --venvs_dir ${venvs_dir} --venv_path ${venv_path} --src_path ${src_path}
+	python3 ${src_path}/scripts/install.py --user ${user} --src_dir ${src_dir} --bin_dir ${bin_dir} --venvs_dir ${venvs_dir} --venv_path ${venv_path} --src_path ${src_path}
 }
 
 mytonprovider_setup() {
