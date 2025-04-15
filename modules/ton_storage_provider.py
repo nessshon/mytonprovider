@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import subprocess
+
 import os
 import base64
+import subprocess
 import tonutils
 import tonutils.client
 import tonutils.wallet
@@ -22,12 +23,19 @@ from mypylib import (
 	get_git_branch
 )
 from adnl_over_tcp import get_messages
-from utils import get_module_by_name, convert_to_required_decimal, fix_git_config
+from utils import (
+	get_module_by_name,
+	convert_to_required_decimal,
+	fix_git_config
+)
+from decorators import publick
+from adnl_over_udp_checker import check_adnl_connection
 
 
 
 class Module():
 	def __init__(self, local):
+		# publick functions: get_console_commands, status, get_upgrade_args, check, register
 		self.name = "ton-storage-provider"
 		self.local = local
 		self.local.add_log("ton_storage_provider console module init done")
@@ -39,6 +47,7 @@ class Module():
 		self.go_package.entry_point = "cmd/main.go"
 	#end define
 
+	@publick
 	def get_console_commands(self):
 		commands = list()
 		register_item = Dict()
@@ -50,6 +59,21 @@ class Module():
 		return commands
 	#end define
 
+	@publick
+	def check(self):
+		print("check provider udp port")
+		provider = self.local.db.ton_storage.provider
+		provider_config = self.get_provider_config()
+		
+		own_ip = get_own_ip()
+		if provider_config.ExternalIP != own_ip:
+			raise Exception("provider_config.ExternalIP != own_ip")
+		ok, error = check_adnl_connection(own_ip, provider.port, provider.pubkey)
+		if not ok:
+			color_print(f"{{red}}{error}{{endc}}")
+	#end define
+
+	@publick
 	@async_to_sync
 	async def register(self, args):
 		self.local.add_log("start register function")
@@ -90,7 +114,7 @@ class Module():
 		self.wait_complet(wallet.addr, msg_hash)
 	#end define
 
-	def wait_complet(addr, msg_hash):
+	def wait_complet(self, addr, msg_hash):
 		print("wait_complet TODO")
 	#end define
 
@@ -116,6 +140,7 @@ class Module():
 		return False
 	#end define
 
+	@publick
 	@async_to_sync
 	async def status(self, args):
 		provider = self.local.db.ton_storage.provider
@@ -178,6 +203,7 @@ class Module():
 		return maximum_profit
 	#end define
 
+	@publick
 	def get_upgrade_args(self, src_path):
 		script_path = f"{src_path}/scripts/install_go_package.sh"
 		upgrade_args = [
@@ -205,7 +231,8 @@ class Module():
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
 		provider_path = f"{storage_path}/provider"
 		db_dir = f"{provider_path}/db"
-		config_path = f"{provider_path}/config.json"
+		provider_config_path = f"{provider_path}/config.json"
+		provider_config_path
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_upgrade_args(install_args.src_path)
@@ -220,7 +247,7 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {config_path}"
+		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path}"
 		add2systemd(name=self.name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
 
 		# Первый запуск - создание конфига
@@ -230,10 +257,10 @@ class Module():
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
 
-		# read ton-storage-provider config
-		provider_config = read_config_from_file(config_path)
+		# read provider config
+		provider_config = read_config_from_file(provider_config_path)
 
-		# prepare config
+		# edit provider config
 		api = mconfig.ton_storage.api
 		provider_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		provider_config.ExternalIP = get_own_ip()
@@ -242,18 +269,18 @@ class Module():
 		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
 
-		# write ton-storage-provider config
-		write_config_to_file(config_path=config_path, data=provider_config)
+		# write provider config
+		write_config_to_file(config_path=provider_config_path, data=provider_config)
 
 		# get provider pubkey
 		key_bytes = base64.b64decode(provider_config.ProviderKey)
 		#privkey_bytes = key_bytes[0:32]
 		pubkey_bytes = key_bytes[32:64]
 
-		# edit mytoncore config file
+		# edit mytoncore config
 		provider = Dict()
-		provider.udp_port = udp_port
-		provider.config_path = config_path
+		provider.port = udp_port
+		provider.config_path = provider_config_path
 		#provider.privkey = base64.b64encode(privkey_bytes).decode("utf-8")
 		provider.pubkey = pubkey_bytes.hex().upper()
 		provider.src_dir = install_args.src_dir
@@ -262,7 +289,7 @@ class Module():
 		# write mconfig
 		write_config_to_file(config_path=mconfig_path, data=mconfig)
 
-		# start ton-storage-provider
+		# start provider
 		self.local.start_service(self.name)
 
 	#end define

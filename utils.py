@@ -131,8 +131,7 @@ def get_module_by_name(local, input_module_name):
 	raise Exception("get_module_by_name error: module not found")
 #end define
 
-def run_module_method_if_exist(local, module_name, method_name, *args, **kwargs):
-	module = get_module_by_name(local, module_name)
+def run_module_method_if_exist(local, module, method_name, *args, **kwargs):
 	method = getattr(module, method_name, None)
 	if method == None:
 		return

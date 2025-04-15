@@ -23,10 +23,10 @@ def install(install_args: Dict, **kwargs):
 	# Проверить конфигурацию
 	mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 	mconfig_path = f"{mconfig_dir}/mytonprovider.db"
-	if os.path.isfile(mconfig_path):
-		print(f"{mconfig_path} already exist. Break mytonprovider install")
-		return
-	#end if
+	# if os.path.isfile(mconfig_path):
+	# 	print(f"{mconfig_path} already exist. Break mytonprovider install")
+	# 	return
+	# #end if
 
 	# Подготовить папку
 	os.makedirs(mconfig_dir, exist_ok=True)
@@ -51,8 +51,12 @@ def install(install_args: Dict, **kwargs):
 
 	# Создать ссылки
 	file_path = "/usr/bin/mytonprovider"
-	file_text = f"{install_args.venv_path}/bin/python3 {src_path}/mytonprovider.py $@"
+	file_text = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py $@"
 	with open(file_path, 'wt') as file:
 		file.write(file_text)
 	#end with
+
+	# Дать права на запуск
+	args = ["chmod", "+x", file_path]
+	subprocess.run(args)
 #end define

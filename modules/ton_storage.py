@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
+
+import os
+import base64
+import requests
+import subprocess
 from random import randint
 from mypylib import (
 	Dict,
@@ -13,14 +18,20 @@ from mypylib import (
 	get_git_hash,
 	get_git_branch
 )
-import subprocess
-import os
-import requests
-from utils import convert_to_required_decimal, get_disk_space, fix_git_config
+
+from utils import (
+	get_module_by_name,
+	get_disk_space,
+	convert_to_required_decimal,
+	fix_git_config
+)
+from decorators import publick
+from adnl_over_udp_checker import check_adnl_connection
 
 
 class Module():
 	def __init__(self, local):
+		# publick functions: get_console_commands, status, get_upgrade_args, check, bags_list
 		self.name = "ton-storage"
 		self.local = local
 		self.local.add_log("ton_storage console module init done")
@@ -32,10 +43,39 @@ class Module():
 		self.go_package.entry_point = "cli/main.go"
 	#end define
 
-	# def get_console_commands(self):
-	# 	return list()
-	# #end define
+	@publick
+	def get_console_commands(self):
+		commands = list()
+		bags_list_item = Dict()
+		bags_list_item.cmd = "bags_list"
+		bags_list_item.func = self.bags_list
+		bags_list_item.desc = "Показать список хранимых контейнеров"
 
+		commands.append(bags_list_item)
+		return commands
+	#end define
+
+	@publick
+	def check(self):
+		print("check storage udp port")
+		ton_storage = self.local.db.ton_storage
+		storage_config = self.get_storage_config()
+		
+		own_ip = get_own_ip()
+		if storage_config.ExternalIP != own_ip:
+			raise Exception("storage_config.ExternalIP != own_ip")
+		ok, error = check_adnl_connection(own_ip, ton_storage.port, ton_storage.pubkey)
+		if not ok:
+			color_print(f"{{red}}{error}{{endc}}")
+	#end define
+
+	def get_storage_config(self):
+		ton_storage = self.local.db.ton_storage
+		storage_config = read_config_from_file(ton_storage.config_path)
+		return storage_config
+	#end define
+
+	@publick
 	def status(self, args):
 		api_data = self.get_api_data()
 		bags_num = self.get_bags_num(api_data)
@@ -84,6 +124,13 @@ class Module():
 		return git_hash, git_branch
 	#end define
 
+	@publick
+	def bags_list(self, args):
+		api_data = self.get_api_data()
+		print(f"TODO: api_data: {api_data}")
+	#end define
+
+	@publick
 	def get_upgrade_args(self, src_path):
 		script_path = f"{src_path}/scripts/install_go_package.sh"
 		upgrade_args = [
@@ -134,29 +181,31 @@ class Module():
 		self.local.start_service(self.name, sleep=10)
 		self.local.stop_service(self.name)
 
-		# read ton_storage config
+		# read storage config
 		storage_config = read_config_from_file(storage_config_path)
 
-		# prepare config
+		# edit storage config
 		storage_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		storage_config.ExternalIP = get_own_ip()
 
-		# write ton_storage config
+		# write storage config
 		write_config_to_file(config_path=storage_config_path, data=storage_config)
+
+		# get storage pubkey
+		key_bytes = base64.b64decode(storage_config.Key)
+		pubkey_bytes = key_bytes[32:64]
+		pubkey = pubkey_bytes.hex().upper()
 
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
 
-		# prepare config
+		# edit mconfig config
 		ton_storage = Dict()
 		ton_storage.storage_path = storage_path
 		ton_storage.port = udp_port
-		#ton_storage.user = install_args.user
 		ton_storage.src_dir = install_args.src_dir
-		#ton_storage.bin_dir = install_args.bin_dir
-		#ton_storage.venvs_dir = install_args.venvs_dir
-		#ton_storage.venv_path = install_args.venv_path
-		#ton_storage.src_path = install_args.src_path
+		ton_storage.pubkey = pubkey
+		ton_storage.config_path = storage_config_path
 
 		api = Dict()
 		api.host = host
@@ -167,7 +216,7 @@ class Module():
 		ton_storage.api = api
 		mconfig.ton_storage = ton_storage
 
-		# Записать конфиг
+		# write mconfig
 		write_config_to_file(config_path=mconfig_path, data=mconfig)
 
 		# start service

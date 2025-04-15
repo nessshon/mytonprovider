@@ -3,5 +3,5 @@
 inquirer==3.4.0
 requests==2.32.3
 asgiref==3.8.1
-tonutils==0.3.0
+tonutils==0.3.2
 pytoniq==0.1.40

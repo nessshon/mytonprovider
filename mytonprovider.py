@@ -18,7 +18,7 @@ console = MyPyConsole()
 
 def init():
 	console.name = "MyTonProvider"
-	#console.startFunction = None
+	console.start_function = pre_up
 	#console.debug = True
 	console.local = local
 
@@ -26,14 +26,17 @@ def init():
 	import_commands(local, console)
 #end define
 
-
+def pre_up():
+	for module in local.buffer.modules:
+		run_module_method_if_exist(local, module, "check")
+#end define
 
 def main():
-	#console.AddItem("команда", func, "Описание команды")
-	console.AddItem("status", status, "Показать статус")
-	console.AddItem("update", update, "Обновить MyTonProvider")
-	console.AddItem("upgrade", upgrade, "Обновить модуль")
-	console.Run()
+	#console.add_item("команда", func, "Описание команды")
+	console.add_item("status", status, "Показать статус")
+	console.add_item("update", update, "Обновить MyTonProvider")
+	console.add_item("upgrade", upgrade, "Обновить модуль")
+	console.run()
 #end define
 
 def status(args):
@@ -68,7 +71,8 @@ def upgrade(args):
 		return
 	#end try
 
-	upgrade_args = run_module_method_if_exist(local, module_name, "get_upgrade_args", src_path=local.buffer.my_dir)
+	module = get_module_by_name(local, module_name)
+	upgrade_args = run_module_method_if_exist(local, module, "get_upgrade_args", src_path=local.buffer.my_dir)
 	exit_code = run_as_root(upgrade_args)
 	if exit_code == 0:
 		text = f"Upgrade {module_name} - {{green}}OK{{endc}}"
