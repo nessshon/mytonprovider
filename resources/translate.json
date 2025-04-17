@@ -1,0 +1,87 @@
+{
+	"status_cmd": {
+		"ru": "Показать статусы модулей",
+		"en": "Show modules statuses",
+		"zh_TW": "顯示模組狀態"
+	},
+	"update_cmd": {
+		"ru": "Обновить MyTonProvider",
+		"en": "Update MyTonProvider",
+		"zh_TW": "更新 MyTonProvider"
+	},
+	"upgrade_cmd": {
+		"ru": "Обновить указанный модуль",
+		"en": "Update the specified module",
+		"zh_TW": "更新指定模組"
+	},
+	"bags_list_cmd": {
+		"ru": "Показать список хранимых контейнеров",
+		"en": "Show list of stored containers",
+		"zh_TW": "顯示儲存容器列表"
+	},
+	"register_cmd": {
+		"ru": "Послать сообщение в список провайдеров",
+		"en": "Send message to provider list",
+		"zh_TW": "發送訊息到提供者列表"
+	},
+	"module_name": {
+		"ru": "Название модуля: {}",
+		"en": "Module name: {}",
+		"zh_TW": "模組名稱: {}"
+	},
+	"bags_num": {
+		"ru": "Количество хранимых контейнеров, размер: {} ({} GB)",
+		"en": "Number of stored containers, size: {} -> {}",
+		"zh_TW": "儲存容器數量、尺寸: {} -> {}"
+	},
+	"disk_space": {
+		"ru": "Дисковое пространство: {} /{} GB",
+		"en": "Disk space: {} /{} GB",
+		"zh_TW": "磁碟空間: {} /{} GB"
+	},
+	"git_hash": {
+		"ru": "Версия хранилища: {} ({})",
+		"en": "Storage version: {} ({})",
+		"zh_TW": "儲存版本: {} ({})"
+	},
+	"provider_already_registered": {
+		"ru": "Кошелек провайдера уже зарегистрирован",
+		"en": "Provider wallet already registered",
+		"zh_TW": "提供者的錢包已經註冊"
+	},
+	"provider_pubkey": {
+		"ru": "Публичный ключ провайдера: {}",
+		"en": "Provider's public key: {}",
+		"zh_TW": "提供者的公鑰: {}"
+	},
+	"provider_wallet": {
+		"ru": "Адрес кошелька провайдера: {}",
+		"en": "Provider wallet address: {}",
+		"zh_TW": "提供者錢包地址: {}"
+	},
+	"provider_balance": {
+		"ru": "Баланс кошелька провайдера: {}",
+		"en": "Provider wallet balance: {}",
+		"zh_TW": "提供者錢包餘額: {}"
+	},
+	"storage_cost": {
+		"ru": "Цена за хранение 200 GB в месяц: {} TON",
+		"en": "Storage price for 200 GB per month: {} TON",
+		"zh_TW": "每月 200 GB 的儲存價格: {} TON"
+	},
+	"max_profit": {
+		"ru": "Максимальный профит в месяц: {} TON",
+		"en": "Maximum profit per month: {} TON",
+		"zh_TW": "每月最高利潤: {} TON"
+	},
+	"123": {
+		"ru": "aaa",
+		"en": "bbb",
+		"zh_TW": "ccc"
+	},
+	"123": {
+		"ru": "aaa",
+		"en": "bbb",
+		"zh_TW": "ccc"
+	}
+}

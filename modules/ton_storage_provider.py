@@ -13,6 +13,7 @@ from asgiref.sync import async_to_sync
 
 from mypylib import (
 	Dict,
+	bcolors,
 	MyPyClass,
 	color_print,
 	add2systemd,
@@ -38,7 +39,7 @@ class Module():
 		# publick functions: get_console_commands, status, get_upgrade_args, check, register
 		self.name = "ton-storage-provider"
 		self.local = local
-		self.local.add_log("ton_storage_provider console module init done")
+		self.local.add_log(f"{self.name} console module init done")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"
@@ -47,21 +48,27 @@ class Module():
 		self.go_package.entry_point = "cmd/main.go"
 	#end define
 
+	def is_module_enabled(self):
+		if "ton_storage" in self.local.db:
+			if "provider" in self.local.db.ton_storage:
+				return True
+		return False
+	#end define
+
 	@publick
 	def get_console_commands(self):
 		commands = list()
-		register_item = Dict()
-		register_item.cmd = "register"
-		register_item.func = self.register
-		register_item.desc = "Послать сообщение в список провайдеров"
+		register = Dict()
+		register.cmd = "register"
+		register.func = self.register
+		register.desc = self.local.translate("register_cmd")
 
-		commands.append(register_item)
+		commands.append(register)
 		return commands
 	#end define
 
 	@publick
 	def check(self):
-		print("check provider udp port")
 		provider = self.local.db.ton_storage.provider
 		provider_config = self.get_provider_config()
 		
@@ -92,7 +99,9 @@ class Module():
 		comment = f"tsp-{self.local.db.ton_storage.provider.pubkey.lower()}"
 		messages = await get_messages(destination, 100)
 		if self.is_already_registered(messages, wallet.addr, comment):
-			color_print("{green}Provider wallet already registered{endc}")
+			text = self.local.translate("provider_already_registered")
+			text = bcolors.green_text(text)
+			print(text)
 		else:
 			await self.do_register(wallet, destination, comment)
 	#end define
@@ -143,25 +152,69 @@ class Module():
 	@publick
 	@async_to_sync
 	async def status(self, args):
+		color_print("{cyan}===[ Local provider status ]==={endc}")
+		self.print_module_name()
+		self.print_provider_pubkey()
+		await self.print_provider_wallet()
+		self.print_storage_cost()
+		self.print_max_profit()
+		self.print_provider_space()
+		self.print_git_hash()
+	#end define
+
+	def print_module_name(self):
+		module_name = bcolors.yellow_text(self.name)
+		text = self.local.translate("module_name").format(module_name)
+		print(text)
+	#end define
+
+	def print_provider_pubkey(self):
 		provider = self.local.db.ton_storage.provider
+		provider_pubkey_text = bcolors.yellow_text(provider.pubkey)
+		text = self.local.translate("provider_pubkey").format(provider_pubkey_text)
+		print(text)
+	#end define
+
+	async def print_provider_wallet(self):
 		wallet = await self.get_provider_wallet()
+		addr = bcolors.yellow_text(wallet.addr)
+		balance = bcolors.green_text(wallet.balance)
+		addr_text = self.local.translate("provider_wallet").format(addr)
+		balance_text = self.local.translate("provider_balance").format(balance)
+		print(addr_text)
+		print(balance_text)
+	#end define
+
+	def print_storage_cost(self):
 		storage_cost = self.get_storage_cost()
-		maximum_profit = self.get_maximum_profit()
+		storage_cost_text = bcolors.yellow_text(storage_cost)
+		text = self.local.translate("storage_cost").format(storage_cost_text)
+		print(text)
+	#end define
+
+	def print_max_profit(self):
+		max_profit = self.get_max_profit()
+		max_profit_text = bcolors.green_text(max_profit)
+		text = self.local.translate("max_profit").format(max_profit_text)
+		print(text)
+	#end define
+
+	def print_provider_space(self):
 		ton_storage_module = get_module_by_name(self.local, "ton-storage")
 		api_data = ton_storage_module.get_api_data()
 		used_provider_space = ton_storage_module.get_bags_size(api_data)
 		total_provider_space = self.get_total_provider_space()
+		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
+		total_provider_space_text = bcolors.yellow_text(total_provider_space)
+		print(f"Пространство провайдера: {used_provider_space_text} /{total_provider_space_text} GB")
+	#end define
+
+	def print_git_hash(self):
 		git_hash, git_branch = self.get_my_git_hash_and_branch()
-		color_print("{cyan}===[ Local provider status ]==={endc}")
-		print(f"Название модуля: {self.name}")
-		print(f"Публичный ключ провайдера: {provider.pubkey}")
-		print(f"Адрес кошелька провайдера: {wallet.addr}")
-		print(f"Баланс кошелька провайдера: {wallet.balance}")
-		print(f"Цена хранения за 200 GB в месяц: {storage_cost} TON")
-		print(f"Максимальный профит в месяц: {maximum_profit} TON")
-		
-		print(f"Пространство провайдера: {used_provider_space} /{total_provider_space} GB")
-		print(f"Версия провайдера: {git_hash} ({git_branch})")
+		git_hash_text = bcolors.yellow_text(git_hash)
+		git_branch_text = bcolors.yellow_text(git_branch)
+		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		print(text)
 	#end define
 
 	def get_total_provider_space(self, decimal_size=3):
@@ -195,7 +248,7 @@ class Module():
 		return round(storage_cost, 2)
 	#end define
 
-	def get_maximum_profit(self):
+	def get_max_profit(self):
 		provider_config = self.get_provider_config()
 		total_provider_space = self.get_total_provider_space(decimal_size=2)
 		min_rate_per_mb_day = float(provider_config.MinRatePerMBDay)

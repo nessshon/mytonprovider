@@ -22,7 +22,11 @@ def init():
 	#console.debug = True
 	console.local = local
 
-	import_modules(local)
+	# Init localization
+	translate_path = f"{local.buffer.my_dir}/resources/translate.json"
+	local.init_translator(translate_path)
+
+	import_modules(local, check_is_enabled=True)
 	import_commands(local, console)
 #end define
 
@@ -33,9 +37,9 @@ def pre_up():
 
 def main():
 	#console.add_item("команда", func, "Описание команды")
-	console.add_item("status", status, "Показать статус")
-	console.add_item("update", update, "Обновить MyTonProvider")
-	console.add_item("upgrade", upgrade, "Обновить модуль")
+	console.add_item("status", status, local.translate("status_cmd"))
+	console.add_item("update", update, local.translate("update_cmd"))
+	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
 	console.run()
 #end define
 

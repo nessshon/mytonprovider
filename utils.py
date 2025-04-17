@@ -90,7 +90,7 @@ def do_import_commands(console, commands):
 		console.AddItem(command.cmd, command.func, command.desc)
 #end define
 
-def import_modules(local):
+def import_modules(local, check_is_enabled=False):
 	local.buffer.modules = list()
 	modules_dir = f"{local.buffer.my_dir}/modules"
 	sys.path.append(modules_dir)
@@ -100,6 +100,8 @@ def import_modules(local):
 		if "Module" not in file_module.__dict__:
 			continue
 		module = file_module.Module(local)
+		if check_is_enabled and module.is_module_enabled() == False:
+			continue
 		local.buffer.modules.append(module)
 #end define
 

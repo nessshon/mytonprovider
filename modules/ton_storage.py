@@ -9,6 +9,7 @@ import subprocess
 from random import randint
 from mypylib import (
 	Dict,
+	bcolors,
 	MyPyClass,
 	color_print,
 	add2systemd,
@@ -34,7 +35,7 @@ class Module():
 		# publick functions: get_console_commands, status, get_upgrade_args, check, bags_list
 		self.name = "ton-storage"
 		self.local = local
-		self.local.add_log("ton_storage console module init done")
+		self.local.add_log(f"{self.name} console module init done")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"
@@ -43,21 +44,26 @@ class Module():
 		self.go_package.entry_point = "cli/main.go"
 	#end define
 
+	def is_module_enabled(self):
+		if "ton_storage" in self.local.db:
+			return True
+		return False
+	#end define
+
 	@publick
 	def get_console_commands(self):
 		commands = list()
-		bags_list_item = Dict()
-		bags_list_item.cmd = "bags_list"
-		bags_list_item.func = self.bags_list
-		bags_list_item.desc = "Показать список хранимых контейнеров"
+		bags_list = Dict()
+		bags_list.cmd = "bags_list"
+		bags_list.func = self.bags_list
+		bags_list.desc = self.local.translate("bags_list_cmd")
 
-		commands.append(bags_list_item)
+		commands.append(bags_list)
 		return commands
 	#end define
 
 	@publick
 	def check(self):
-		print("check storage udp port")
 		ton_storage = self.local.db.ton_storage
 		storage_config = self.get_storage_config()
 		
@@ -77,17 +83,44 @@ class Module():
 
 	@publick
 	def status(self, args):
+		color_print("{cyan}===[ Local storage status ]==={endc}")
+		self.print_module_name()
+		self.print_bags_num()
+		self.print_disk_space()
+		self.print_git_hash()
+	#end define
+
+	def print_module_name(self):
+		module_name = bcolors.yellow_text(self.name)
+		text = self.local.translate("module_name").format(module_name)
+		print(text)
+	#end define
+
+	def print_bags_num(self):
 		api_data = self.get_api_data()
 		bags_num = self.get_bags_num(api_data)
+		used_provider_space = self.get_bags_size(api_data)
+		bags_num_text = bcolors.green_text(bags_num)
+		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
+		text = self.local.translate("bags_num").format(bags_num_text, used_provider_space_text)
+		print(text)
+	#end define
+
+	def print_disk_space(self):
 		ton_storage = self.local.db.ton_storage
 		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path)
-		used_provider_space = self.get_bags_size(api_data)
+		used_disk_space_text = bcolors.green_text(used_disk_space) # TODO
+		total_disk_space_text = bcolors.yellow_text(total_disk_space)
+		text = self.local.translate("disk_space").format(used_disk_space_text, total_disk_space_text)
+		print(text)
+	#end define
+
+	def print_git_hash(self):
 		git_hash, git_branch = self.get_my_git_hash_and_branch()
-		color_print("{cyan}===[ Local storage status ]==={endc}")
-		print(f"Название модуля: {self.name}")
-		print(f"Количество хранимых контейнеров, размер: {bags_num} -> {used_provider_space} GB")
-		print(f"Дисковое пространство: {used_disk_space} /{total_disk_space}")
-		print(f"Версия хранилища: {git_hash} ({git_branch})")
+		git_hash_text = bcolors.yellow_text(git_hash)
+		git_branch_text = bcolors.yellow_text(git_branch)
+		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		print(text)
 	#end define
 
 	def get_api_data(self):
