@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-
 import os
 import base64
 import subprocess
@@ -31,12 +30,15 @@ from utils import (
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
-
+from addr_and_key import (
+	addr_to_bytes,
+	get_pubkey_from_privkey,
+	split_provider_key
+)
 
 
 class Module():
 	def __init__(self, local):
-		# publick functions: get_console_commands, status, get_upgrade_args, check, register
 		self.name = "ton-storage-provider"
 		self.local = local
 		self.local.add_log(f"{self.name} console module init done")
@@ -48,6 +50,7 @@ class Module():
 		self.go_package.entry_point = "cmd/main.go"
 	#end define
 
+	@publick
 	def is_module_enabled(self):
 		if "ton_storage" in self.local.db:
 			if "provider" in self.local.db.ton_storage:
@@ -58,12 +61,25 @@ class Module():
 	@publick
 	def get_console_commands(self):
 		commands = list()
+
 		register = Dict()
 		register.cmd = "register"
 		register.func = self.register
 		register.desc = self.local.translate("register_cmd")
-
 		commands.append(register)
+
+		import_wallet = Dict()
+		import_wallet.cmd = "import_wallet"
+		import_wallet.func = self.import_wallet
+		import_wallet.desc = self.local.translate("import_wallet_cmd")
+		commands.append(import_wallet)
+
+		export_wallet = Dict()
+		export_wallet.cmd = "export_wallet"
+		export_wallet.func = self.export_wallet
+		export_wallet.desc = self.local.translate("export_wallet_cmd")
+		commands.append(export_wallet)
+
 		return commands
 	#end define
 
@@ -130,7 +146,7 @@ class Module():
 	async def get_provider_wallet(self):
 		#provider = self.local.db.ton_storage.provider
 		provider_config = self.get_provider_config()
-		client = tonutils.client.LiteserverClient(is_testnet=True)
+		client = tonutils.client.LiteserverClient(is_testnet=False)
 		private_key = base64.b64decode(provider_config.ProviderKey)
 		wallet = Dict()
 		wallet.obj = tonutils.wallet.WalletV3R2.from_private_key(client, private_key)
@@ -151,13 +167,50 @@ class Module():
 
 	@publick
 	@async_to_sync
+	async def import_wallet(self, args):
+		try:
+			key = args[0]
+		except:
+			color_print("{red}Bad args. Usage:{endc} import_wallet <wallet-private-key>")
+			return
+		self.do_import_wallet(key)
+		color_print("import_wallet - {green}OK{endc}")
+	#end define
+
+	def do_import_wallet(self, privkey):
+		privkey_bytes = base64.b64decode(privkey)
+		pubkey_bytes = get_pubkey_from_privkey(privkey_bytes)
+		provider_key_bytes = privkey_bytes + pubkey_bytes
+
+		provider_config = self.get_provider_config()
+		provider_config.ProviderKey = base64.b64encode(provider_key_bytes).decode("utf-8")
+		self.set_provider_config(provider_config)
+
+		self.local.db.ton_storage.provider.pubkey = pubkey_bytes.hex().upper()
+	#end define
+
+	@publick
+	@async_to_sync
+	async def export_wallet(self, args):
+		provider_config = self.get_provider_config()
+		key_b64 = provider_config.ProviderKey
+		privkey, pubkey = split_provider_key(key_b64)
+		privkey_b64 = base64.b64encode(privkey).decode("utf-8")
+		wallet = await self.get_provider_wallet()
+
+		print("Address:", wallet.addr)
+		print("Private key:", privkey_b64)
+	#end define
+
+	@publick
+	@async_to_sync
 	async def status(self, args):
 		color_print("{cyan}===[ Local provider status ]==={endc}")
 		self.print_module_name()
 		self.print_provider_pubkey()
 		await self.print_provider_wallet()
 		self.print_storage_cost()
-		self.print_max_profit()
+		self.print_profit()
 		self.print_provider_space()
 		self.print_git_hash()
 	#end define
@@ -192,21 +245,21 @@ class Module():
 		print(text)
 	#end define
 
-	def print_max_profit(self):
-		max_profit = self.get_max_profit()
-		max_profit_text = bcolors.green_text(max_profit)
-		text = self.local.translate("max_profit").format(max_profit_text)
+	def print_profit(self):
+		real_profit, maximum_profit = self.get_profit()
+		real_profit_text = bcolors.green_text(real_profit)
+		max_profit_text = bcolors.yellow_text(maximum_profit)
+		text = self.local.translate("provider_profit").format(real_profit_text, max_profit_text)
 		print(text)
 	#end define
 
 	def print_provider_space(self):
-		ton_storage_module = get_module_by_name(self.local, "ton-storage")
-		api_data = ton_storage_module.get_api_data()
-		used_provider_space = ton_storage_module.get_bags_size(api_data)
-		total_provider_space = self.get_total_provider_space()
+		used_provider_space = self.get_used_provider_space()
+		total_provider_space = self.get_total_provider_space(decimal_size=3, round_size=2)
 		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
 		total_provider_space_text = bcolors.yellow_text(total_provider_space)
-		print(f"Пространство провайдера: {used_provider_space_text} /{total_provider_space_text} GB")
+		text = self.local.translate("provider_space").format(used_provider_space_text, total_provider_space_text)
+		print(text)
 	#end define
 
 	def print_git_hash(self):
@@ -217,18 +270,30 @@ class Module():
 		print(text)
 	#end define
 
-	def get_total_provider_space(self, decimal_size=3):
+	def get_used_provider_space(self):
+		ton_storage_module = get_module_by_name(self.local, "ton-storage")
+		api_data = ton_storage_module.get_api_data()
+		used_provider_space = ton_storage_module.get_bags_size(api_data)
+		return used_provider_space
+	#end define
+
+	def get_total_provider_space(self, decimal_size, round_size):
 		# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
 		provider_config = self.get_provider_config()
 		result_megabytes = provider_config.Storages[0].SpaceToProvideMegabytes
 		result_int = result_megabytes *1024**2
-		result = convert_to_required_decimal(result_int, decimal_size)
+		result = convert_to_required_decimal(result_int, decimal_size, round_size)
 		return result
 	#end define
 
 	def get_provider_config(self):
 		provider = self.local.db.ton_storage.provider
 		return read_config_from_file(provider.config_path)
+	#en define
+
+	def set_provider_config(self, provider_config):
+		provider = self.local.db.ton_storage.provider
+		write_config_to_file(config_path=provider.config_path, data=provider_config)
 	#en define
 
 	def get_my_git_hash_and_branch(self):
@@ -248,12 +313,14 @@ class Module():
 		return round(storage_cost, 2)
 	#end define
 
-	def get_max_profit(self):
+	def get_profit(self):
 		provider_config = self.get_provider_config()
-		total_provider_space = self.get_total_provider_space(decimal_size=2)
+		used_provider_space = self.get_used_provider_space()
+		total_provider_space = self.get_total_provider_space(decimal_size=2, round_size=0)
 		min_rate_per_mb_day = float(provider_config.MinRatePerMBDay)
+		real_profit = round(used_provider_space * min_rate_per_mb_day, 2)
 		maximum_profit = round(total_provider_space * min_rate_per_mb_day, 2)
-		return maximum_profit
+		return real_profit, maximum_profit
 	#end define
 
 	@publick

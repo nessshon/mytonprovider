@@ -31,13 +31,13 @@
 	},
 	"bags_num": {
 		"ru": "Количество хранимых контейнеров, размер: {} ({} GB)",
-		"en": "Number of stored containers, size: {} -> {}",
+		"en": "Number of stored containers, size: {} ({} GB)",
 		"zh_TW": "儲存容器數量、尺寸: {} -> {}"
 	},
 	"disk_space": {
-		"ru": "Дисковое пространство: {} /{} GB",
-		"en": "Disk space: {} /{} GB",
-		"zh_TW": "磁碟空間: {} /{} GB"
+		"ru": "Дисковое пространство занято/всего: {} /{} GB",
+		"en": "Disk space used/total: {} /{} GB",
+		"zh_TW": "已使用磁碟空間/總磁碟空間: {} /{} GB"
 	},
 	"git_hash": {
 		"ru": "Версия хранилища: {} ({})",
@@ -69,15 +69,35 @@
 		"en": "Storage price for 200 GB per month: {} TON",
 		"zh_TW": "每月 200 GB 的儲存價格: {} TON"
 	},
-	"max_profit": {
-		"ru": "Максимальный профит в месяц: {} TON",
-		"en": "Maximum profit per month: {} TON",
-		"zh_TW": "每月最高利潤: {} TON"
+	"provider_profit": {
+		"ru": "Прибыль провайдера в месяц настоящий/максимальный: {} /{} TON",
+		"en": "Provider's profit per month real/maximum: {} /{} TON",
+		"zh_TW": "提供者每月實際/最大利潤: {} /{} TON"
 	},
-	"123": {
-		"ru": "aaa",
-		"en": "bbb",
-		"zh_TW": "ccc"
+	"provider_space": {
+		"ru": "Пространство провайдера занято/всего: {} /{} GB",
+		"en": "Provider space used/total: {} /{} GB",
+		"zh_TW": "已使用提供者空間/總計: {} /{} GB"
+	},
+	"last_banchmark_time": {
+		"ru": "Последнее время бенчмарка: {}",
+		"en": "Last benchmark time: {}",
+		"zh_TW": "上次基準: {}"
+	},
+	"lite_banchmark_speed": {
+		"ru": "Скорость чтения/записи RND-4K-QD64: {} /{}",
+		"en": "Read/write speed RND-4K-QD64: {} /{}",
+		"zh_TW": "讀/寫速度 RND-4K-QD64: {} /{}"
+	},
+	"hard_banchmark_speed": {
+		"ru": "Скорость чтения/записи RND-4K-QD1: {} /{}",
+		"en": "Read/write speed RND-4K-QD1: {} /{}",
+		"zh_TW": "讀/寫速度 RND-4K-QD1: {} /{}"
+	},
+	"full_banchmark": {
+		"ru": "Скорость обработки БД: {} ops/s",
+		"en": "Database processing speed: {} ops/s",
+		"zh_TW": "資料庫處理速度: {} ops/s"
 	},
 	"123": {
 		"ru": "aaa",

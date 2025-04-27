@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-
 import os
 import base64
 import requests
@@ -17,14 +16,16 @@ from mypylib import (
 	write_config_to_file,
 	get_own_ip,
 	get_git_hash,
-	get_git_branch
+	get_git_branch,
+	print_table
 )
 
 from utils import (
 	get_module_by_name,
 	get_disk_space,
 	convert_to_required_decimal,
-	fix_git_config
+	fix_git_config,
+	reduct
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -32,7 +33,6 @@ from adnl_over_udp_checker import check_adnl_connection
 
 class Module():
 	def __init__(self, local):
-		# publick functions: get_console_commands, status, get_upgrade_args, check, bags_list
 		self.name = "ton-storage"
 		self.local = local
 		self.local.add_log(f"{self.name} console module init done")
@@ -44,6 +44,7 @@ class Module():
 		self.go_package.entry_point = "cli/main.go"
 	#end define
 
+	@publick
 	def is_module_enabled(self):
 		if "ton_storage" in self.local.db:
 			return True
@@ -138,14 +139,14 @@ class Module():
 		return len(api_data.bags)
 	#end define
 
-	def get_bags_size(self, api_data, decimal_size=3):
+	def get_bags_size(self, api_data):
 		if api_data.bags == None:
 			return 0
 		used = 0
 		for bag in api_data.bags:
 			used += bag.size
-		used_space = convert_to_required_decimal(used, decimal_size)
-		return 
+		used_space = convert_to_required_decimal(used, decimal_size=3, round_size=2)
+		return used_space
 	#end define
 
 	def get_my_git_hash_and_branch(self):
@@ -160,7 +161,22 @@ class Module():
 	@publick
 	def bags_list(self, args):
 		api_data = self.get_api_data()
-		print(f"TODO: api_data: {api_data}")
+		if api_data.bags == None:
+			print("no data")
+			return
+		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed"]]
+		for bag in api_data.bags:
+			bag_id = reduct(bag.bag_id)
+			progress = round(bag.downloaded /bag.size *100, 2)
+			size = convert_to_required_decimal(bag.size, decimal_size=3)
+			download_speed = convert_to_required_decimal(bag.download_speed, decimal_size=2, round_size=2)
+			upload_speed = convert_to_required_decimal(bag.upload_speed, decimal_size=2, round_size=2)
+			progress_text = f"{progress}%"
+			size_text = f"{size} GB"
+			download_speed_text = f"{download_speed} MB/s"
+			upload_speed_text = f"{upload_speed} MB/s"
+			table += [[bag_id, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text]]
+		print_table(table)
 	#end define
 
 	@publick

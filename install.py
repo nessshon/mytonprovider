@@ -110,21 +110,12 @@ def main():
 	main_module.install(install_args, **answers)
 	for need_module_name in need_modules_names:
 		need_module = get_module_by_name(local, need_module_name)
+		method = getattr(need_module, "install", None)
+		if method == None:
+			continue
 		need_module.install(install_args, **answers)
 #end define
 
-
-# args = parse_input_args()
-# answers = inquirer.prompt(questions)
-# utils = answers.pop("utils")
-# main.install(args, **answers)
-# if "TonStorage" in utils:
-# 	ton_storage.install(args, **answers)
-# if "TonStorageProvider" in utils:
-# 	ton_storage_provider.install(args, **answers)
-# if "TonTunnelProvider" in utils:
-# 	ton_tunnel_provider.install(args, **answers)
-# #end if
 
 if __name__ == "__main__":
 	import_modules(local)

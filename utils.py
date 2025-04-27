@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf_8 -*-
+
 import shutil
 import random
 from string import digits, ascii_letters
@@ -19,28 +22,25 @@ def get_disk_space(disk_path, decimal_size=3) -> int:
 	return total_space, used_space, free_space
 #end define
 
-def convert_to_required_decimal(input_int, decimal_size=3):
-	round_size = 0
-	if decimal_size > 2:
-		round_size = 2
+def convert_to_required_decimal(input_int, decimal_size=3, round_size=0):
 	result_int = input_int /1024**decimal_size
 	result = round(result_int, round_size)
 	return result
 #end define
 
 def fix_git_config(git_path: str):
-    args = ["git", "status"]
-    try:
-        process = subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_path, timeout=3)
-        err = process.stderr.decode("utf-8")
-    except Exception as e:
-        err = str(e)
-    if err:
-        if 'git config --global --add safe.directory' in err:
-            args = ["git", "config", "--global", "--add", "safe.directory", git_path]
-            subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
-        else:
-            raise Exception(f'Failed to check git status: {err}')
+	args = ["git", "status"]
+	try:
+		process = subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_path, timeout=3)
+		err = process.stderr.decode("utf-8")
+	except Exception as e:
+		err = str(e)
+	if err:
+		if 'git config --global --add safe.directory' in err:
+			args = ["git", "config", "--global", "--add", "safe.directory", git_path]
+			subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, timeout=3)
+		else:
+			raise Exception(f'Failed to check git status: {err}')
 # end define
 
 @lru_cache
@@ -70,6 +70,16 @@ def parse_input_args():
 			print("Unknown schema of args")
 			sys.exit(1)
 	return args
+#end define
+
+def reduct(text):
+	if text is None:
+		return
+	if len(text) < 16:
+		return text
+	end = len(text)
+	result = text[0:6] + "..." + text[end - 6:end]
+	return result
 #end define
 
 

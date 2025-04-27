@@ -9,8 +9,8 @@ from mypylib import Dict
 COMMENT_OP = bytes.fromhex("00000000")
 
 async def get_messages(addr, count):
-	#client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=1)
-	client = pytoniq.LiteBalancer.from_testnet_config(trust_level=1)
+	client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=1)
+	#client = pytoniq.LiteBalancer.from_testnet_config(trust_level=1)
 	await client.start_up()
 	transactions = await client.get_transactions(address=addr, count=count, only_archive=True)
 	await client.close_all()

@@ -1,10 +1,17 @@
-# добавить alias в bashrc
+#!/usr/bin/env python3
+# -*- coding: utf_8 -*-
 
-
-
-from mypylib import MyPyClass, Dict, run_as_root, color_print
+import sys
 from mypyconsole.mypyconsole import MyPyConsole
+from mypylib import (
+	MyPyClass,
+	Dict,
+	run_as_root,
+	color_print,
+	thr_sleep
+)
 from utils import (
+	get_module_by_name,
 	import_commands,
 	import_modules,
 	run_module_method_if_exist
@@ -15,32 +22,47 @@ local = MyPyClass(__file__)
 console = MyPyConsole()
 
 
-
 def init():
+	import_modules(local, check_is_enabled=True)
+	init_localization()
+	
+	if "--daemon" in sys.argv:
+		init_daemon()
+	else:
+		init_console()
+#end define
+
+def init_daemon():
+	for module in local.buffer.modules:
+		method = getattr(module, "daemon", None)
+		if method == None:
+			continue
+		cycle_name = f"{module.name}-daemon"
+		local.start_cycle(module.daemon, name=cycle_name, sec=60)
+	thr_sleep()
+#end define
+
+def init_console():
 	console.name = "MyTonProvider"
 	console.start_function = pre_up
-	#console.debug = True
+	console.debug = True
 	console.local = local
 
-	# Init localization
+	console.add_item("status", status, local.translate("status_cmd"))
+	console.add_item("update", update, local.translate("update_cmd"))
+	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
+	console.run()
+#end define
+
+def init_localization():
 	translate_path = f"{local.buffer.my_dir}/resources/translate.json"
 	local.init_translator(translate_path)
-
-	import_modules(local, check_is_enabled=True)
 	import_commands(local, console)
 #end define
 
 def pre_up():
 	for module in local.buffer.modules:
 		run_module_method_if_exist(local, module, "check")
-#end define
-
-def main():
-	#console.add_item("команда", func, "Описание команды")
-	console.add_item("status", status, local.translate("status_cmd"))
-	console.add_item("update", update, local.translate("update_cmd"))
-	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
-	console.run()
 #end define
 
 def status(args):
@@ -89,5 +111,4 @@ def upgrade(args):
 
 if __name__ == "__main__":
 	init()
-	main()
 #end if

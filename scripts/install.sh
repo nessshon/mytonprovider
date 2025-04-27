@@ -87,6 +87,9 @@ src_path="${src_dir}/${repo}"
 
 install_required() {
 	apt install -y git curl wget virtualenv python3 python3-pip
+	
+	# Install for benchmark
+	apt install -y fio rocksdb-tools
 }
 
 activate_venv() {
