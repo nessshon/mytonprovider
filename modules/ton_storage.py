@@ -35,7 +35,7 @@ class Module():
 	def __init__(self, local):
 		self.name = "ton-storage"
 		self.local = local
-		self.local.add_log(f"{self.name} console module init done")
+		self.local.add_log(f"{self.name} console module init done", "debug")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"
@@ -45,7 +45,7 @@ class Module():
 	#end define
 
 	@publick
-	def is_module_enabled(self):
+	def is_enabled(self):
 		if "ton_storage" in self.local.db:
 			return True
 		return False
@@ -67,11 +67,12 @@ class Module():
 	def check(self):
 		ton_storage = self.local.db.ton_storage
 		storage_config = self.get_storage_config()
+		listen_ip, storage_port = storage_config.ListenAddr.split(':')
 		
 		own_ip = get_own_ip()
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, ton_storage.port, ton_storage.pubkey)
+		ok, error = check_adnl_connection(own_ip, storage_port, ton_storage.pubkey)
 		if not ok:
 			color_print(f"{{red}}{error}{{endc}}")
 	#end define
@@ -100,7 +101,7 @@ class Module():
 	def print_bags_num(self):
 		api_data = self.get_api_data()
 		bags_num = self.get_bags_num(api_data)
-		used_provider_space = self.get_bags_size(api_data)
+		used_provider_space = self.get_bags_size(api_data, decimal_size=3, round_size=2)
 		bags_num_text = bcolors.green_text(bags_num)
 		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
 		text = self.local.translate("bags_num").format(bags_num_text, used_provider_space_text)
@@ -109,7 +110,7 @@ class Module():
 
 	def print_disk_space(self):
 		ton_storage = self.local.db.ton_storage
-		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path)
+		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path, decimal_size=3, round_size=2)
 		used_disk_space_text = bcolors.green_text(used_disk_space) # TODO
 		total_disk_space_text = bcolors.yellow_text(total_disk_space)
 		text = self.local.translate("disk_space").format(used_disk_space_text, total_disk_space_text)
@@ -139,16 +140,17 @@ class Module():
 		return len(api_data.bags)
 	#end define
 
-	def get_bags_size(self, api_data):
+	def get_bags_size(self, api_data, decimal_size, round_size):
 		if api_data.bags == None:
 			return 0
 		used = 0
 		for bag in api_data.bags:
 			used += bag.size
-		used_space = convert_to_required_decimal(used, decimal_size=3, round_size=2)
+		used_space = convert_to_required_decimal(used, decimal_size, round_size)
 		return used_space
 	#end define
 
+	@publick
 	def get_my_git_hash_and_branch(self):
 		ton_storage = self.local.db.ton_storage
 		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
@@ -168,7 +170,7 @@ class Module():
 		for bag in api_data.bags:
 			bag_id = reduct(bag.bag_id)
 			progress = round(bag.downloaded /bag.size *100, 2)
-			size = convert_to_required_decimal(bag.size, decimal_size=3)
+			size = convert_to_required_decimal(bag.size, decimal_size=3, round_size=2)
 			download_speed = convert_to_required_decimal(bag.download_speed, decimal_size=2, round_size=2)
 			upload_speed = convert_to_required_decimal(bag.upload_speed, decimal_size=2, round_size=2)
 			progress_text = f"{progress}%"
@@ -251,7 +253,7 @@ class Module():
 		# edit mconfig config
 		ton_storage = Dict()
 		ton_storage.storage_path = storage_path
-		ton_storage.port = udp_port
+		#ton_storage.port = udp_port
 		ton_storage.src_dir = install_args.src_dir
 		ton_storage.pubkey = pubkey
 		ton_storage.config_path = storage_config_path

@@ -41,7 +41,7 @@ class Module():
 	def __init__(self, local):
 		self.name = "ton-storage-provider"
 		self.local = local
-		self.local.add_log(f"{self.name} console module init done")
+		self.local.add_log(f"{self.name} console module init done", "debug")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"
@@ -51,7 +51,7 @@ class Module():
 	#end define
 
 	@publick
-	def is_module_enabled(self):
+	def is_enabled(self):
 		if "ton_storage" in self.local.db:
 			if "provider" in self.local.db.ton_storage:
 				return True
@@ -87,11 +87,12 @@ class Module():
 	def check(self):
 		provider = self.local.db.ton_storage.provider
 		provider_config = self.get_provider_config()
+		listen_ip, provider_port = provider_config.ListenAddr.split(':')
 		
 		own_ip = get_own_ip()
 		if provider_config.ExternalIP != own_ip:
 			raise Exception("provider_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, provider.port, provider.pubkey)
+		ok, error = check_adnl_connection(own_ip, provider_port, provider.pubkey)
 		if not ok:
 			color_print(f"{{red}}{error}{{endc}}")
 	#end define
@@ -254,7 +255,7 @@ class Module():
 	#end define
 
 	def print_provider_space(self):
-		used_provider_space = self.get_used_provider_space()
+		used_provider_space = self.get_used_provider_space(decimal_size=3, round_size=2)
 		total_provider_space = self.get_total_provider_space(decimal_size=3, round_size=2)
 		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
 		total_provider_space_text = bcolors.yellow_text(total_provider_space)
@@ -270,10 +271,10 @@ class Module():
 		print(text)
 	#end define
 
-	def get_used_provider_space(self):
+	def get_used_provider_space(self, decimal_size, round_size):
 		ton_storage_module = get_module_by_name(self.local, "ton-storage")
 		api_data = ton_storage_module.get_api_data()
-		used_provider_space = ton_storage_module.get_bags_size(api_data)
+		used_provider_space = ton_storage_module.get_bags_size(api_data, decimal_size, round_size)
 		return used_provider_space
 	#end define
 
@@ -296,6 +297,7 @@ class Module():
 		write_config_to_file(config_path=provider.config_path, data=provider_config)
 	#en define
 
+	@publick
 	def get_my_git_hash_and_branch(self):
 		provider = self.local.db.ton_storage.provider
 		git_path = f"{provider.src_dir}/{self.go_package.repo}"
@@ -315,11 +317,11 @@ class Module():
 
 	def get_profit(self):
 		provider_config = self.get_provider_config()
-		used_provider_space = self.get_used_provider_space()
+		used_provider_space = self.get_used_provider_space(decimal_size=2, round_size=0)
 		total_provider_space = self.get_total_provider_space(decimal_size=2, round_size=0)
 		min_rate_per_mb_day = float(provider_config.MinRatePerMBDay)
-		real_profit = round(used_provider_space * min_rate_per_mb_day, 2)
-		maximum_profit = round(total_provider_space * min_rate_per_mb_day, 2)
+		real_profit = round(used_provider_space * min_rate_per_mb_day *30, 2)
+		maximum_profit = round(total_provider_space * min_rate_per_mb_day *30, 2)
 		return real_profit, maximum_profit
 	#end define
 
@@ -384,7 +386,9 @@ class Module():
 		api = mconfig.ton_storage.api
 		provider_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		provider_config.ExternalIP = get_own_ip()
+		provider_config.MaxSpan = 3600 *24 *7
 		provider_config.MinRatePerMBDay = self.calulate_MinRatePerMBDay(storage_cost)
+		provider_config.MaxBagSizeBytes = provider_config.MaxBagSizeBytes *100
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
 		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
@@ -399,7 +403,7 @@ class Module():
 
 		# edit mytoncore config
 		provider = Dict()
-		provider.port = udp_port
+		#provider.port = udp_port
 		provider.config_path = provider_config_path
 		#provider.privkey = base64.b64encode(privkey_bytes).decode("utf-8")
 		provider.pubkey = pubkey_bytes.hex().upper()

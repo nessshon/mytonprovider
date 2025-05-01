@@ -2,6 +2,7 @@
 # -*- coding: utf_8 -*-
 
 import sys
+#import threading
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
@@ -23,6 +24,7 @@ console = MyPyConsole()
 
 
 def init():
+	local.run()
 	import_modules(local, check_is_enabled=True)
 	init_localization()
 	
@@ -33,6 +35,7 @@ def init():
 #end define
 
 def init_daemon():
+	#threading.current_thread().name = "daemon"
 	for module in local.buffer.modules:
 		method = getattr(module, "daemon", None)
 		if method == None:
@@ -45,7 +48,7 @@ def init_daemon():
 def init_console():
 	console.name = "MyTonProvider"
 	console.start_function = pre_up
-	console.debug = True
+	#console.debug = True
 	console.local = local
 
 	console.add_item("status", status, local.translate("status_cmd"))

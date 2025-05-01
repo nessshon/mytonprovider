@@ -60,7 +60,7 @@ def ignore_tunnel(answers):
 def calculate_space_to_provide(answers):
 	storage_path = answers.get("storage_path")
 	os.makedirs(storage_path, exist_ok=True)
-	total_space, used_space, free_space = get_disk_space(storage_path)
+	total_space, used_space, free_space = get_disk_space(storage_path, decimal_size=3, round_size=0)
 	available_space = int(free_space * 0.9)
 	return str(available_space)
 #end define
@@ -106,8 +106,9 @@ def main():
 	questions = create_questions()
 	answers = inquirer.prompt(questions)
 	need_modules_names = answers.pop("utils")
+	need_modules_names += get_modules_names(local, mandatory=True)
 
-	main_module.install(install_args, **answers)
+	main_module.install(local, install_args, **answers)
 	for need_module_name in need_modules_names:
 		need_module = get_module_by_name(local, need_module_name)
 		method = getattr(need_module, "install", None)

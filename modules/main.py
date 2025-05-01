@@ -18,8 +18,9 @@ from utils import (
 
 
 
-def install(install_args: Dict, **kwargs):
+def install(local, install_args, **kwargs):
 	# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
+
 	# Проверить конфигурацию
 	mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 	mconfig_path = f"{mconfig_dir}/mytonprovider.db"
@@ -36,6 +37,7 @@ def install(install_args: Dict, **kwargs):
 	mconfig.config = Dict()
 	mconfig.config.logLevel = "debug"
 	mconfig.config.isLocaldbSaving = True
+	mconfig.config.isStartOnlyOneProcess = False
 	#mconfig.send_telemetry = local.buffer.telemetry
 
 	# Записать конфиг
@@ -49,9 +51,18 @@ def install(install_args: Dict, **kwargs):
 		mconfig_path
 	])
 
+	# Создать службу
+	daemon_name = "mytonproviderd"
+	start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py"
+	start_daemon_cmd = f"{start_cmd} --daemon"
+	add2systemd(name=daemon_name, user=install_args.user, start=start_daemon_cmd, force=True)
+
+	# Запустить службу
+	local.start_service(daemon_name)
+
 	# Создать ссылки
 	file_path = "/usr/bin/mytonprovider"
-	file_text = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py $@"
+	file_text = f"{start_cmd} $@"
 	with open(file_path, 'wt') as file:
 		file.write(file_text)
 	#end with

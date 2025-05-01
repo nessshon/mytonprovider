@@ -40,9 +40,9 @@
 		"zh_TW": "已使用磁碟空間/總磁碟空間: {} /{} GB"
 	},
 	"git_hash": {
-		"ru": "Версия хранилища: {} ({})",
-		"en": "Storage version: {} ({})",
-		"zh_TW": "儲存版本: {} ({})"
+		"ru": "Версия пакета: {} ({})",
+		"en": "Package version: {} ({})",
+		"zh_TW": "軟體包版本: {} ({})"
 	},
 	"provider_already_registered": {
 		"ru": "Кошелек провайдера уже зарегистрирован",
@@ -60,9 +60,9 @@
 		"zh_TW": "提供者錢包地址: {}"
 	},
 	"provider_balance": {
-		"ru": "Баланс кошелька провайдера: {}",
-		"en": "Provider wallet balance: {}",
-		"zh_TW": "提供者錢包餘額: {}"
+		"ru": "Баланс кошелька провайдера: {} TON",
+		"en": "Provider wallet balance: {} TON",
+		"zh_TW": "提供者錢包餘額: {} TON"
 	},
 	"storage_cost": {
 		"ru": "Цена за хранение 200 GB в месяц: {} TON",

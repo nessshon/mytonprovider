@@ -13,16 +13,16 @@ from mypylib import Dict
 import subprocess
 
 
-def get_disk_space(disk_path, decimal_size=3) -> int:
+def get_disk_space(disk_path, decimal_size, round_size) -> int:
 	# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
 	total, used, free = shutil.disk_usage(disk_path)
-	total_space = convert_to_required_decimal(total, decimal_size)
-	used_space = convert_to_required_decimal(used, decimal_size)
-	free_space = convert_to_required_decimal(free, decimal_size)
+	total_space = convert_to_required_decimal(total, decimal_size, round_size)
+	used_space = convert_to_required_decimal(used, decimal_size, round_size)
+	free_space = convert_to_required_decimal(free, decimal_size, round_size)
 	return total_space, used_space, free_space
 #end define
 
-def convert_to_required_decimal(input_int, decimal_size=3, round_size=0):
+def convert_to_required_decimal(input_int, decimal_size, round_size):
 	result_int = input_int /1024**decimal_size
 	result = round(result_int, round_size)
 	return result
@@ -110,9 +110,17 @@ def import_modules(local, check_is_enabled=False):
 		if "Module" not in file_module.__dict__:
 			continue
 		module = file_module.Module(local)
-		if check_is_enabled and module.is_module_enabled() == False:
+		is_enabled = is_module_enabled(module)
+		if check_is_enabled and is_enabled == False:
 			continue
 		local.buffer.modules.append(module)
+#end define
+
+def is_module_enabled(module, default=True):
+	is_enabled_func = getattr(module, "is_enabled", None)
+	if is_enabled_func == None:
+		return default
+	return module.is_enabled()
 #end define
 
 def get_modules_names_from_dir(search_dir):
@@ -126,11 +134,12 @@ def get_modules_names_from_dir(search_dir):
 	return modules_names
 #end define
 
-def get_modules_names(local):
+def get_modules_names(local, mandatory=False):
 	result = list()
 	for module in local.buffer.modules:
 		module_name = getattr(module, "name", None)
-		if module_name != None:
+		is_mandatory = getattr(module, "mandatory", False)
+		if module_name != None and is_mandatory == mandatory:
 			result.append(module_name)
 	return result
 #end define

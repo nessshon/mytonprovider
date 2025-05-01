@@ -86,6 +86,7 @@ venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
 install_required() {
+	apt update
 	apt install -y git curl wget virtualenv python3 python3-pip
 	
 	# Install for benchmark

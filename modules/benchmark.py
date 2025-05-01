@@ -20,12 +20,8 @@ class Module():
 	def __init__(self, local):
 		self.name = "benchmark"
 		self.local = local
-		self.local.add_log(f"{self.name} console module init done")
-	#end define
-
-	@publick
-	def is_module_enabled(self):
-		return True
+		self.mandatory = True
+		self.local.add_log(f"{self.name} console module init done", "debug")
 	#end define
 
 	@publick
@@ -53,12 +49,7 @@ class Module():
 	#end define
 
 	@publick
-	def check(self):
-		return True
-	#end define
-
-	@publick
-	def status(self, args):
+	def status_disable(self, args):
 		color_print("{cyan}===[ Benchmark status ]==={endc}")
 		self.print_module_name()
 		self.print_last_banchmark_time()
@@ -114,12 +105,13 @@ class Module():
 	#end define
 
 	def save_benchmark(self, data):
+		self.local.add_log("start save_benchmark function", "debug")
 		self.local.db.benchmark = data
 		self.local.db.benchmark.time = get_timestamp()
 	#end define
 
 	def do_benchmark(self):
-		self.local.add_log("start run_benchmark function")
+		self.local.add_log("start run_benchmark function", "debug")
 		timeout = 200
 		src_path = self.local.buffer.my_dir
 		benchmark_script_path = f"{src_path}/scripts/benchmark.sh"
