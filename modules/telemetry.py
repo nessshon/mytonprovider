@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import zlib
+import gzip
 import json
 import psutil
 import requests
@@ -106,8 +106,10 @@ class Module():
 		url = self.local.db.get("telemetry_url", self.default_url)
 		#output = json.dumps(data)
 		additional_headers = dict()
-		additional_headers["content-encoding"] = "gzip"
-		compressed_data = zlib.compress(json.dumps(data).encode('utf-8'))
+		additional_headers["Content-Encoding"] = "gzip"
+		additional_headers["Content-Type"] = "application/json"
+		data_bytes = json.dumps(data).encode("utf-8")
+		compressed_data = gzip.compress(data_bytes)
 		resp = requests.post(url, data=compressed_data, headers=additional_headers, timeout=3)
 	#end define
 
