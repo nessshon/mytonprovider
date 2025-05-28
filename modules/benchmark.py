@@ -79,6 +79,7 @@ class Module():
 
 	def save_benchmark(self, disk, network):
 		self.local.add_log("start save_benchmark function", "debug")
+		self.local.db.benchmark = Dict()
 		self.local.db.benchmark.disk = disk
 		self.local.db.benchmark.network = network
 		self.local.db.benchmark.timestamp = get_timestamp()
