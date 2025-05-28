@@ -81,7 +81,6 @@ def status(args):
 #end define
 
 def update(args):
-	# https://github.com/ton-blockchain/mytonctrl/blob/e85a541b762f916a67c02ae83dbef6a2ce9121d7/mytonctrl/mytonctrl.py#L337
 	script_path = f"{local.buffer.my_dir}/scripts/update.sh"
 	exit_code = run_as_root(["bash", script_path])
 	if exit_code == 0:

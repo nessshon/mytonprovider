@@ -45,10 +45,10 @@ def install(local, install_args, **kwargs):
 
 	# Поменять права с root на user
 	subprocess.run([
-		"chown",
+		"chown", "-R"
 		install_args.user + ':' + install_args.user,
-		mconfig_dir,
-		mconfig_path
+		install_args.venv_path,
+		mconfig_dir
 	])
 
 	# Создать службу

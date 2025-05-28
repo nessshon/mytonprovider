@@ -185,7 +185,7 @@ def get_module_by_name(local, input_module_name):
 		module_name = getattr(module, "name", None)
 		if module_name == input_module_name:
 			return module
-	raise Exception("get_module_by_name error: module not found")
+	raise Exception(f"get_module_by_name error: module {input_module_name} not found")
 #end define
 
 def run_module_method_if_exist(local, module, method_name, *args, **kwargs):

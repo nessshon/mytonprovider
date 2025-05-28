@@ -20,9 +20,6 @@ branch="dev"
 src_dir="/usr/src"
 bin_dir="/usr/bin"
 src_path="${src_dir}/${repo}"
-bin_path="${bin_dir}/${repo}"
-go_path="/usr/local/go/bin/go"
-
 
 clone_repository() {
 	echo "https://github.com/${author}/${repo}.git -> ${branch}"
@@ -31,5 +28,11 @@ clone_repository() {
 	git config --global --add safe.directory ${src_path}
 }
 
+restart_service() {
+	systemctl restart mytonprovider
+}
+
+# Start update
 clone_repository
+restart_service
 exit 0
