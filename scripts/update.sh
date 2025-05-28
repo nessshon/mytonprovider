@@ -35,13 +35,18 @@ clone_repository() {
 	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
 }
 
+install_apt_dependencies() {
+	apt update
+	apt install -y $(cat ${src_path}/resources/pkglist.txt)
+}
+
 activate_venv() {
 	virtualenv ${venv_path}
 	source ${venv_path}/bin/activate
 }
 
 install_pip_dependencies() {
-	pip3 install -r ${src_path}/requirements.txt
+	pip3 install -r ${src_path}/resources/requirements.txt
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
 
@@ -51,6 +56,7 @@ restart_service() {
 
 # Start update
 clone_repository
+install_apt_dependencies
 activate_venv
 install_pip_dependencies
 restart_service

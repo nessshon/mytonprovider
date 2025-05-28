@@ -87,10 +87,7 @@ src_path="${src_dir}/${repo}"
 
 install_apt_dependencies() {
 	apt update
-	apt install -y git curl wget virtualenv python3 python3-pip
-	
-	# Install for benchmark
-	apt install -y fio rocksdb-tools
+	apt install -y $(cat ${src_path}/resources/pkglist.txt)
 }
 
 activate_venv() {
@@ -106,7 +103,7 @@ clone_repository() {
 }
 
 install_pip_dependencies() {
-	pip3 install -r ${src_path}/requirements.txt
+	pip3 install -r ${src_path}/resources/requirements.txt
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
 
