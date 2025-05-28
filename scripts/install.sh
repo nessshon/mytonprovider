@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-# Default args
+# Set default arguments
 author="igroman787"
 repo="mytonprovider"
 branch="dev"
 ignore=false
 
-# colors
+# Colors
 COLOR='\033[92m'
 ENDC='\033[0m'
 
@@ -78,14 +78,14 @@ restart_yourself_via_root
 user=${input_user}
 echo "Using user: ${user}"
 
-# install parameters
+# Install parameters
 src_dir="/usr/src"
 bin_dir="/usr/bin"
 venvs_dir="/home/${user}/.local/venv"
 venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
-install_required() {
+install_apt_dependencies() {
 	apt update
 	apt install -y git curl wget virtualenv python3 python3-pip
 	
@@ -105,11 +105,8 @@ clone_repository() {
 	git config --global --add safe.directory ${src_path}
 }
 
-install_requirements() {
+install_pip_dependencies() {
 	pip3 install -r ${src_path}/requirements.txt
-}
-
-install_dependencies() {
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
 
@@ -118,25 +115,22 @@ launch_installer() {
 }
 
 mytonprovider_setup() {
-	echo -e "${COLOR}[1/7]${ENDC} Installing required packages"
-	install_required
+	echo -e "${COLOR}[1/6]${ENDC} Installing required packages"
+	install_apt_dependencies
 
-	echo -e "${COLOR}[2/7]${ENDC} Activating virtual environment"
+	echo -e "${COLOR}[2/6]${ENDC} Activating virtual environment"
 	activate_venv
 
-	echo -e "${COLOR}[3/7]${ENDC} Cloning MyTonProvider repository"
+	echo -e "${COLOR}[3/6]${ENDC} Cloning MyTonProvider repository"
 	clone_repository
 
-	echo -e "${COLOR}[4/7]${ENDC} Installing requirements"
-	install_requirements
+	echo -e "${COLOR}[4/6]${ENDC} Installing requirements"
+	install_pip_dependencies
 
-	echo -e "${COLOR}[5/7]${ENDC} Installing dependencies"
-	install_dependencies
-
-	echo -e "${COLOR}[6/7]${ENDC} Launching UI/UX installer"
+	echo -e "${COLOR}[5/6]${ENDC} Launching UI/UX installer"
 	launch_installer
 
-	echo -e "${COLOR}[7/7]${ENDC} MyTonProvider installation completed"
+	echo -e "${COLOR}[6/6]${ENDC} MyTonProvider installation completed"
 }
 
 mytonprovider_setup

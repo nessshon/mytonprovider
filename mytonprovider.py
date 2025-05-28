@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
+import os
 import sys
 #import threading
 from mypyconsole.mypyconsole import MyPyConsole
@@ -81,8 +82,9 @@ def status(args):
 #end define
 
 def update(args):
+	user = os.getenv("USER")
 	script_path = f"{local.buffer.my_dir}/scripts/update.sh"
-	exit_code = run_as_root(["bash", script_path])
+	exit_code = run_as_root(["bash", script_path, "-d", local.buffer.venvs_dir])
 	if exit_code == 0:
 		text = "Update MyTonProvider - {green}OK{endc}"
 	else:

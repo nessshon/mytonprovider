@@ -45,7 +45,7 @@ def install(local, install_args, **kwargs):
 
 	# Поменять права с root на user
 	subprocess.run([
-		"chown", "-R"
+		"chown", "-R",
 		install_args.user + ':' + install_args.user,
 		install_args.venv_path,
 		mconfig_dir
