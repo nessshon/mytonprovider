@@ -41,14 +41,14 @@ def init_daemon():
 		if method == None:
 			continue
 		cycle_name = f"{module.name}-daemon"
-		local.start_cycle(module.daemon, name=cycle_name, sec=60)
+		local.start_cycle(module.daemon, name=cycle_name, sec=module.daemon_interval)
 	thr_sleep()
 #end define
 
 def init_console():
 	console.name = "MyTonProvider"
 	console.start_function = pre_up
-	#console.debug = True
+	console.debug = True
 	console.local = local
 
 	console.add_item("status", status, local.translate("status_cmd"))

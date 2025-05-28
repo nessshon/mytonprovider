@@ -9,11 +9,11 @@ from pathlib import Path
 import importlib
 from os import listdir
 import sys
-from mypylib import Dict
+from mypylib import Dict, bcolors
 import subprocess
 
 
-def get_disk_space(disk_path, decimal_size, round_size) -> int:
+def get_disk_space(disk_path, decimal_size, round_size):
 	# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
 	total, used, free = shutil.disk_usage(disk_path)
 	total_space = convert_to_required_decimal(total, decimal_size, round_size)
@@ -28,13 +28,13 @@ def convert_to_required_decimal(input_int, decimal_size, round_size):
 	return result
 #end define
 
-def fix_git_config(git_path: str):
+def fix_git_config(git_path):
 	args = ["git", "status"]
 	try:
 		process = subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_path, timeout=3)
 		err = process.stderr.decode("utf-8")
-	except Exception as e:
-		err = str(e)
+	except Exception as ex:
+		err = str(ex)
 	if err:
 		if 'git config --global --add safe.directory' in err:
 			args = ["git", "config", "--global", "--add", "safe.directory", git_path]
@@ -82,6 +82,40 @@ def reduct(text):
 	return result
 #end define
 
+def get_color_int(data, borderline_value, logic, ending=None):
+	if data is None:
+		result = "n/a"
+	elif logic == "more":
+		if data >= borderline_value:
+			result = bcolors.green_text(data, ending)
+		else:
+			result = bcolors.red_text(data, ending)
+	elif logic == "less":
+		if data <= borderline_value:
+			result = bcolors.green_text(data, ending)
+		else:
+			result = bcolors.red_text(data, ending)
+	return result
+#end define
+
+def run_subprocess(*args, timeout):
+	is_shell = len(args) == 1
+	process = subprocess.run(
+		*args, 
+		stdin=subprocess.PIPE, 
+		stdout=subprocess.PIPE, 
+		stderr=subprocess.PIPE, 
+		timeout=timeout, 
+		shell=is_shell
+	)
+	stdout = process.stdout.decode("utf-8")
+	stderr = process.stderr.decode("utf-8")
+	if process.returncode != 0:
+		raise Exception(f"run_subprocess error: {stderr}")
+	return stdout
+#end define
+
+
 
 ###
 ### Для работы с модулями
@@ -108,10 +142,12 @@ def import_modules(local, check_is_enabled=False):
 	for module_name in modules_names:
 		file_module = importlib.import_module(module_name)
 		if "Module" not in file_module.__dict__:
+			#print(module_name, "not_module")
 			continue
 		module = file_module.Module(local)
 		is_enabled = is_module_enabled(module)
 		if check_is_enabled and is_enabled == False:
+			#print(module_name, "not_enabled")
 			continue
 		local.buffer.modules.append(module)
 #end define

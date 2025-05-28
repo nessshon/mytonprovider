@@ -35,7 +35,8 @@ class Module():
 	def __init__(self, local):
 		self.name = "ton-storage"
 		self.local = local
-		self.local.add_log(f"{self.name} console module init done", "debug")
+		self.mandatory = False
+		self.local.add_log(f"{self.name} module init done", "debug")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"

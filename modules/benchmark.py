@@ -12,8 +12,9 @@ from mypylib import (
 	print_table,
 	get_timestamp
 )
+from speedtest import Speedtest
 from decorators import publick
-from asgiref.sync import async_to_sync
+from utils import run_subprocess
 
 
 class Module():
@@ -21,7 +22,8 @@ class Module():
 		self.name = "benchmark"
 		self.local = local
 		self.mandatory = True
-		self.local.add_log(f"{self.name} console module init done", "debug")
+		self.daemon_interval = 60
+		self.local.add_log(f"{self.name} module init done", "debug")
 	#end define
 
 	@publick
@@ -39,60 +41,31 @@ class Module():
 
 	@publick
 	def run_benchmark(self, args):
-		data = self.do_benchmark()
+		disk, network = self.do_benchmark()
 		table = list()
-		table += [["Test type", "Read speed", "Write speed", "Read iops", "Write iops", "Random ops"]]
-		table += [["Fio lite", data.lite.read_speed, data.lite.write_speed, data.lite.read_iops, data.lite.write_iops, None]] # RND-4K-QD64
-		table += [["Fio hard", data.hard.read_speed, data.hard.write_speed, data.hard.read_iops, data.hard.write_iops, None]] # RND-4K-QD1
-		table += [["RocksDB", None, None, None, None, data.full.random_ops]]
+		table += [["Test type", "Read speed", "Write speed", "Read iops", "Write iops"]]
+		table += [["RND-4K-QD64", disk.qd64.read, disk.qd64.write, disk.qd64.read_iops, disk.qd64.write_iops]]
+		table += [["RND-4K-QD1", disk.qd1.read, disk.qd1.write, disk.qd1.read_iops, disk.qd1.write_iops]]
+		print_table(table)
+		print()
+		table = list()
+		table += [["Test type", "Download (Mbit/s)", "Upload (Mbit/s)"]]
+		table += [["Speedtest", network.download //1024**2, network.upload //1024**2]]
 		print_table(table)
 	#end define
 
-	@publick
-	def status_disable(self, args):
-		color_print("{cyan}===[ Benchmark status ]==={endc}")
-		self.print_module_name()
-		self.print_last_banchmark_time()
-		self.print_banchmark_data()
-	#end define
-
-	def print_module_name(self):
-		module_name = bcolors.yellow_text(self.name)
-		text = self.local.translate("module_name").format(module_name)
-		print(text)
-	#end define
-
-	def print_last_banchmark_time(self):
-		if self.is_benchmark_done():
-			last_banchmark_time = self.local.db.benchmark.time
-		else:
-			last_banchmark_time = None
-		#end if
-
-		last_banchmark_time_text = self.local.translate("last_banchmark_time").format(last_banchmark_time)
-		print(last_banchmark_time_text)
-	#end define
-
-	def print_banchmark_data(self):
-		data = self.local.db.benchmark
-		if self.is_benchmark_done() == False:
-			return
-		#end if
-
-		lite_banchmark_speed_text = self.local.translate("lite_banchmark_speed").format(data.lite.read_speed, data.lite.write_speed)
-		hard_banchmark_speed_text = self.local.translate("hard_banchmark_speed").format(data.hard.read_speed, data.hard.write_speed)
-		full_banchmark_text = self.local.translate("full_banchmark").format(data.full.random_ops)
-		print(lite_banchmark_speed_text)
-		print(hard_banchmark_speed_text)
-		print(full_banchmark_text)
+	def do_benchmark(self):
+		disk = self.disk_benchmark()
+		network = self.network_benchmark()
+		self.save_benchmark(disk, network)
+		return disk, network
 	#end define
 
 	def is_benchmark_done(self):
+		life_time = 3600 *24 *7
 		if self.local.db.benchmark == None:
 			return False
-		time_now = get_timestamp()
-		life_time = 3600 *24 *7
-		if self.local.db.benchmark.time + life_time < time_now:
+		if self.local.db.benchmark.timestamp + life_time < get_timestamp():
 			return False
 		return True
 	#end define
@@ -104,32 +77,80 @@ class Module():
 		self.do_benchmark()
 	#end define
 
-	def save_benchmark(self, data):
+	def save_benchmark(self, disk, network):
 		self.local.add_log("start save_benchmark function", "debug")
-		self.local.db.benchmark = data
-		self.local.db.benchmark.time = get_timestamp()
+		self.local.db.benchmark.disk = disk
+		self.local.db.benchmark.network = network
+		self.local.db.benchmark.timestamp = get_timestamp()
 	#end define
 
-	def do_benchmark(self):
-		self.local.add_log("start run_benchmark function", "debug")
-		timeout = 200
-		src_path = self.local.buffer.my_dir
-		benchmark_script_path = f"{src_path}/scripts/benchmark.sh"
-		benchmark_path = self.local.db.ton_storage.storage_path
-		process = subprocess.run(
-			["bash", benchmark_script_path, benchmark_path], 
-			stdin=subprocess.PIPE, 
-			stdout=subprocess.PIPE, 
-			stderr=subprocess.PIPE, 
-			timeout=timeout)
-		stdout = process.stdout.decode("utf-8")
-		stderr = process.stderr.decode("utf-8")
-		if process.returncode != 0:
-			raise Exception(f"run_benchmark error: {stderr}")
+	def network_benchmark(self):
+		speedtest = Speedtest()
+
+		self.local.add_log("start Speedtest download test", "debug")
+		speedtest.download()
+
+		self.local.add_log("start Speedtest upload test", "debug")
+		speedtest.upload()
+		return Dict(speedtest.results.dict())
+	#end define
+
+	def disk_benchmark(self):
+		self.local.add_log("start disk_benchmark function", "debug")
+		test_path = self.local.db.ton_storage.storage_path
+		test_file = f"{test_path}/test.img"
+		test_db = f"{test_path}/bench"
+
+		fio_args = f"fio --name=test --filename={test_file} --runtime=15 --blocksize=4k \
+			--ioengine=libaio --direct=1 --size=4G --randrepeat=1 --gtod_reduce=1"
+		read_args = f"{fio_args} --readwrite=randread"
+		write_args = f"{fio_args} --readwrite=randwrite"
+		qd64_read_args = f"{read_args} --iodepth=64"
+		qd64_write_args = f"{write_args} --iodepth=64"
+		qd1_read_args = f"{read_args} --iodepth=1"
+		qd1_write_args = f"{write_args} --iodepth=1"
+		
+		result = Dict()
+		result.qd64 = Dict()
+		result.qd1 = Dict()
+		result.qd64.name = "RND-4K-QD64"
+		result.qd1.name = "RND-4K-QD1"
+
+		self.local.add_log("start RND-4K-QD64 read test", "debug")
+		qd64_read_result = run_subprocess(qd64_read_args, timeout=20)
+
+		self.local.add_log("start RND-4K-QD64 write test", "debug")
+		qd64_write_result = run_subprocess(qd64_write_args, timeout=20)
+
+		self.local.add_log("start RND-4K-QD1 read test", "debug")
+		qd1_read_result = run_subprocess(qd1_read_args, timeout=20)
+
+		self.local.add_log("start RND-4K-QD1 write test", "debug")
+		qd1_write_result = run_subprocess(qd1_write_args, timeout=20)
+
+		result.qd64.read, result.qd64.read_iops = self.parse_fio_result(qd64_read_result, mode="read")
+		result.qd64.write, result.qd64.write_iops = self.parse_fio_result(qd64_write_result, mode="write")
+		result.qd1.read, result.qd1.read_iops = self.parse_fio_result(qd1_read_result, mode="read")
+		result.qd1.write, result.qd1.write_iops = self.parse_fio_result(qd1_write_result, mode="write")
+
+		return result
+	#end define
+
+	def parse_fio_result(self, fio_result, mode):
+		if mode not in ["read", "write"]:
+			raise Exception(f"parse_fio_result error: unknown mode {mode}")
 		#end if
 
-		result = Dict(json.loads(stdout))
-		self.save_benchmark(result)
-		return result
+		find_result = fio_result.find(f"{mode}:")
+		if find_result < 0:
+			raise Exception(f"parse_fio_result error: {mode} not found")
+		#end if
+
+		need_line = fio_result[find_result:]
+		null, iops_buff, bw_buff, *null = need_line.split(' ')
+		null, iops_text = iops_buff.split('=')
+		null, bw = bw_buff.split('=')
+		iops = iops_text.replace(',', '')
+		return bw, iops
 	#end define
 #end class

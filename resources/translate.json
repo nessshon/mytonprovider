@@ -99,6 +99,26 @@
 		"en": "Database processing speed: {} ops/s",
 		"zh_TW": "資料庫處理速度: {} ops/s"
 	},
+	"cpu_load": {
+		"en": "CPU load average[{0}]: {1}, {2}, {3}",
+		"ru": "Средняя нагрузка процессора[{0}]: {1}, {2}, {3}",
+		"zh_TW": "平均 CPU 負載[{0}]: {1}, {2}, {3}"
+	},
+	"memory_load": {
+		"en": "Memory load: {0}, {1}",
+		"ru": "Загрузка памяти: {0}, {1}",
+		"zh_TW": "記憶體負載: {0}, {1}"
+	},
+	"net_load": {
+		"ru": "Средняя нагрузка сети (Mbit/s): {0}, {1}, {2}",
+		"en": "Network load average (Mbit/s): {0}, {1}, {2}",
+		"zh_TW": "網絡平均負載 (Mbit/s): {0}, {1}, {2}"
+	},
+	"disks_load": {
+		"ru": "Средняя нагрузка дисков (MB/s): {0}",
+		"en": "Disks load average (MB/s): {0}",
+		"zh_TW": "磁碟平均負載 (MB/s): {0}"
+	},
 	"123": {
 		"ru": "aaa",
 		"en": "bbb",

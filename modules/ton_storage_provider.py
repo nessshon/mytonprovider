@@ -41,7 +41,8 @@ class Module():
 	def __init__(self, local):
 		self.name = "ton-storage-provider"
 		self.local = local
-		self.local.add_log(f"{self.name} console module init done", "debug")
+		self.mandatory = False
+		self.local.add_log(f"{self.name} module init done", "debug")
 
 		self.go_package = Dict()
 		self.go_package.author = "xssnick"
@@ -386,7 +387,8 @@ class Module():
 		api = mconfig.ton_storage.api
 		provider_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		provider_config.ExternalIP = get_own_ip()
-		provider_config.MaxSpan = 3600 *24 *7
+		provider_config.MinSpan = 3600 *24 *7
+		provider_config.MaxSpan = 3600 *24 *30
 		provider_config.MinRatePerMBDay = self.calulate_MinRatePerMBDay(storage_cost)
 		provider_config.MaxBagSizeBytes = provider_config.MaxBagSizeBytes *100
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
