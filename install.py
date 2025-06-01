@@ -12,6 +12,7 @@ from utils import (
 	import_modules,
 	get_modules_names,
 	get_module_by_name,
+	init_localization,
 	get_disk_space
 )
 
@@ -65,34 +66,42 @@ def calculate_space_to_provide(answers):
 	return str(available_space)
 #end define
 
+def question_space_to_provide(answers):
+	storage_path = answers.get("storage_path")
+	total_space, used_space, free_space = get_disk_space(storage_path, decimal_size=3, round_size=0)
+	text = local.translate("question_space_to_provide").format(free_space, total_space)
+	return text
+#end define
+
+
 def create_questions():
 	questions = [
 		inquirer.Checkbox(
 			name="utils",
-			message="Выберете утилиты",
+			message=local.translate("question_utils"),
 			choices=get_modules_names(local)
 		),
 		inquirer.Path(
 			name="storage_path",
-			message=f"Ввод места хранения файлов провайдера",
+			message=local.translate("question_storage_path"),
 			default=default_storage_path,
 			ignore=ignore_storage
 		),
 		inquirer.Text(
 			name="storage_cost",
-			message=f"Сколько TON будет стоить хранение 200 GB в месяц",
+			message=local.translate("question_storage_cost"),
 			default=default_storage_cost,
 			ignore=ignore_provider
 		),
 		inquirer.Text(
 			name="space_to_provide_gigabytes",
-			message=f"Какой размер диска может занять ton-storage в GB",
+			message=question_space_to_provide,
 			default=calculate_space_to_provide,
 			ignore=ignore_provider
 		),
 		inquirer.Text(
 			name="traffic_cost",
-			message=f"Сколько будет стоить 10 GB трафика сети",
+			message=local.translate("question_traffic_cost"),
 			default=default_traffic_cost,
 			ignore=ignore_tunnel
 		)
@@ -120,5 +129,6 @@ def main():
 
 if __name__ == "__main__":
 	import_modules(local)
+	init_localization(local)
 	main()
 #end if

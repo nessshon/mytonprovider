@@ -16,7 +16,8 @@ from utils import (
 	get_module_by_name,
 	import_commands,
 	import_modules,
-	run_module_method_if_exist
+	run_module_method_if_exist,
+	init_localization
 )
 
 
@@ -27,7 +28,8 @@ console = MyPyConsole()
 def init():
 	local.run()
 	import_modules(local, check_is_enabled=True)
-	init_localization()
+	init_localization(local)
+	import_commands(local, console)
 	
 	if "--daemon" in sys.argv:
 		init_daemon()
@@ -49,19 +51,13 @@ def init_daemon():
 def init_console():
 	console.name = "MyTonProvider"
 	console.start_function = pre_up
-	console.debug = True
+	#console.debug = True
 	console.local = local
 
 	console.add_item("status", status, local.translate("status_cmd"))
 	console.add_item("update", update, local.translate("update_cmd"))
 	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
 	console.run()
-#end define
-
-def init_localization():
-	translate_path = f"{local.buffer.my_dir}/resources/translate.json"
-	local.init_translator(translate_path)
-	import_commands(local, console)
 #end define
 
 def pre_up():

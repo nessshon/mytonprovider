@@ -86,14 +86,14 @@ class Module():
 
 	@publick
 	def check(self):
-		provider = self.local.db.ton_storage.provider
+		adnl_pubkey = self.get_adnl_pubkey()
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
 		
 		own_ip = get_own_ip()
 		if provider_config.ExternalIP != own_ip:
 			raise Exception("provider_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, provider_port, provider.pubkey)
+		ok, error = check_adnl_connection(own_ip, provider_port, adnl_pubkey)
 		if not ok:
 			color_print(f"{{red}}{error}{{endc}}")
 	#end define
@@ -114,7 +114,8 @@ class Module():
 
 		# Зарегистрироваться в списке отправив транзакцию
 		destination = "0:7777777777777777777777777777777777777777777777777777777777777777"
-		comment = f"tsp-{self.local.db.ton_storage.provider.pubkey.lower()}"
+		provider_pubkey = self.get_provider_pubkey()
+		comment = f"tsp-{provider_pubkey.lower()}"
 		messages = await get_messages(destination, 100)
 		if self.is_already_registered(messages, wallet.addr, comment):
 			text = self.local.translate("provider_already_registered")
@@ -146,7 +147,6 @@ class Module():
 	#end define
 
 	async def get_provider_wallet(self):
-		#provider = self.local.db.ton_storage.provider
 		provider_config = self.get_provider_config()
 		client = tonutils.client.LiteserverClient(is_testnet=False)
 		private_key = base64.b64decode(provider_config.ProviderKey)
@@ -165,6 +165,22 @@ class Module():
 			if (message.src == src and message.comment == comment):
 				return True
 		return False
+	#end define
+
+	def get_adnl_pubkey(self):
+		provider_config = self.get_provider_config()
+		adnl_bytes = base64.b64decode(provider_config.ADNLKey)
+		adnl_pubkey_bytes = adnl_bytes[32:64]
+		adnl_pubkey = adnl_pubkey_bytes.hex().upper()
+		return adnl_pubkey
+	#end define
+
+	def get_provider_pubkey(self):
+		provider_config = self.get_provider_config()
+		provider_bytes = base64.b64decode(provider_config.ProviderKey)
+		provider_pubkey_bytes = provider_bytes[32:64]
+		provider_pubkey = provider_pubkey_bytes.hex().upper()
+		return provider_pubkey
 	#end define
 
 	@publick
@@ -188,7 +204,7 @@ class Module():
 		provider_config.ProviderKey = base64.b64encode(provider_key_bytes).decode("utf-8")
 		self.set_provider_config(provider_config)
 
-		self.local.db.ton_storage.provider.pubkey = pubkey_bytes.hex().upper()
+		#self.local.db.ton_storage.provider.pubkey = pubkey_bytes.hex().upper()
 	#end define
 
 	@publick
@@ -224,8 +240,8 @@ class Module():
 	#end define
 
 	def print_provider_pubkey(self):
-		provider = self.local.db.ton_storage.provider
-		provider_pubkey_text = bcolors.yellow_text(provider.pubkey)
+		provider_pubkey = self.get_provider_pubkey()
+		provider_pubkey_text = bcolors.yellow_text(provider_pubkey)
 		text = self.local.translate("provider_pubkey").format(provider_pubkey_text)
 		print(text)
 	#end define
@@ -399,16 +415,14 @@ class Module():
 		write_config_to_file(config_path=provider_config_path, data=provider_config)
 
 		# get provider pubkey
-		key_bytes = base64.b64decode(provider_config.ProviderKey)
+		#key_bytes = base64.b64decode(provider_config.ProviderKey)
 		#privkey_bytes = key_bytes[0:32]
-		pubkey_bytes = key_bytes[32:64]
+		#pubkey_bytes = key_bytes[32:64]
 
 		# edit mytoncore config
 		provider = Dict()
-		#provider.port = udp_port
 		provider.config_path = provider_config_path
-		#provider.privkey = base64.b64encode(privkey_bytes).decode("utf-8")
-		provider.pubkey = pubkey_bytes.hex().upper()
+		#provider.pubkey = pubkey_bytes.hex().upper()
 		provider.src_dir = install_args.src_dir
 		mconfig.ton_storage.provider = provider
 

@@ -9,7 +9,8 @@ from mypylib import (
 	Dict,
 	get_load_avg,
 	read_config_from_file,
-	write_config_to_file
+	write_config_to_file,
+	get_timestamp
 )
 from decorators import publick
 from utils import get_module_by_name, get_disk_space
@@ -87,6 +88,7 @@ class Module():
 		data.cpu_info.is_virtual = self.local.try_function(is_product_virtual)
 		data.pings = self.local.try_function(get_pings_values)
 		data.benchmark = self.local.db.benchmark
+		data.timestamp = get_timestamp()
 
 		return data
 	#end define

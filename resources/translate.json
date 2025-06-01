@@ -1,4 +1,29 @@
 {
+	"question_utils": {
+		"ru": "Выберете утилиты",
+		"en": "Select utilities",
+		"zh_TW": "選擇實用程式"
+	},
+	"question_storage_path": {
+		"ru": "Ввод места хранения файлов провайдера",
+		"en": "Entering the storage location of the provider files",
+		"zh_TW": "輸入提供者檔案的儲存位置"
+	},
+	"question_storage_cost": {
+		"ru": "Сколько TON будет стоить хранение 200 GB в месяц",
+		"en": "How much will TON cost to store 200 GB per month",
+		"zh_TW": "TON 每月儲存 200 GB 資料需要多少錢"
+	},
+	"question_space_to_provide": {
+		"ru": "Какой размер диска может занять ton-storage в GB (дисковое пространство: {} /{})",
+		"en": "How much disk space can ton-storage take in GB (disk space: {} /{})",
+		"zh_TW": "ton-storage 可佔用多少 GB 的磁碟空間（磁碟空間: {}/{}）"
+	},
+	"question_traffic_cost": {
+		"ru": "Сколько будет стоить 10 GB трафика сети",
+		"en": "How much will 10 GB of network traffic cost",
+		"zh_TW": "10GB的網路流量要花多少錢"
+	},
 	"status_cmd": {
 		"ru": "Показать статусы модулей",
 		"en": "Show modules statuses",

@@ -13,6 +13,11 @@ from mypylib import Dict, bcolors
 import subprocess
 
 
+def init_localization(local):
+	translate_path = f"{local.buffer.my_dir}/resources/translate.json"
+	local.init_translator(translate_path)
+#end define
+
 def get_disk_space(disk_path, decimal_size, round_size):
 	# decimal_size: bytes=0, kilobytes=1, megabytes=2, gigabytes=3, terabytes=4
 	total, used, free = shutil.disk_usage(disk_path)

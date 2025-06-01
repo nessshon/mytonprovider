@@ -170,7 +170,7 @@ class Module():
 		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed"]]
 		for bag in api_data.bags:
 			bag_id = reduct(bag.bag_id)
-			progress = round(bag.downloaded /bag.size *100, 2)
+			progress = self.get_progress(bag)
 			size = convert_to_required_decimal(bag.size, decimal_size=3, round_size=2)
 			download_speed = convert_to_required_decimal(bag.download_speed, decimal_size=2, round_size=2)
 			upload_speed = convert_to_required_decimal(bag.upload_speed, decimal_size=2, round_size=2)
@@ -180,6 +180,13 @@ class Module():
 			upload_speed_text = f"{upload_speed} MB/s"
 			table += [[bag_id, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text]]
 		print_table(table)
+	#end define
+
+	def get_progress(self, bag):
+		if bag.size == 0:
+			return 0
+		progress = round(bag.downloaded /bag.size *100, 2)
+		return progress
 	#end define
 
 	@publick

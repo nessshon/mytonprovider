@@ -10,7 +10,9 @@ from mypylib import (
 	run_as_root,
 	color_print,
 	print_table,
-	get_timestamp
+	get_timestamp,
+	timestamp2datetime,
+	timeago
 )
 from speedtest import Speedtest
 from decorators import publick
@@ -41,7 +43,14 @@ class Module():
 
 	@publick
 	def run_benchmark(self, args):
-		disk, network = self.do_benchmark()
+		if self.is_benchmark_done():
+			benchmark = self.local.db.benchmark
+			print("last benchmark time:", timeago(benchmark.timestamp))
+			print()
+			disk = benchmark.disk
+			network = benchmark.network
+		else:
+			disk, network = self.do_benchmark()
 		table = list()
 		table += [["Test type", "Read speed", "Write speed", "Read iops", "Write iops"]]
 		table += [["RND-4K-QD64", disk.qd64.read, disk.qd64.write, disk.qd64.read_iops, disk.qd64.write_iops]]
