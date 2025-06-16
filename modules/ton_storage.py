@@ -68,12 +68,13 @@ class Module():
 	def check(self):
 		ton_storage = self.local.db.ton_storage
 		storage_config = self.get_storage_config()
+		storage_pubkey = self.get_storage_pubkey()
 		listen_ip, storage_port = storage_config.ListenAddr.split(':')
 		
 		own_ip = get_own_ip()
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, storage_port, ton_storage.pubkey)
+		ok, error = check_adnl_connection(own_ip, storage_port, storage_pubkey)
 		if not ok:
 			color_print(f"{{red}}{error}{{endc}}")
 	#end define
@@ -82,6 +83,14 @@ class Module():
 		ton_storage = self.local.db.ton_storage
 		storage_config = read_config_from_file(ton_storage.config_path)
 		return storage_config
+	#end define
+
+	def get_storage_pubkey(self):
+		storage_config = self.get_storage_config()
+		storage_bytes = base64.b64decode(storage_config.Key)
+		storage_pubkey_bytes = storage_bytes[32:64]
+		storage_pubkey = storage_pubkey_bytes.hex().upper()
+		return storage_pubkey
 	#end define
 
 	@publick
@@ -251,9 +260,9 @@ class Module():
 		write_config_to_file(config_path=storage_config_path, data=storage_config)
 
 		# get storage pubkey
-		key_bytes = base64.b64decode(storage_config.Key)
-		pubkey_bytes = key_bytes[32:64]
-		pubkey = pubkey_bytes.hex().upper()
+		#key_bytes = base64.b64decode(storage_config.Key)
+		#pubkey_bytes = key_bytes[32:64]
+		#pubkey = pubkey_bytes.hex().upper()
 
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
@@ -263,7 +272,7 @@ class Module():
 		ton_storage.storage_path = storage_path
 		#ton_storage.port = udp_port
 		ton_storage.src_dir = install_args.src_dir
-		ton_storage.pubkey = pubkey
+		#ton_storage.pubkey = pubkey
 		ton_storage.config_path = storage_config_path
 
 		api = Dict()

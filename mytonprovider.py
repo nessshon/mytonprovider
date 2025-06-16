@@ -3,6 +3,7 @@
 
 import os
 import sys
+import json
 #import threading
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
@@ -57,6 +58,8 @@ def init_console():
 	console.add_item("status", status, local.translate("status_cmd"))
 	console.add_item("update", update, local.translate("update_cmd"))
 	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
+	console.add_item("get", get_settings, local.translate("get_cmd"))
+	console.add_item("set", set_settings, local.translate("set_cmd"))
 	console.run()
 #end define
 
@@ -105,6 +108,28 @@ def upgrade(args):
 	else:
 		text = f"Upgrade {module_name} - {{red}}Error{{endc}}"
 	color_print(text)
+#end define
+
+def get_settings(args):
+	try:
+		name = args[0]
+	except:
+		color_print("{red}Bad args. Usage:{endc} get <settings-name>")
+		return
+	result = local.db.get(name)
+	print(json.dumps(result, indent=2))
+#end defin
+
+def set_settings(args):
+	try:
+		name = args[0]
+		value = args[1]
+	except:
+		color_print("{red}Bad args. Usage:{endc} set <settings-name> <settings-value>")
+		return
+	data = json.loads(value)
+	local.db[name] = data
+	color_print("SetSettings - {green}OK{endc}")
 #end define
 
 

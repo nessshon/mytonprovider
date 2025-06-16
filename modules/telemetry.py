@@ -33,7 +33,10 @@ class Module():
 		self.local = local
 		self.mandatory = False
 		self.daemon_interval = 60
-		self.default_url = "https://mytonprovider.org/api/v1/providers"
+		self.telemetry_url = "https://mytonprovider.org/api/v1/providers"
+		self.benchmark_url = "https://mytonprovider.org/api/v1/benchmarks"
+		self.send_benchmark_interval = 86400 # 24 hours
+		self.send_benchmark_time = 0
 		self.local.add_log(f"{self.name} module init done", "debug")
 	#end define
 
@@ -44,8 +47,13 @@ class Module():
 			return
 		#end if
 
-		data = self.collect_telemetry_data()
-		self.send_telemetry(data)
+		telemetry_data = self.collect_telemetry_data()
+		self.send_telemetry(telemetry_data)
+		
+		if self.send_benchmark_time + self.send_benchmark_interval < get_timestamp():
+			benchmark_data = self.collect_benchmark_data()
+			self.send_benchmark(benchmark_data)
+		#end if
 	#end define
 
 	def collect_telemetry_data(self):
@@ -56,17 +64,19 @@ class Module():
 
 		data = Dict()
 		data.storage = Dict()
-		data.storage.pubkey = self.local.db.ton_storage.pubkey
+		#data.storage.pubkey = self.local.db.ton_storage.pubkey
+		data.storage.pubkey = ton_storage_module.get_storage_pubkey()
 		data.storage.disk_name = self.local.try_function(get_storage_disk_name)
 		data.storage.total_disk_space = total_disk_space
 		data.storage.used_disk_space = used_disk_space
 		data.storage.free_disk_space = free_disk_space
 
-		
 		data.storage.provider = Dict()
-		data.storage.provider.pubkey = self.local.db.ton_storage.provider.pubkey
+		#data.storage.provider.pubkey = self.local.db.ton_storage.provider.pubkey
+		data.storage.provider.pubkey = ton_storage_provider_module.get_provider_pubkey()
 		data.storage.provider.used_provider_space = ton_storage_provider_module.get_used_provider_space(decimal_size=3, round_size=2)
 		data.storage.provider.total_provider_space = ton_storage_provider_module.get_total_provider_space(decimal_size=3, round_size=2)
+		data.storage.provider.max_bag_size_bytes = ton_storage_provider_module.get_provider_maxbagsize()
 
 		data.git_hashes = Dict()
 		data.git_hashes = self.get_all_git_hashes()
@@ -87,9 +97,22 @@ class Module():
 		data.cpu_info.product_name = self.local.try_function(get_product_name)
 		data.cpu_info.is_virtual = self.local.try_function(is_product_virtual)
 		data.pings = self.local.try_function(get_pings_values)
-		data.benchmark = self.local.db.benchmark
 		data.timestamp = get_timestamp()
 
+		return data
+	#end define
+
+	def collect_benchmark_data(self):
+		if self.local.db.benchmark is None:
+			return
+		#end define
+
+		data = Dict()
+		ton_storage_provider_module = get_module_by_name(self.local, "ton-storage-provider")
+		data.pubkey = ton_storage_provider_module.get_provider_pubkey()
+		data.timestamp = get_timestamp()
+		for key, value in self.local.db.benchmark.items():
+			data[key] = value
 		return data
 	#end define
 
@@ -105,14 +128,36 @@ class Module():
 	#end define
 
 	def send_telemetry(self, data):
-		url = self.local.db.get("telemetry_url", self.default_url)
-		#output = json.dumps(data)
+		if data is None:
+			self.local.add_log("send_telemetry error: data is None", "error")
+			return
+		#end define
+
+		url = self.local.db.get("telemetry_url", self.telemetry_url)
+		resp = self.send_data(url, data)
+		print("send_telemetry:", resp)
+	#end define
+
+	def send_benchmark(self, data):
+		if data is None:
+			self.local.add_log("send_benchmark error: data is None", "error")
+			return
+		#end define
+
+		url = self.local.db.get("benchmark_url", self.benchmark_url)
+		resp = self.send_data(url, data)
+		print("send_benchmark:", resp)
+		self.send_benchmark_time = get_timestamp()
+	#end define
+
+	def send_data(self, url, data):
 		additional_headers = dict()
 		additional_headers["Content-Encoding"] = "gzip"
 		additional_headers["Content-Type"] = "application/json"
 		data_bytes = json.dumps(data).encode("utf-8")
 		compressed_data = gzip.compress(data_bytes)
 		resp = requests.post(url, data=compressed_data, headers=additional_headers, timeout=3)
+		return resp
 	#end define
 
 	def install(self, install_args, **kwargs):

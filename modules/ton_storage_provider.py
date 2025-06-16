@@ -183,6 +183,11 @@ class Module():
 		return provider_pubkey
 	#end define
 
+	def get_provider_maxbagsize(self):
+		provider_config = self.get_provider_config()
+		return provider_config.MaxBagSizeBytes
+	#end define
+
 	@publick
 	@async_to_sync
 	async def import_wallet(self, args):
