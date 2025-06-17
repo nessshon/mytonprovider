@@ -85,14 +85,10 @@ venvs_dir="/home/${user}/.local/venv"
 venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
-install_apt_dependencies() {
-	apt update
-	apt install -y $(cat ${src_path}/resources/pkglist.txt)
-}
 
-activate_venv() {
-	virtualenv ${venv_path}
-	source ${venv_path}/bin/activate
+preparation_for_cloning() {
+	apt update
+	apt install -y git
 }
 
 clone_repository() {
@@ -100,6 +96,15 @@ clone_repository() {
 	rm -rf ${src_path}
 	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
 	git config --global --add safe.directory ${src_path}
+}
+
+install_apt_dependencies() {
+	apt install -y $(cat ${src_path}/resources/pkglist.txt)
+}
+
+activate_venv() {
+	virtualenv ${venv_path}
+	source ${venv_path}/bin/activate
 }
 
 install_pip_dependencies() {
@@ -112,14 +117,15 @@ launch_installer() {
 }
 
 mytonprovider_setup() {
-	echo -e "${COLOR}[1/6]${ENDC} Installing required packages"
+	echo -e "${COLOR}[1/6]${ENDC} Cloning MyTonProvider repository"
+	preparation_for_cloning
+	clone_repository
+
+	echo -e "${COLOR}[2/6]${ENDC} Installing required packages"
 	install_apt_dependencies
 
-	echo -e "${COLOR}[2/6]${ENDC} Activating virtual environment"
+	echo -e "${COLOR}[3/6]${ENDC} Activating virtual environment"
 	activate_venv
-
-	echo -e "${COLOR}[3/6]${ENDC} Cloning MyTonProvider repository"
-	clone_repository
 
 	echo -e "${COLOR}[4/6]${ENDC} Installing requirements"
 	install_pip_dependencies
