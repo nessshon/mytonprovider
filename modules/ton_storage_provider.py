@@ -106,6 +106,7 @@ class Module():
 	@async_to_sync
 	async def register(self, args):
 		self.local.add_log("start register function")
+		long_way = "--force" not in args
 		wallet = await self.get_provider_wallet()
 		# print("wallet.addr:", wallet.addr)
 		# print("wallet.status:", wallet.status)
@@ -126,8 +127,10 @@ class Module():
 		destination = "0:7777777777777777777777777777777777777777777777777777777777777777"
 		provider_pubkey = self.get_provider_pubkey()
 		comment = f"tsp-{provider_pubkey.lower()}"
-		messages = await get_messages(destination, 100)
-		if self.is_already_registered(messages, wallet.addr, comment):
+		
+		if long_way:
+			messages = await get_messages(destination, 100)
+		if long_way and self.is_already_registered(messages, wallet.addr, comment):
 			text = self.local.translate("provider_already_registered")
 			color_print(f"{{green}}{text}{{endc}}")
 		else:
