@@ -22,7 +22,11 @@ from mypylib import (
 	get_git_hash,
 	get_git_branch
 )
-from adnl_over_tcp import get_messages
+from adnl_over_tcp import (
+	get_messages,
+	wait_message,
+	get_account
+)
 from utils import (
 	get_module_by_name,
 	convert_to_required_decimal,
@@ -107,8 +111,14 @@ class Module():
 		# print("wallet.status:", wallet.status)
 		# print("wallet.balance:", wallet.balance)
 
+		# Проверить баланс провайдера
+		if wallet.balance < 0.03:
+			text = self.local.translate("low_provider_balance")
+			color_print(f"{{red}}{text}{{endc}}")
+		#end if
+
 		# Проверить что кошелек активен
-		if (wallet.status == "uninit" and wallet.balance > 0.003):
+		if wallet.status == "uninit":
 			await self.do_deploy(wallet)
 		#end if
 
@@ -119,31 +129,34 @@ class Module():
 		messages = await get_messages(destination, 100)
 		if self.is_already_registered(messages, wallet.addr, comment):
 			text = self.local.translate("provider_already_registered")
-			text = bcolors.green_text(text)
-			print(text)
+			color_print(f"{{green}}{text}{{endc}}")
 		else:
 			await self.do_register(wallet, destination, comment)
+			color_print("{green}provider regiser - OK{endc}")
 	#end define
 
 	async def do_deploy(self, wallet):
+		self.local.add_log("start do_deploy function", "debug")
+		account, shard_account = await get_account(addr)
+		end_lt = shard_account.last_trans_hash
+		end_hash = shard_account.last_trans_hash.hex()
+
 		msg_hash = await wallet.obj.deploy()
-		print("deploy msg_hash:", msg_hash)
-		self.wait_complet(wallet.addr, msg_hash)
+		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
 	#end define
 
 	async def do_register(self, wallet, destination, comment):
 		self.local.add_log("start do_register function", "debug")
+		account, shard_account = await get_account(addr)
+		end_lt = shard_account.last_trans_hash
+		end_hash = shard_account.last_trans_hash.hex()
+
 		msg_hash = await wallet.obj.transfer(
 			destination = destination, 
 			amount = 0.01, 
 			body = comment
 		)
-		print("transfer msg_hash:", msg_hash)
-		self.wait_complet(wallet.addr, msg_hash)
-	#end define
-
-	def wait_complet(self, addr, msg_hash):
-		print("wait_complet TODO")
+		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
 	#end define
 
 	async def get_provider_wallet(self):

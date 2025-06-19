@@ -69,6 +69,11 @@
 		"en": "Package version: {} ({})",
 		"zh_TW": "軟體包版本: {} ({})"
 	},
+	"low_provider_balance": {
+		"ru": "Баланс кошелька провайдера низкий. Пополните кошелек провайдера",
+		"en": "Provider wallet balance is low. Top up provider wallet",
+		"zh_TW": "提供者錢包餘額不足. 請充值提供者錢包"
+	},
 	"provider_already_registered": {
 		"ru": "Кошелек провайдера уже зарегистрирован",
 		"en": "Provider wallet already registered",

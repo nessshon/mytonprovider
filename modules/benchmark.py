@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
+import os
 import json
 import subprocess
 from mypylib import (
@@ -109,7 +110,6 @@ class Module():
 		self.local.add_log("start disk_benchmark function", "debug")
 		test_path = self.local.db.ton_storage.storage_path
 		test_file = f"{test_path}/test.img"
-		test_db = f"{test_path}/bench"
 
 		fio_args = f"fio --name=test --filename={test_file} --runtime=15 --blocksize=4k \
 			--ioengine=libaio --direct=1 --size=4G --randrepeat=1 --gtod_reduce=1"
@@ -142,6 +142,7 @@ class Module():
 		result.qd64.write, result.qd64.write_iops = self.parse_fio_result(qd64_write_result, mode="write")
 		result.qd1.read, result.qd1.read_iops = self.parse_fio_result(qd1_read_result, mode="read")
 		result.qd1.write, result.qd1.write_iops = self.parse_fio_result(qd1_write_result, mode="write")
+		os.remove(test_file)
 
 		return result
 	#end define
