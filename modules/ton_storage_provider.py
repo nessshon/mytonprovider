@@ -137,7 +137,7 @@ class Module():
 
 	async def do_deploy(self, wallet):
 		self.local.add_log("start do_deploy function", "debug")
-		account, shard_account = await get_account(addr)
+		account, shard_account = await get_account(wallet.addr)
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
@@ -147,7 +147,7 @@ class Module():
 
 	async def do_register(self, wallet, destination, comment):
 		self.local.add_log("start do_register function", "debug")
-		account, shard_account = await get_account(addr)
+		account, shard_account = await get_account(wallet.addr)
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
