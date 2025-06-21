@@ -20,7 +20,10 @@ from mypylib import (
 	write_config_to_file,
 	get_own_ip,
 	get_git_hash,
-	get_git_branch
+	get_git_branch,
+	get_service_status,
+	get_service_uptime,
+	time2human
 )
 from adnl_over_tcp import (
 	get_messages,
@@ -30,7 +33,10 @@ from adnl_over_tcp import (
 from utils import (
 	get_module_by_name,
 	convert_to_required_decimal,
-	fix_git_config
+	fix_git_config,
+	get_color_status,
+	get_check_status,
+	set_check_data
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -90,6 +96,10 @@ class Module():
 
 	@publick
 	def check(self):
+		self.local.start_thread(self.check_thread)
+	#end define
+
+	def check_thread(self):
 		adnl_pubkey = self.get_adnl_pubkey()
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
@@ -97,9 +107,8 @@ class Module():
 		own_ip = get_own_ip()
 		if provider_config.ExternalIP != own_ip:
 			raise Exception("provider_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, provider_port, adnl_pubkey)
-		if not ok:
-			color_print(f"{{red}}{error}{{endc}}")
+		result, status = check_adnl_connection(own_ip, provider_port, adnl_pubkey)
+		set_check_data(self, result, status)
 	#end define
 
 	@publick
@@ -251,6 +260,8 @@ class Module():
 		self.print_storage_cost()
 		self.print_profit()
 		self.print_provider_space()
+		self.print_port_status()
+		self.print_service_status()
 		self.print_git_hash()
 	#end define
 
@@ -298,6 +309,24 @@ class Module():
 		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
 		total_provider_space_text = bcolors.yellow_text(total_provider_space)
 		text = self.local.translate("provider_space").format(used_provider_space_text, total_provider_space_text)
+		print(text)
+	#end define
+
+	def print_port_status(self):
+		provider_config = self.get_provider_config()
+		listen_ip, provider_port = provider_config.ListenAddr.split(':')
+		port_color = bcolors.yellow_text(provider_port, " udp")
+		status = get_check_status(self)
+		text = self.local.translate("port_status").format(port_color, status)
+		print(text)
+	#end define
+
+	def print_service_status(self):
+		service_status = get_service_status(self.name)
+		service_uptime = get_service_uptime(self.name)
+		service_status_color = get_color_status(service_status)
+		service_uptime_color = bcolors.green_text(time2human(service_uptime))
+		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
 		print(text)
 	#end define
 

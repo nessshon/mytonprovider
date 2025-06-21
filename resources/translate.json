@@ -64,6 +64,16 @@
 		"en": "Disk space used/total: {} /{} GB",
 		"zh_TW": "已使用磁碟空間/總磁碟空間: {} /{} GB"
 	},
+	"port_status": {
+		"ru": "Внешний порт и статус: {}, {}",
+		"en": "External port and status: {}, {}",
+		"zh_TW": "外部連接埠和狀態: {}, {}"
+	},
+	"service_status_and_uptime": {
+		"ru": "Статус службы и время работы: {}, {}",
+		"en": "Service status and opening hours: {}, {}",
+		"zh_TW": "服務狀態及開放時間: {}, {}"
+	},
 	"git_hash": {
 		"ru": "Версия пакета: {} ({})",
 		"en": "Package version: {} ({})",

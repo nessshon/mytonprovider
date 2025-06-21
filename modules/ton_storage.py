@@ -17,7 +17,10 @@ from mypylib import (
 	get_own_ip,
 	get_git_hash,
 	get_git_branch,
-	print_table
+	print_table,
+	get_service_status,
+	get_service_uptime,
+	time2human
 )
 
 from utils import (
@@ -25,7 +28,10 @@ from utils import (
 	get_disk_space,
 	convert_to_required_decimal,
 	fix_git_config,
-	reduct
+	reduct,
+	get_color_status,
+	get_check_status,
+	set_check_data
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -66,6 +72,10 @@ class Module():
 
 	@publick
 	def check(self):
+		self.local.start_thread(self.check_thread)
+	#end define
+
+	def check_thread(self):
 		ton_storage = self.local.db.ton_storage
 		storage_config = self.get_storage_config()
 		storage_pubkey = self.get_storage_pubkey()
@@ -74,9 +84,8 @@ class Module():
 		own_ip = get_own_ip()
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
-		ok, error = check_adnl_connection(own_ip, storage_port, storage_pubkey)
-		if not ok:
-			color_print(f"{{red}}{error}{{endc}}")
+		result, status = check_adnl_connection(own_ip, storage_port, storage_pubkey)
+		set_check_data(self, result, status)
 	#end define
 
 	def get_storage_config(self):
@@ -99,6 +108,8 @@ class Module():
 		self.print_module_name()
 		self.print_bags_num()
 		self.print_disk_space()
+		self.print_port_status()
+		self.print_service_status()
 		self.print_git_hash()
 	#end define
 
@@ -125,6 +136,24 @@ class Module():
 		total_disk_space_text = bcolors.yellow_text(total_disk_space)
 		text = self.local.translate("disk_space").format(used_disk_space_text, total_disk_space_text)
 		print(text)
+	#end define
+
+	def print_port_status(self):
+		storage_config = self.get_storage_config()
+		listen_ip, storage_port = storage_config.ListenAddr.split(':')
+		port_color = bcolors.yellow_text(storage_port, " udp")
+		status = get_check_status(self)
+		text = self.local.translate("port_status").format(port_color, status)
+		color_print(text)
+	#end define
+
+	def print_service_status(self):
+		service_status = get_service_status(self.name)
+		service_uptime = get_service_uptime(self.name)
+		service_status_color = get_color_status(service_status)
+		service_uptime_color = bcolors.green_text(time2human(service_uptime))
+		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
+		color_print(text)
 	#end define
 
 	def print_git_hash(self):

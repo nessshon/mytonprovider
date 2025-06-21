@@ -9,7 +9,11 @@ from pathlib import Path
 import importlib
 from os import listdir
 import sys
-from mypylib import Dict, bcolors
+from mypylib import (
+	Dict,
+	bcolors,
+	get_timestamp
+)
 import subprocess
 
 
@@ -101,6 +105,44 @@ def get_color_int(data, borderline_value, logic, ending=None):
 		else:
 			result = bcolors.red_text(data, ending)
 	return result
+#end define
+
+def get_color_status(input):
+	if input == True:
+		result = bcolors.green_text("working")
+	else:
+		result = bcolors.red_text("not working")
+	return result
+#end define
+
+def set_check_data(module, *args):
+	time_now = get_timestamp()
+	module.local.buffer[module.name] = Dict()
+	module.local.buffer[module.name].check = (*args, time_now)
+#end define
+
+def get_check_data(module):
+	if module.name not in module.local.buffer:
+		result = None
+		error = "The data is none"
+		return result, error
+	result, error, timestamp = module.local.buffer[module.name].check
+	#if get_timestamp() > timestamp + 300:
+	#	result = None
+	#	error = "The data is out of date. Re-running the check"
+	#	module.local.start_thread(module.check_thread)
+	return result, error
+#end define
+
+def get_check_status(module):
+	result, error = get_check_data(module)
+	if result is True:
+		status = bcolors.green_text("Open")
+	elif result is False:
+		status = bcolors.red_text("Close")
+	else:
+		status = "Clarification"
+	return status
 #end define
 
 def run_subprocess(*args, timeout):
