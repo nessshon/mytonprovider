@@ -107,7 +107,7 @@ def get_color_int(data, borderline_value, logic, ending=None):
 	return result
 #end define
 
-def get_color_status(input):
+def get_service_status_color(input):
 	if input == True:
 		result = bcolors.green_text("working")
 	else:
@@ -115,33 +115,48 @@ def get_color_status(input):
 	return result
 #end define
 
-def set_check_data(module, *args):
-	time_now = get_timestamp()
-	module.local.buffer[module.name] = Dict()
-	module.local.buffer[module.name].check = (*args, time_now)
+def set_check_data(module, check_name, data):
+	timestamp = get_timestamp()
+	if module.name not in module.local.buffer:
+		module.local.buffer[module.name] = Dict()
+	module.local.buffer[module.name][check_name] = (timestamp, data)
 #end define
 
-def get_check_data(module):
-	if module.name not in module.local.buffer:
-		result = None
-		error = "The data is none"
-		return result, error
-	result, error, timestamp = module.local.buffer[module.name].check
+def get_check_data(module, check_name):
+	if (module.name not in module.local.buffer or 
+		check_name not in module.local.buffer[module.name]):
+		return
+	timestamp, data = module.local.buffer[module.name][check_name]
 	#if get_timestamp() > timestamp + 300:
 	#	result = None
 	#	error = "The data is out of date. Re-running the check"
 	#	module.local.start_thread(module.check_thread)
-	return result, error
+	return data
 #end define
 
-def get_check_status(module):
-	result, error = get_check_data(module)
-	if result is True:
+def get_check_port_status(module):
+	result = get_check_data(module, check_name="port")
+	if result is None:
+		status = "Clarification"
+	elif result is True:
 		status = bcolors.green_text("Open")
 	elif result is False:
 		status = bcolors.red_text("Close")
 	else:
+		status = "Unknown"
+	return status
+#end define
+
+def get_check_update_status(module):
+	result = get_check_data(module, check_name="update")
+	if result is None:
 		status = "Clarification"
+	elif result is True:
+		status = bcolors.magenta_text("Update available")
+	elif result is False:
+		status = None
+	else:
+		status = "Unknown"
 	return status
 #end define
 

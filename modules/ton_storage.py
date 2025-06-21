@@ -20,7 +20,8 @@ from mypylib import (
 	print_table,
 	get_service_status,
 	get_service_uptime,
-	time2human
+	time2human,
+	check_git_update
 )
 
 from utils import (
@@ -29,9 +30,10 @@ from utils import (
 	convert_to_required_decimal,
 	fix_git_config,
 	reduct,
-	get_color_status,
-	get_check_status,
-	set_check_data
+	get_service_status_color,
+	get_check_port_status,
+	set_check_data,
+	get_check_update_status
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -72,10 +74,17 @@ class Module():
 
 	@publick
 	def check(self):
-		self.local.start_thread(self.check_thread)
+		self.local.start_thread(self.check_update)
+		self.local.start_thread(self.check_port)
 	#end define
 
-	def check_thread(self):
+	def check_update(self):
+		git_path = self.get_my_git_path()
+		is_update_available = check_git_update(git_path)
+		set_check_data(module=self, check_name="update", data=is_update_available)
+	#end define
+
+	def check_port(self):
 		ton_storage = self.local.db.ton_storage
 		storage_config = self.get_storage_config()
 		storage_pubkey = self.get_storage_pubkey()
@@ -85,7 +94,7 @@ class Module():
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
 		result, status = check_adnl_connection(own_ip, storage_port, storage_pubkey)
-		set_check_data(self, result, status)
+		set_check_data(module=self, check_name="port", data=result)
 	#end define
 
 	def get_storage_config(self):
@@ -142,7 +151,7 @@ class Module():
 		storage_config = self.get_storage_config()
 		listen_ip, storage_port = storage_config.ListenAddr.split(':')
 		port_color = bcolors.yellow_text(storage_port, " udp")
-		status = get_check_status(self)
+		status = get_check_port_status(module=self)
 		text = self.local.translate("port_status").format(port_color, status)
 		color_print(text)
 	#end define
@@ -150,7 +159,7 @@ class Module():
 	def print_service_status(self):
 		service_status = get_service_status(self.name)
 		service_uptime = get_service_uptime(self.name)
-		service_status_color = get_color_status(service_status)
+		service_status_color = get_service_status_color(service_status)
 		service_uptime_color = bcolors.green_text(time2human(service_uptime))
 		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
 		color_print(text)
@@ -161,6 +170,9 @@ class Module():
 		git_hash_text = bcolors.yellow_text(git_hash)
 		git_branch_text = bcolors.yellow_text(git_branch)
 		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		update_status = get_check_update_status(module=self)
+		if update_status:
+			text += f", {update_status}"
 		print(text)
 	#end define
 
@@ -191,12 +203,17 @@ class Module():
 
 	@publick
 	def get_my_git_hash_and_branch(self):
-		ton_storage = self.local.db.ton_storage
-		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		git_path = self.get_my_git_path()
 		fix_git_config(git_path)
 		git_hash = get_git_hash(git_path, short=True)
 		git_branch = get_git_branch(git_path)
 		return git_hash, git_branch
+	#end define
+
+	def get_my_git_path(self):
+		ton_storage = self.local.db.ton_storage
+		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		return git_path
 	#end define
 
 	@publick

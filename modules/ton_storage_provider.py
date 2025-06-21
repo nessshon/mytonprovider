@@ -23,7 +23,8 @@ from mypylib import (
 	get_git_branch,
 	get_service_status,
 	get_service_uptime,
-	time2human
+	time2human,
+	check_git_update
 )
 from adnl_over_tcp import (
 	get_messages,
@@ -34,9 +35,10 @@ from utils import (
 	get_module_by_name,
 	convert_to_required_decimal,
 	fix_git_config,
-	get_color_status,
-	get_check_status,
-	set_check_data
+	get_service_status_color,
+	get_check_port_status,
+	set_check_data,
+	get_check_update_status
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -96,10 +98,17 @@ class Module():
 
 	@publick
 	def check(self):
-		self.local.start_thread(self.check_thread)
+		self.local.start_thread(self.check_update)
+		self.local.start_thread(self.check_port)
 	#end define
 
-	def check_thread(self):
+	def check_update(self):
+		git_path = self.get_my_git_path()
+		is_update_available = check_git_update(git_path)
+		set_check_data(module=self, check_name="update", data=is_update_available)
+	#end define
+
+	def check_port(self):
 		adnl_pubkey = self.get_adnl_pubkey()
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
@@ -108,23 +117,25 @@ class Module():
 		if provider_config.ExternalIP != own_ip:
 			raise Exception("provider_config.ExternalIP != own_ip")
 		result, status = check_adnl_connection(own_ip, provider_port, adnl_pubkey)
-		set_check_data(self, result, status)
+		set_check_data(module=self, check_name="port", data=result)
 	#end define
 
 	@publick
 	@async_to_sync
 	async def register(self, args):
 		self.local.add_log("start register function")
-		long_way = "--force" not in args
-		wallet = await self.get_provider_wallet()
-		# print("wallet.addr:", wallet.addr)
-		# print("wallet.status:", wallet.status)
-		# print("wallet.balance:", wallet.balance)
+		if self.local.db.ton_storage.provider.is_already_registered and "--force" not in args:
+			text = self.local.translate("provider_already_registered")
+			color_print(f"{{green}}{text}{{endc}}")
+			return
+		#end define
 
 		# Проверить баланс провайдера
+		wallet = await self.get_provider_wallet()
 		if wallet.balance < 0.03:
 			text = self.local.translate("low_provider_balance")
 			color_print(f"{{red}}{text}{{endc}}")
+			return
 		#end if
 
 		# Проверить что кошелек активен
@@ -136,15 +147,8 @@ class Module():
 		destination = "0:7777777777777777777777777777777777777777777777777777777777777777"
 		provider_pubkey = self.get_provider_pubkey()
 		comment = f"tsp-{provider_pubkey.lower()}"
-		
-		if long_way:
-			messages = await get_messages(destination, 100)
-		if long_way and self.is_already_registered(messages, wallet.addr, comment):
-			text = self.local.translate("provider_already_registered")
-			color_print(f"{{green}}{text}{{endc}}")
-		else:
-			await self.do_register(wallet, destination, comment)
-			color_print("{green}provider regiser - OK{endc}")
+		await self.do_register(wallet, destination, comment)
+		color_print("{green}provider regiser - OK{endc}")
 	#end define
 
 	async def do_deploy(self, wallet):
@@ -169,6 +173,7 @@ class Module():
 			body = comment
 		)
 		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
+		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
 
 	async def get_provider_wallet(self):
@@ -184,13 +189,13 @@ class Module():
 		return wallet
 	#end define
 
-	def is_already_registered(self, messages, src, comment):
-		for message in messages:
-			#print(f"{message.src} --> {message.comment}")
-			if (message.src == src and message.comment == comment):
-				return True
-		return False
-	#end define
+	# def is_already_registered(self, messages, src, comment):
+	# 	for message in messages:
+	# 		#print(f"{message.src} --> {message.comment}")
+	# 		if (message.src == src and message.comment == comment):
+	# 			return True
+	# 	return False
+	# #end define
 
 	def get_adnl_pubkey(self):
 		provider_config = self.get_provider_config()
@@ -316,7 +321,7 @@ class Module():
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
 		port_color = bcolors.yellow_text(provider_port, " udp")
-		status = get_check_status(self)
+		status = get_check_port_status(module=self)
 		text = self.local.translate("port_status").format(port_color, status)
 		print(text)
 	#end define
@@ -324,7 +329,7 @@ class Module():
 	def print_service_status(self):
 		service_status = get_service_status(self.name)
 		service_uptime = get_service_uptime(self.name)
-		service_status_color = get_color_status(service_status)
+		service_status_color = get_service_status_color(service_status)
 		service_uptime_color = bcolors.green_text(time2human(service_uptime))
 		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
 		print(text)
@@ -335,6 +340,9 @@ class Module():
 		git_hash_text = bcolors.yellow_text(git_hash)
 		git_branch_text = bcolors.yellow_text(git_branch)
 		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		update_status = get_check_update_status(module=self)
+		if update_status:
+			text += f", {update_status}"
 		print(text)
 	#end define
 
@@ -366,12 +374,17 @@ class Module():
 
 	@publick
 	def get_my_git_hash_and_branch(self):
-		provider = self.local.db.ton_storage.provider
-		git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		git_path = self.get_my_git_path()
 		fix_git_config(git_path)
 		git_hash = get_git_hash(git_path, short=True)
 		git_branch = get_git_branch(git_path)
 		return git_hash, git_branch
+	#end define
+
+	def get_my_git_path(self):
+		provider = self.local.db.ton_storage.provider
+		git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		return git_path
 	#end define
 
 	def get_storage_cost(self):
