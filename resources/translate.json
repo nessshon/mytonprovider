@@ -1,0 +1,187 @@
+{
+	"question_utils": {
+		"ru": "Выберете модули",
+		"en": "Select modules",
+		"zh_TW": "選擇模組"
+	},
+	"question_storage_path": {
+		"ru": "Место хранения",
+		"en": "Storage location",
+		"zh_TW": "輸入提供者檔案的儲存位置"
+	},
+	"question_storage_cost": {
+		"ru": "Цена за хранение 200 ГБ в месяц",
+		"en": "Storage price per 200 GB per month",
+		"zh_TW": "每月每 200 GB 的儲存價格"
+	},
+	"question_space_to_provide": {
+		"ru": "Максимальный выделенный размер хранилища (всего: {}, свободно {})",
+		"en": "Storage maximum allocated size (disk space: {}, free {})",
+		"zh_TW": "儲存最大分配大小 (磁碟空間: {}, 可用空間: {})"
+	},
+	"question_traffic_cost": {
+		"ru": "Сколько будет стоить 10 GB трафика сети",
+		"en": "How much will 10 GB of network traffic cost",
+		"zh_TW": "10GB的網路流量要花多少錢"
+	},
+	"status_cmd": {
+		"ru": "Показать статусы модулей",
+		"en": "Show modules statuses",
+		"zh_TW": "顯示模組狀態"
+	},
+	"update_cmd": {
+		"ru": "Обновить указанный модуль",
+		"en": "Update the specified module",
+		"zh_TW": "更新指定模組"
+	},
+	"bags_list_cmd": {
+		"ru": "Показать список хранимых контейнеров",
+		"en": "Show list of stored containers",
+		"zh_TW": "顯示儲存容器列表"
+	},
+	"register_cmd": {
+		"ru": "Послать сообщение в список провайдеров",
+		"en": "Send message to provider list",
+		"zh_TW": "發送訊息到提供者列表"
+	},
+	"module_name": {
+		"ru": "Название модуля: {}",
+		"en": "Module name: {}",
+		"zh_TW": "模組名稱: {}"
+	},
+	"bags_num": {
+		"ru": "Количество хранимых контейнеров, размер: {} ({} GB)",
+		"en": "Number of stored containers, size: {} ({} GB)",
+		"zh_TW": "儲存容器數量、尺寸: {} -> {}"
+	},
+	"disk_space": {
+		"ru": "Дисковое пространство занято/всего: {} /{} GB",
+		"en": "Disk space used/total: {} /{} GB",
+		"zh_TW": "已使用磁碟空間/總磁碟空間: {} /{} GB"
+	},
+	"port_status": {
+		"ru": "Внешний порт и статус: {}, {}",
+		"en": "External port and status: {}, {}",
+		"zh_TW": "外部連接埠和狀態: {}, {}"
+	},
+	"service_status_and_uptime": {
+		"ru": "Статус службы и время работы: {}, {}",
+		"en": "Service status and working time: {}, {}",
+		"zh_TW": "服務狀態及開放時間: {}, {}"
+	},
+	"git_hash": {
+		"ru": "Версия пакета: {} ({})",
+		"en": "Package version: {} ({})",
+		"zh_TW": "軟體包版本: {} ({})"
+	},
+	"low_provider_balance": {
+		"ru": "Баланс кошелька провайдера низкий. Пополните кошелек провайдера",
+		"en": "Provider wallet balance is low. Top up provider wallet",
+		"zh_TW": "提供者錢包餘額不足. 請充值提供者錢包"
+	},
+	"provider_already_registered": {
+		"ru": "Кошелек провайдера уже зарегистрирован",
+		"en": "Provider wallet already registered",
+		"zh_TW": "提供者的錢包已經註冊"
+	},
+	"provider_pubkey": {
+		"ru": "Публичный ключ провайдера: {}",
+		"en": "Provider's public key: {}",
+		"zh_TW": "提供者的公鑰: {}"
+	},
+	"provider_wallet": {
+		"ru": "Адрес кошелька провайдера: {}",
+		"en": "Provider wallet address: {}",
+		"zh_TW": "提供者錢包地址: {}"
+	},
+	"provider_balance": {
+		"ru": "Баланс кошелька провайдера: {} TON",
+		"en": "Provider wallet balance: {} TON",
+		"zh_TW": "提供者錢包餘額: {} TON"
+	},
+	"storage_cost": {
+		"ru": "Цена за хранение 200 GB в месяц: {} TON",
+		"en": "Storage price for 200 GB per month: {} TON",
+		"zh_TW": "每月 200 GB 的儲存價格: {} TON"
+	},
+	"provider_profit": {
+		"ru": "Прибыль провайдера в месяц настоящий/максимальный: {} /{} TON",
+		"en": "Provider's profit per month real/maximum: {} /{} TON",
+		"zh_TW": "提供者每月實際/最大利潤: {} /{} TON"
+	},
+	"provider_space": {
+		"ru": "Пространство провайдера занято/всего: {} /{} GB",
+		"en": "Provider space used/total: {} /{} GB",
+		"zh_TW": "已使用提供者空間/總計: {} /{} GB"
+	},
+	"last_banchmark_time": {
+		"ru": "Последнее время бенчмарка: {}",
+		"en": "Last benchmark time: {}",
+		"zh_TW": "上次基準: {}"
+	},
+	"lite_banchmark_speed": {
+		"ru": "Скорость чтения/записи RND-4K-QD64: {} /{}",
+		"en": "Read/write speed RND-4K-QD64: {} /{}",
+		"zh_TW": "讀/寫速度 RND-4K-QD64: {} /{}"
+	},
+	"hard_banchmark_speed": {
+		"ru": "Скорость чтения/записи RND-4K-QD1: {} /{}",
+		"en": "Read/write speed RND-4K-QD1: {} /{}",
+		"zh_TW": "讀/寫速度 RND-4K-QD1: {} /{}"
+	},
+	"full_banchmark": {
+		"ru": "Скорость обработки БД: {} ops/s",
+		"en": "Database processing speed: {} ops/s",
+		"zh_TW": "資料庫處理速度: {} ops/s"
+	},
+	"cpu_load": {
+		"en": "CPU load average[{0}]: {1}, {2}, {3}",
+		"ru": "Средняя нагрузка процессора[{0}]: {1}, {2}, {3}",
+		"zh_TW": "平均 CPU 負載[{0}]: {1}, {2}, {3}"
+	},
+	"memory_load": {
+		"en": "Memory load: {0}, {1}",
+		"ru": "Загрузка памяти: {0}, {1}",
+		"zh_TW": "記憶體負載: {0}, {1}"
+	},
+	"net_load": {
+		"ru": "Средняя нагрузка сети (Mbit/s): {0}, {1}, {2}",
+		"en": "Network load average (Mbit/s): {0}, {1}, {2}",
+		"zh_TW": "網絡平均負載 (Mbit/s): {0}, {1}, {2}"
+	},
+	"disks_load": {
+		"ru": "Средняя нагрузка дисков (MB/s): {0}",
+		"en": "Disks load average (MB/s): {0}",
+		"zh_TW": "磁碟平均負載 (MB/s): {0}"
+	},
+	"benchmark_cmd": {
+		"ru": "Запустить тест производительности системы",
+		"en": "Run a system performance test",
+		"zh_TW": "運行系統效能測試"
+	},
+	"import_wallet_cmd": {
+		"ru": "Импортировать кошелек по приватному ключу",
+		"en": "Import wallet by private key",
+		"zh_TW": "透過私鑰導入錢包"
+	},
+	"export_wallet_cmd": {
+		"ru": "Экспортировать приватный ключ кошелька",
+		"en": "Export wallet private key",
+		"zh_TW": "匯出錢包私鑰"
+	},
+	"get_cmd": {
+		"ru": "Получить настройки по названию",
+		"en": "Get settings by name",
+		"zh_TW": "按名稱取得設置"
+	},
+	"set_cmd": {
+		"ru": "Задать настройки по названию",
+		"en": "Set settings by name",
+		"zh_TW": "按名稱設定"
+	},
+	"123": {
+		"ru": "aaa",
+		"en": "bbb",
+		"zh_TW": "ccc"
+	}
+}
