@@ -30,11 +30,6 @@
 		"zh_TW": "顯示模組狀態"
 	},
 	"update_cmd": {
-		"ru": "Обновить MyTonProvider",
-		"en": "Update MyTonProvider",
-		"zh_TW": "更新 MyTonProvider"
-	},
-	"upgrade_cmd": {
 		"ru": "Обновить указанный модуль",
 		"en": "Update the specified module",
 		"zh_TW": "更新指定模組"
@@ -158,6 +153,31 @@
 		"ru": "Средняя нагрузка дисков (MB/s): {0}",
 		"en": "Disks load average (MB/s): {0}",
 		"zh_TW": "磁碟平均負載 (MB/s): {0}"
+	},
+	"benchmark_cmd": {
+		"ru": "Запустить тест производительности системы",
+		"en": "Run a system performance test",
+		"zh_TW": "運行系統效能測試"
+	},
+	"import_wallet_cmd": {
+		"ru": "Импортировать кошелек по приватному ключу",
+		"en": "Import wallet by private key",
+		"zh_TW": "透過私鑰導入錢包"
+	},
+	"export_wallet_cmd": {
+		"ru": "Экспортировать приватный ключ кошелька",
+		"en": "Export wallet private key",
+		"zh_TW": "匯出錢包私鑰"
+	},
+	"get_cmd": {
+		"ru": "Получить настройки по названию",
+		"en": "Get settings by name",
+		"zh_TW": "按名稱取得設置"
+	},
+	"set_cmd": {
+		"ru": "Задать настройки по названию",
+		"en": "Set settings by name",
+		"zh_TW": "按名稱設定"
 	},
 	"123": {
 		"ru": "aaa",

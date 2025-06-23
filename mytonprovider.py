@@ -57,7 +57,6 @@ def init_console():
 
 	console.add_item("status", status, local.translate("status_cmd"))
 	console.add_item("update", update, local.translate("update_cmd"))
-	console.add_item("upgrade", upgrade, local.translate("upgrade_cmd"))
 	console.add_item("get", get_settings, local.translate("get_cmd"))
 	console.add_item("set", set_settings, local.translate("set_cmd"))
 	console.run()
@@ -81,33 +80,23 @@ def status(args):
 #end define
 
 def update(args):
-	user = os.getenv("USER")
-	script_path = f"{local.buffer.my_dir}/scripts/update.sh"
-	exit_code = run_as_root(["bash", script_path, "-d", local.buffer.venvs_dir])
-	if exit_code == 0:
-		text = "Update MyTonProvider - {green}OK{endc}"
-	else:
-		text = "Update MyTonProvider - {red}Error{endc}"
-	color_print(text)
-	local.exit()
-#end define
-
-def upgrade(args):
 	try:
 		module_name = args[0]
 	except:
-		color_print("{red}Bad args. Usage:{endc} upgrade <module-name>")
+		color_print("{red}Bad args. Usage:{endc} update <module-name>")
 		return
 	#end try
 
 	module = get_module_by_name(local, module_name)
-	upgrade_args = run_module_method_if_exist(local, module, "get_upgrade_args", src_path=local.buffer.my_dir)
-	exit_code = run_as_root(upgrade_args)
+	update_args = run_module_method_if_exist(local, module, "get_update_args", src_path=local.buffer.my_dir)
+	exit_code = run_as_root(update_args)
 	if exit_code == 0:
-		text = f"Upgrade {module_name} - {{green}}OK{{endc}}"
+		text = f"Update {module_name} - {{green}}OK{{endc}}"
 	else:
-		text = f"Upgrade {module_name} - {{red}}Error{{endc}}"
+		text = f"Update {module_name} - {{red}}Error{{endc}}"
 	color_print(text)
+	if module_name == "main":
+		local.exit()
 #end define
 
 def get_settings(args):

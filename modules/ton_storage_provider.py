@@ -407,16 +407,16 @@ class Module():
 	#end define
 
 	@publick
-	def get_upgrade_args(self, src_path):
+	def get_update_args(self, src_path):
 		script_path = f"{src_path}/scripts/install_go_package.sh"
-		upgrade_args = [
+		update_args = [
 			"bash",	script_path, 
 			"-a", self.go_package.author, 
 			"-r", self.go_package.repo, 
 			"-b", self.go_package.branch, 
 			"-e", self.go_package.entry_point
 		]
-		return upgrade_args
+		return update_args
 	#end define
 
 	def install(
@@ -438,7 +438,7 @@ class Module():
 		provider_config_path
 
 		# Склонировать исходники и скомпилировать бинарники
-		upgrade_args = self.get_upgrade_args(install_args.src_path)
+		upgrade_args = self.get_update_args(install_args.src_path)
 		subprocess.run(upgrade_args)
 
 		# Подготовить папку
