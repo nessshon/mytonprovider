@@ -40,7 +40,7 @@ def parse_input_args():
 
 def validate_storage(answers, storage_path):
 	try:
-		os.makedirs(mconfig_dir, exist_ok=True)
+		os.makedirs(storage_path, exist_ok=True)
 		return True
 	except:
 		return False
