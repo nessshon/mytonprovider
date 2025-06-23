@@ -39,7 +39,11 @@ def parse_input_args():
 #end define
 
 def validate_storage(answers, storage_path):
-	return os.access(storage_path, os.W_OK)
+	try:
+		os.makedirs(mconfig_dir, exist_ok=True)
+		return True
+	except:
+		return False
 #end define
 
 def validate_cost(answers, cost):
