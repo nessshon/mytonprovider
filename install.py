@@ -5,9 +5,7 @@ from typing import Any
 import inquirer
 import sys
 import os
-#from sys import path as system_path
 from mypylib import Dict, MyPyClass
-from modules import main as main_module
 from utils import (
 	import_modules,
 	get_modules_names,
@@ -40,6 +38,18 @@ def parse_input_args():
 	return args
 #end define
 
+def validate_storage(answers, storage_path):
+	return os.access(storage_path, os.W_OK)
+#end define
+
+def validate_cost(answers, cost):
+	try:
+		float(cost)
+		return True
+	except:
+		return False
+#end define
+
 def ignore_storage(answers):
 	if "ton-storage" in answers["utils"]:
 		return False
@@ -69,7 +79,7 @@ def calculate_space_to_provide(answers):
 def question_space_to_provide(answers):
 	storage_path = answers.get("storage_path")
 	total_space, used_space, free_space = get_disk_space(storage_path, decimal_size=3, round_size=0)
-	text = local.translate("question_space_to_provide").format(free_space, total_space)
+	text = local.translate("question_space_to_provide").format(total_space, free_space)
 	return text
 #end define
 
@@ -85,13 +95,15 @@ def create_questions():
 			name="storage_path",
 			message=local.translate("question_storage_path"),
 			default=default_storage_path,
-			ignore=ignore_storage
+			ignore=ignore_storage,
+			validate=validate_storage
 		),
 		inquirer.Text(
 			name="storage_cost",
 			message=local.translate("question_storage_cost"),
 			default=default_storage_cost,
-			ignore=ignore_provider
+			ignore=ignore_provider,
+			validate=validate_cost
 		),
 		inquirer.Text(
 			name="space_to_provide_gigabytes",
@@ -116,8 +128,9 @@ def main():
 	answers = inquirer.prompt(questions)
 	need_modules_names = answers.pop("utils")
 	need_modules_names += get_modules_names(local, mandatory=True)
+	need_modules_names.sort()
+	#print("need_modules_names:", need_modules_names)
 
-	main_module.install(local, install_args, **answers)
 	for need_module_name in need_modules_names:
 		need_module = get_module_by_name(local, need_module_name)
 		method = getattr(need_module, "install", None)

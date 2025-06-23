@@ -8,6 +8,7 @@ from functools import lru_cache
 from pathlib import Path
 import importlib
 from os import listdir
+from os.path import normpath
 import sys
 from mypylib import (
 	Dict,
@@ -38,6 +39,7 @@ def convert_to_required_decimal(input_int, decimal_size, round_size):
 #end define
 
 def fix_git_config(git_path):
+	git_path = normpath(git_path)
 	args = ["git", "status"]
 	try:
 		process = subprocess.run(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=git_path, timeout=3)

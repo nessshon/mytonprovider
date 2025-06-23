@@ -52,6 +52,7 @@ from addr_and_key import (
 class Module():
 	def __init__(self, local):
 		self.name = "ton-storage-provider"
+		self.service_name = self.name
 		self.local = local
 		self.mandatory = False
 		self.local.add_log(f"{self.name} module init done", "debug")
@@ -327,8 +328,8 @@ class Module():
 	#end define
 
 	def print_service_status(self):
-		service_status = get_service_status(self.name)
-		service_uptime = get_service_uptime(self.name)
+		service_status = get_service_status(self.service_name)
+		service_uptime = get_service_uptime(self.service_name)
 		service_status_color = get_service_status_color(service_status)
 		service_uptime_color = bcolors.green_text(time2human(service_uptime))
 		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
@@ -375,7 +376,6 @@ class Module():
 	@publick
 	def get_my_git_hash_and_branch(self):
 		git_path = self.get_my_git_path()
-		fix_git_config(git_path)
 		git_hash = get_git_hash(git_path, short=True)
 		git_branch = get_git_branch(git_path)
 		return git_hash, git_branch
@@ -384,6 +384,7 @@ class Module():
 	def get_my_git_path(self):
 		provider = self.local.db.ton_storage.provider
 		git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		fix_git_config(git_path)
 		return git_path
 	#end define
 
@@ -450,11 +451,11 @@ class Module():
 
 		# Создать службу
 		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path}"
-		add2systemd(name=self.name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
+		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
 
 		# Первый запуск - создание конфига
-		self.local.start_service(self.name, sleep=10)
-		self.local.stop_service(self.name)
+		self.local.start_service(self.service_name, sleep=10)
+		self.local.stop_service(self.service_name)
 
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
@@ -469,7 +470,7 @@ class Module():
 		provider_config.MinSpan = 3600 *24 *7
 		provider_config.MaxSpan = 3600 *24 *30
 		provider_config.MinRatePerMBDay = self.calulate_MinRatePerMBDay(storage_cost)
-		provider_config.MaxBagSizeBytes = provider_config.MaxBagSizeBytes *100
+		provider_config.MaxBagSizeBytes = 40 *1024 *1024 *1024 # 40GB
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
 		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
@@ -493,21 +494,20 @@ class Module():
 		write_config_to_file(config_path=mconfig_path, data=mconfig)
 
 		# start provider
-		self.local.start_service(self.name)
-
+		self.local.start_service(self.service_name)
+		self.local.start_service("mytonproviderd")
 	#end define
 
 	def calculate_space_to_provide(self, input_space):
 		# convert gigabytes to megabytes
 		input_space_int = int(input_space)
-		result_int = input_space_int*1024
-		result = int(result_int)
+		result = input_space_int *1024
 		return result
 	#end define
 
 	def calulate_MinRatePerMBDay(self, storage_cost):
 		# 200_gb_per_month --> 1_mb_per_day
-		data = int(storage_cost) /200 /1024 /30
+		data = float(storage_cost) /200 /1024 /30
 		return f"{data:.9f}"
 	#end define
 #end class

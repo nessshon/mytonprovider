@@ -2,6 +2,7 @@
 # -*- coding: utf_8 -*-
 
 import os
+import time
 import json
 import subprocess
 from mypylib import (
@@ -84,6 +85,7 @@ class Module():
 	def daemon(self):
 		if self.is_benchmark_done():
 			return
+		time.sleep(60)
 		self.do_benchmark()
 	#end define
 

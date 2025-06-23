@@ -2,34 +2,14 @@
 # -*- coding: utf_8 -*-
 
 import os
-import json
 import psutil
 from mypylib import (
 	Dict,
-	bcolors,
-	color_print,
-	print_table,
 	get_timestamp,
-	get_internet_interface_name,
-	get_load_avg
+	get_internet_interface_name
 )
 from decorators import publick
-from asgiref.sync import async_to_sync
-from utils import (
-	convert_to_required_decimal,
-	get_color_int
-)
-from server_info import (
-	get_cpu_name,
-	get_product_name,
-	is_product_virtual,
-	do_beacon_ping,
-	get_pings_values,
-	get_storage_disk_name,
-	get_uname,
-	get_ram_info,
-	get_swap_info
-)
+from utils import convert_to_required_decimal
 
 
 class Module():
@@ -45,75 +25,6 @@ class Module():
 	def init_data(self):
 		self.local.buffer.network = [None]*15*6
 		self.local.buffer.diskio = [None]*15*6
-	#end define
-
-	@publick
-	def status(self, args):
-		color_print("{cyan}===[ Statistics status ]==={endc}")
-		self.print_module_name()
-		self.print_cpu_load()
-		self.print_network_load()
-		self.print_disks_load()
-		self.print_memory_load()
-	#end define
-
-	def print_module_name(self):
-		module_name = bcolors.yellow_text(self.name)
-		text = self.local.translate("module_name").format(module_name)
-		print(text)
-	#end define
-
-	def print_cpu_load(self):
-		cpu_count = psutil.cpu_count()
-		cpu_load1, cpu_load5, cpu_load15 = get_load_avg()
-		cpu_count_text = bcolors.yellow_text(cpu_count)
-		cpu_load1_text = get_color_int(cpu_load1, cpu_count, logic="less")
-		cpu_load5_text = get_color_int(cpu_load5, cpu_count, logic="less")
-		cpu_load15_text = get_color_int(cpu_load15, cpu_count, logic="less")
-		text = self.local.translate("cpu_load").format(cpu_count_text, cpu_load1_text, cpu_load5_text, cpu_load15_text)
-		print(text)
-	#end define
-
-	def print_memory_load(self):
-		ram = get_ram_info()
-		swap = get_swap_info()
-		ram_usage_text = get_color_int(ram.usage, 100, logic="less", ending=" Gb")
-		ram_usage_percent_text = get_color_int(ram.usage_percent, 90, logic="less", ending="%")
-		swap_usage_text = get_color_int(swap.usage, 100, logic="less", ending=" Gb")
-		swap_usage_percent_text = get_color_int(swap.usage_percent, 90, logic="less", ending="%")
-		ram_load_text = f"{bcolors.cyan}ram:[{bcolors.default}{ram_usage_text}, {ram_usage_percent_text}{bcolors.cyan}]{bcolors.endc}"
-		swap_load_text = f"{bcolors.cyan}swap:[{bcolors.default}{swap_usage_text}, {swap_usage_percent_text}{bcolors.cyan}]{bcolors.endc}"
-		text = self.local.translate("memory_load").format(ram_load_text, swap_load_text)
-		print(text)
-	#end define
-
-	def print_network_load(self):
-		borderline_value = 300 # 300 Mbit/s
-		net_load1, net_load5, net_load15 = self.get_statistics_data("net_load_avg")
-		net_load1_text = get_color_int(net_load1, borderline_value, logic="less")
-		net_load5_text = get_color_int(net_load5, borderline_value, logic="less")
-		net_load15_text = get_color_int(net_load15, borderline_value, logic="less")
-		text = self.local.translate("net_load").format(net_load1_text, net_load5_text, net_load15_text)
-		print(text)
-	#end define
-
-	def print_disks_load(self):
-		borderline_value = 80 # 80%
-		disks_load_avg = self.get_statistics_data("disks_load_avg")
-		disks_load_percent_avg = self.get_statistics_data("disks_load_percent_avg")
-
-		# Disks status
-		disks_load_list = list()
-		for name, data in disks_load_avg.items():
-			disk_load_text = bcolors.green_text(data[2]) # data = 1 minute, 5 minute, 15 minute
-			disk_load_percent_text = get_color_int(disks_load_percent_avg[name][2], borderline_value, logic="less", ending="%")
-			buff = "{}, {}"
-			buff = "{}{}:[{}{}{}]{}".format(bcolors.cyan, name, bcolors.default, buff, bcolors.cyan, bcolors.endc)
-			disks_load_buff = buff.format(disk_load_text, disk_load_percent_text)
-			disks_load_list.append(disks_load_buff)
-		disks_load_data = ", ".join(disks_load_list)
-		text = self.local.translate("disks_load").format(disks_load_data)
-		print(text)
 	#end define
 
 	def get_statistics_data(self, name):
@@ -155,7 +66,6 @@ class Module():
 		self.local.buffer.diskio.append(data)
 		#print("read_disk_data:", data)
 	#end define
-
 
 	def save_disk_statistics(self):
 		data = self.local.buffer.diskio

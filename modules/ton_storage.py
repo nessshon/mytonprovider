@@ -42,6 +42,7 @@ from adnl_over_udp_checker import check_adnl_connection
 class Module():
 	def __init__(self, local):
 		self.name = "ton-storage"
+		self.service_name = self.name
 		self.local = local
 		self.mandatory = False
 		self.local.add_log(f"{self.name} module init done", "debug")
@@ -157,8 +158,8 @@ class Module():
 	#end define
 
 	def print_service_status(self):
-		service_status = get_service_status(self.name)
-		service_uptime = get_service_uptime(self.name)
+		service_status = get_service_status(self.service_name)
+		service_uptime = get_service_uptime(self.service_name)
 		service_status_color = get_service_status_color(service_status)
 		service_uptime_color = bcolors.green_text(time2human(service_uptime))
 		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
@@ -204,7 +205,6 @@ class Module():
 	@publick
 	def get_my_git_hash_and_branch(self):
 		git_path = self.get_my_git_path()
-		fix_git_config(git_path)
 		git_hash = get_git_hash(git_path, short=True)
 		git_branch = get_git_branch(git_path)
 		return git_hash, git_branch
@@ -213,6 +213,7 @@ class Module():
 	def get_my_git_path(self):
 		ton_storage = self.local.db.ton_storage
 		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		fix_git_config(git_path)
 		return git_path
 	#end define
 
@@ -289,11 +290,11 @@ class Module():
 
 		# Создать службу
 		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --daemon --db {db_dir} --api {host}:{api_port}" # --api-login {login} --api-password {password}
-		add2systemd(name=self.name, user=install_args.user, start=start_cmd, workdir=storage_path, force=True)
+		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=storage_path, force=True)
 
 		# Первый запуск - создание конфига
-		self.local.start_service(self.name, sleep=10)
-		self.local.stop_service(self.name)
+		self.local.start_service(self.service_name, sleep=10)
+		self.local.stop_service(self.service_name)
 
 		# read storage config
 		storage_config = read_config_from_file(storage_config_path)
@@ -334,6 +335,7 @@ class Module():
 		write_config_to_file(config_path=mconfig_path, data=mconfig)
 
 		# start service
-		self.local.start_service(self.name)
+		self.local.start_service(self.service_name)
+		self.local.start_service("mytonproviderd")
 	#end define
 #end class
