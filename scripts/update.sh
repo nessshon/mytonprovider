@@ -21,7 +21,7 @@ ENDC='\033[0m'
 # Set default arguments
 author="igroman787"
 repo="mytonprovider"
-branch="dev"
+branch="master"
 
 # Install parameters
 src_dir="/usr/src"

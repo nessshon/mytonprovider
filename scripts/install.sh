@@ -4,7 +4,7 @@ set -e
 # Set default arguments
 author="igroman787"
 repo="mytonprovider"
-branch="dev"
+branch="master"
 ignore=false
 
 # Colors
