@@ -50,14 +50,9 @@ install_pip_dependencies() {
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
 
-restart_service() {
-	systemctl restart mytonproviderd
-}
-
 # Start update
 clone_repository
 install_apt_dependencies
 activate_venv
 install_pip_dependencies
-restart_service
 exit 0

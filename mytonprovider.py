@@ -18,7 +18,8 @@ from utils import (
 	import_commands,
 	import_modules,
 	run_module_method_if_exist,
-	init_localization
+	init_localization,
+	set_check_data
 )
 
 
@@ -91,6 +92,7 @@ def update(args):
 	update_args = run_module_method_if_exist(local, module, "get_update_args", src_path=local.buffer.my_dir)
 	exit_code = run_as_root(update_args)
 	if exit_code == 0:
+		set_check_data(module, check_name="update", data=False)
 		text = f"Update {module_name} - {{green}}OK{{endc}}"
 	else:
 		text = f"Update {module_name} - {{red}}Error{{endc}}"

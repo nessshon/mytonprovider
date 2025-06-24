@@ -253,7 +253,8 @@ class Module():
 			"-a", self.go_package.author, 
 			"-r", self.go_package.repo, 
 			"-b", self.go_package.branch, 
-			"-e", self.go_package.entry_point
+			"-e", self.go_package.entry_point,
+			"&&", "systemctl", "restart", self.service_name
 		]
 		return update_args
 	#end define
