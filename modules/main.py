@@ -171,7 +171,10 @@ class Module():
 	@publick
 	def get_update_args(self, src_path):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
-		update_args = ["bash", script_path, "-d", self.local.buffer.venvs_dir]
+		update_args = [
+			"bash", script_path, "-d", self.local.buffer.venvs_dir,
+			"&&", "systemctl", "restart", self.service_name
+		]
 		return update_args
 	#end define
 
