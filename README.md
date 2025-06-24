@@ -11,7 +11,7 @@ ton_storage_provider - Concludes storage contracts, sends confirmations and rece
 ton_tunnel_provider - Concludes contracts for traffic routing. Allows you to earn income for proxying someone else's traffic through your IP address.
 ```
 
-# How to instlall:
+# How to install:
 1. Download the installer and run it:
 ```bash
 wget https://raw.githubusercontent.com/igroman787/mytonprovider/master/scripts/install.sh
