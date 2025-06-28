@@ -52,6 +52,11 @@ go_path="/usr/local/go/bin/go"
 check_go_version() {
 	go_mod_path=${1}
 	go_path=${2}
+	if [ ! -f ${go_path} ]; then
+		install_go
+		return
+	fi
+
 	go_mod_text=$(cat ${go_mod_path}) || exit 1
 	need_version_text=$(echo "${go_mod_text}" | grep "go " | head -n 1 | awk '{print $2}')
 	current_version_text=$(${go_path} version | awk '{print $3}' | sed 's\go\\g')
