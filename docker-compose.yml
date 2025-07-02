@@ -1,0 +1,9 @@
+services:
+  provider:
+    build: .
+    container_name: mytonprovider
+    volumes:
+      - ./storage:/var/storage
+    tty: true
+    stdin_open: true
+    # command: ["--daemon"]
