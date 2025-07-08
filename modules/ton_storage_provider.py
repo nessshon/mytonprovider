@@ -452,7 +452,8 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path}"
+		main_module = get_module_by_name(self.local, "main")
+		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path} -network-config {main_module.global_config_path}"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
 
 		# Первый запуск - создание конфига
