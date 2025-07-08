@@ -269,8 +269,6 @@ class Module():
 		host = "localhost"
 		udp_port = randint(1024, 65000)
 		api_port = randint(1024, 65000)
-		#login = generate_login()
-		#password = generate_password()
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
@@ -309,27 +307,18 @@ class Module():
 		# write storage config
 		write_config_to_file(config_path=storage_config_path, data=storage_config)
 
-		# get storage pubkey
-		#key_bytes = base64.b64decode(storage_config.Key)
-		#pubkey_bytes = key_bytes[32:64]
-		#pubkey = pubkey_bytes.hex().upper()
-
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
 
 		# edit mconfig config
 		ton_storage = Dict()
 		ton_storage.storage_path = storage_path
-		#ton_storage.port = udp_port
 		ton_storage.src_dir = install_args.src_dir
-		#ton_storage.pubkey = pubkey
 		ton_storage.config_path = storage_config_path
 
 		api = Dict()
 		api.host = host
 		api.port = api_port
-		#api.login = login
-		#api.password = password
 		
 		ton_storage.api = api
 		mconfig.ton_storage = ton_storage
