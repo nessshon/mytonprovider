@@ -440,7 +440,8 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		subprocess.run(upgrade_args)
+		process = subprocess.run(upgrade_args)
+		process.check_returncode()
 
 		# Подготовить папку
 		os.makedirs(provider_path, exist_ok=True)
