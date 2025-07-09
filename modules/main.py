@@ -6,6 +6,7 @@ import json
 import psutil
 import subprocess
 from random import randint
+from getpass import getuser
 from mypylib import (
 	Dict,
 	bcolors,
@@ -49,6 +50,11 @@ class Module():
 		self.local = local
 		self.mandatory = True
 		self.local.add_log(f"{self.name} module init done", "debug")
+
+		self.global_config_name = "global.config.json"
+		self.global_config_dir = "/var/ton"
+		self.global_config_path = f"{self.global_config_dir}/{self.global_config_name}"
+		self.global_config_url = f"https://igroman787.github.io/{self.global_config_name}"
 	#end define
 
 	@publick
@@ -172,7 +178,7 @@ class Module():
 	def get_update_args(self, src_path):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
-			"bash", script_path, "-d", self.local.buffer.venvs_dir,
+			"bash", script_path, "-u", getuser(), "-d", self.local.buffer.venvs_dir,
 			"&&", "systemctl", "restart", self.service_name
 		]
 		return update_args
@@ -188,8 +194,12 @@ class Module():
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
 
-		# Подготовить папку
+		# Подготовить папки
 		os.makedirs(mconfig_dir, exist_ok=True)
+		os.makedirs(self.global_config_dir, exist_ok=True)
+
+		# Скачать глобал конфиг
+		subprocess.run(["wget", self.global_config_url, "-O", self.global_config_path])
 
 		# Создать конфиг
 		mconfig = Dict()
@@ -206,7 +216,8 @@ class Module():
 			"chown", "-R",
 			install_args.user + ':' + install_args.user,
 			install_args.venv_path,
-			mconfig_dir
+			mconfig_dir,
+			self.global_config_dir
 		])
 
 		# Создать службу

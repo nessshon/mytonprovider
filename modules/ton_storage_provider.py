@@ -408,6 +408,13 @@ class Module():
 
 	@publick
 	def get_update_args(self, src_path):
+		# Temporarily. Delete in TODO
+		if self.local.db.ton_storage != None:
+			provider_config = self.get_provider_config()
+			provider_config.MaxSpan = self.calculate_MaxSpan(self.get_storage_cost())
+			self.set_provider_config(provider_config)
+		#end if
+
 		script_path = f"{src_path}/scripts/install_go_package.sh"
 		update_args = [
 			"bash",	script_path, 
@@ -440,7 +447,8 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		subprocess.run(upgrade_args)
+		process = subprocess.run(upgrade_args)
+		process.check_returncode()
 
 		# Подготовить папку
 		os.makedirs(provider_path, exist_ok=True)
@@ -451,7 +459,8 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path}"
+		main_module = get_module_by_name(self.local, "main")
+		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path} -network-config {main_module.global_config_path}"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
 
 		# Первый запуск - создание конфига
@@ -469,9 +478,9 @@ class Module():
 		provider_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		provider_config.ExternalIP = get_own_ip()
 		provider_config.MinSpan = 3600 *24 *7
-		provider_config.MaxSpan = 3600 *24 *30
-		provider_config.MinRatePerMBDay = self.calulate_MinRatePerMBDay(storage_cost)
-		provider_config.MaxBagSizeBytes = 40 *1024 *1024 *1024 # 40GB
+		provider_config.MaxSpan = self.calculate_MaxSpan(storage_cost)
+		provider_config.MinRatePerMBDay = self.calculate_MinRatePerMBDay(storage_cost)
+		provider_config.MaxBagSizeBytes = 40 * 1024**3 # 40GB
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
 		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
@@ -506,7 +515,19 @@ class Module():
 		return result
 	#end define
 
-	def calulate_MinRatePerMBDay(self, storage_cost):
+	def calculate_MaxSpan(self, storage_cost):
+		min_proof_cost = 0.05
+		min_span = 3600 *24 *30
+		min_bag_size = 400
+		# 200_gb_per_month --> 1_mb_per_sec
+		data = float(storage_cost) /200 /1024 /30 /24 /3600
+		max_span = int(min_proof_cost /(data *min_bag_size))
+		if max_span < min_span:
+			return min_span
+		return max_span
+	#end define
+
+	def calculate_MinRatePerMBDay(self, storage_cost):
 		# 200_gb_per_month --> 1_mb_per_day
 		data = float(storage_cost) /200 /1024 /30
 		return f"{data:.9f}"

@@ -269,8 +269,6 @@ class Module():
 		host = "localhost"
 		udp_port = randint(1024, 65000)
 		api_port = randint(1024, 65000)
-		#login = generate_login()
-		#password = generate_password()
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
@@ -279,7 +277,8 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		subprocess.run(upgrade_args)
+		process = subprocess.run(upgrade_args)
+		process.check_returncode()
 
 		# Подготовить папку
 		os.makedirs(storage_path, exist_ok=True)
@@ -290,7 +289,8 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --daemon --db {db_dir} --api {host}:{api_port}" # --api-login {login} --api-password {password}
+		main_module = get_module_by_name(self.local, "main")
+		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --daemon --db {db_dir} --api {host}:{api_port} -network-config {main_module.global_config_path}"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=storage_path, force=True)
 
 		# Первый запуск - создание конфига
@@ -307,27 +307,18 @@ class Module():
 		# write storage config
 		write_config_to_file(config_path=storage_config_path, data=storage_config)
 
-		# get storage pubkey
-		#key_bytes = base64.b64decode(storage_config.Key)
-		#pubkey_bytes = key_bytes[32:64]
-		#pubkey = pubkey_bytes.hex().upper()
-
 		# read mconfig
 		mconfig = read_config_from_file(mconfig_path)
 
 		# edit mconfig config
 		ton_storage = Dict()
 		ton_storage.storage_path = storage_path
-		#ton_storage.port = udp_port
 		ton_storage.src_dir = install_args.src_dir
-		#ton_storage.pubkey = pubkey
 		ton_storage.config_path = storage_config_path
 
 		api = Dict()
 		api.host = host
 		api.port = api_port
-		#api.login = login
-		#api.password = password
 		
 		ton_storage.api = api
 		mconfig.ton_storage = ton_storage

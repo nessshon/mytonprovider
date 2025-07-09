@@ -124,7 +124,7 @@ class Module():
 		disk_write = disk_write_diff /time_diff
 		disk_read_count = disk_read_count_diff /time_diff
 		disk_write_count = disk_write_count_diff /time_diff
-		disk_load = convert_to_required_decimal(disk_read + disk_write, decimal_size=3, round_size=0)
+		disk_load = convert_to_required_decimal(disk_read + disk_write, decimal_size=2, round_size=2)
 		iops = round(disk_read_count + disk_write_count, 2)
 		return disk_load, disk_load_percent, iops
 	#end define
@@ -199,7 +199,7 @@ class Module():
 		bites_sent_avg = bytes_sent_diff /time_diff *8
 		packets_recv_avg = packets_recv_diff /time_diff
 		packets_sent_avg = packets_sent_diff /time_diff
-		net_load_avg = convert_to_required_decimal(bites_recv_avg + bites_sent_avg, decimal_size=3, round_size=0)
+		net_load_avg = convert_to_required_decimal(bites_recv_avg + bites_sent_avg, decimal_size=2, round_size=2)
 		pps_avg = round(packets_recv_avg + packets_sent_avg, 2)
 		return net_load_avg, pps_avg
 	#end define
