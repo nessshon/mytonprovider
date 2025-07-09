@@ -18,6 +18,7 @@ show_help_and_exit() {
 	echo ' -r               Set git repo'
 	echo ' -b               Set git branch'
 	echo ' -e               Set entry point for compilation'
+	echo ' -s               Service name for restart'
 	echo ' -h               Show this help'
 	exit
 }
@@ -28,12 +29,13 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "a:r:b:e:h" flag; do
+while getopts "a:r:b:e:s:h" flag; do
 	case "${flag}" in
 		a) author=${OPTARG};;
 		r) repo=${OPTARG};;
 		b) branch=${OPTARG};;
 		e) entry_point=${OPTARG};;
+		s) service_name=${OPTARG};;
 		h) show_help_and_exit;;
 		*)
 			echo "Flag -${flag} is not recognized. Aborting"
@@ -107,6 +109,12 @@ compilation() {
 	CGO_ENABLED=1 ${go_path} build -o ${bin_path} ${src_path}/${entry_point}
 }
 
+service_restart() {
+	if [ -n "${service_name}" ]; then
+		systemctl restart ${service_name}
+	fi
+}
+
 setup_go_package(){
 	echo -e "${COLOR}[1/4]${ENDC} Cloning ${repo} repository"
 	clone_repository
@@ -116,6 +124,7 @@ setup_go_package(){
 
 	echo -e "${COLOR}[3/4]${ENDC} Source compilation"
 	compilation
+	service_restart
 
 	echo -e "${COLOR}[4/4]${ENDC} ${repo} installation complete"
 }

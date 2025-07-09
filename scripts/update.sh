@@ -57,6 +57,10 @@ download_global_config() {
 	chown -R ${user}:${user} /var/ton
 }
 
+service_restart() {
+	systemctl restart mytonproviderd
+}
+
 
 # Start update
 clone_repository
@@ -64,4 +68,5 @@ install_apt_dependencies
 activate_venv
 install_pip_dependencies
 download_global_config
+service_restart
 exit 0
