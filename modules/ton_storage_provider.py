@@ -190,14 +190,6 @@ class Module():
 		return wallet
 	#end define
 
-	# def is_already_registered(self, messages, src, comment):
-	# 	for message in messages:
-	# 		#print(f"{message.src} --> {message.comment}")
-	# 		if (message.src == src and message.comment == comment):
-	# 			return True
-	# 	return False
-	# #end define
-
 	def get_adnl_pubkey(self):
 		provider_config = self.get_provider_config()
 		adnl_bytes = base64.b64decode(provider_config.ADNLKey)
@@ -239,8 +231,6 @@ class Module():
 		provider_config = self.get_provider_config()
 		provider_config.ProviderKey = base64.b64encode(provider_key_bytes).decode("utf-8")
 		self.set_provider_config(provider_config)
-
-		#self.local.db.ton_storage.provider.pubkey = pubkey_bytes.hex().upper()
 	#end define
 
 	@publick
@@ -422,7 +412,7 @@ class Module():
 			"-r", self.go_package.repo, 
 			"-b", self.go_package.branch, 
 			"-e", self.go_package.entry_point,
-			"&&", "systemctl", "restart", self.service_name
+			"-s", self.service_name
 		]
 		return update_args
 	#end define
