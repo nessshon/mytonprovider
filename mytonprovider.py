@@ -89,7 +89,7 @@ def update(args):
 	#end try
 
 	module = get_module_by_name(local, module_name)
-	update_args = run_module_method_if_exist(local, module, "get_update_args", src_path=local.buffer.my_dir)
+	update_args = run_module_method_if_exist(local, module, "get_update_args", src_path=local.buffer.my_dir, restart_service=True)
 	exit_code = run_as_root(update_args)
 	if exit_code == 0:
 		set_check_data(module, check_name="update", data=False)
