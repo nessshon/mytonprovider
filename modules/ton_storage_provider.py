@@ -397,7 +397,7 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, src_path):
+	def get_update_args(self, src_path, restart_service=False):
 		# Temporarily. Delete in TODO
 		if self.local.db.ton_storage != None:
 			provider_config = self.get_provider_config()
@@ -411,9 +411,10 @@ class Module():
 			"-a", self.go_package.author, 
 			"-r", self.go_package.repo, 
 			"-b", self.go_package.branch, 
-			"-e", self.go_package.entry_point,
-			"-s", self.service_name
+			"-e", self.go_package.entry_point
 		]
+		if restart_service == True:
+			update_args += ["-s", self.service_name]
 		return update_args
 	#end define
 

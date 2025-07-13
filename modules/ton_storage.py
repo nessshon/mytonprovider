@@ -246,16 +246,17 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, src_path):
+	def get_update_args(self, src_path, restart_service=False):
 		script_path = f"{src_path}/scripts/install_go_package.sh"
 		update_args = [
 			"bash",	script_path, 
 			"-a", self.go_package.author, 
 			"-r", self.go_package.repo, 
 			"-b", self.go_package.branch, 
-			"-e", self.go_package.entry_point,
-			"-s", self.service_name
+			"-e", self.go_package.entry_point
 		]
+		if restart_service == True:
+			update_args += ["-s", self.service_name]
 		return update_args
 	#end define
 
