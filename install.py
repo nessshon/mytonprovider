@@ -109,13 +109,13 @@ def calculate_storage_path(answers):
 def calculate_storage_cost(answers):
 	save_answers = get_save_answers()
 	result = save_answers.storage_cost or default_storage_cost
-	return result
+	return str(result)
 #end define
 
 def calculate_traffic_cost(answers):
 	save_answers = get_save_answers()
 	result = save_answers.traffic_cost or default_traffic_cost
-	return result
+	return str(result)
 #end define
 
 def get_save_answers():
