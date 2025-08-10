@@ -2,9 +2,9 @@
 # -*- coding: utf_8 -*-
 
 import os
+import shutil
 import base64
 import requests
-import subprocess
 from random import randint
 from mypylib import (
 	Dict,
@@ -33,7 +33,8 @@ from utils import (
 	get_service_status_color,
 	get_check_port_status,
 	set_check_data,
-	get_check_update_status
+	get_check_update_status,
+	run_subprocess
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -52,10 +53,35 @@ class Module():
 		self.go_package.repo = "tonutils-storage"
 		self.go_package.branch = "master"
 		self.go_package.entry_point = "cli/main.go"
+
+		self.daemon_interval = 86400
+	#end define
+
+	@publick
+	def daemon(self):
+		""" Remove BAGs that the provider process did not removed """
+		api_data = self.get_api_data()
+		bags_list = self.get_bags_list(api_data)
+		bags_dir = f"{self.local.db.ton_storage.storage_path}/provider"
+		for bag_id in os.listdir(bags_dir):
+			if len(bag_id) != 64:
+				continue
+			if bag_id not in bags_list:
+				self.local.add_log(f"Cleaning up old BAGs: {bags_dir}/{bag_id}", "warning")
+				shutil.rmtree(f"{bags_dir}/{bag_id}")
 	#end define
 
 	@publick
 	def is_enabled(self):
+		git_path = self.get_my_git_path()
+		try:
+			get_git_branch(git_path)
+			return True
+		except:
+			return False
+	#end define
+
+	def is_enabled_old(self):
 		if "ton_storage" in self.local.db:
 			return True
 		return False
@@ -66,7 +92,7 @@ class Module():
 		commands = list()
 		bags_list = Dict()
 		bags_list.cmd = "bags_list"
-		bags_list.func = self.bags_list
+		bags_list.func = self.print_bags_list
 		bags_list.desc = self.local.translate("bags_list_cmd")
 
 		commands.append(bags_list)
@@ -74,7 +100,7 @@ class Module():
 	#end define
 
 	@publick
-	def check(self):
+	def pre_up(self):
 		self.local.start_thread(self.check_update)
 		self.local.start_thread(self.check_port)
 	#end define
@@ -192,6 +218,15 @@ class Module():
 		return len(api_data.bags)
 	#end define
 
+	def get_bags_list(self, api_data):
+		result = list()
+		if api_data.bags == None:
+			return result
+		for bag in api_data.bags:
+			result.append(bag.bag_id)
+		return result
+	#end define
+
 	def get_bags_size(self, api_data, decimal_size, round_size):
 		if api_data.bags == None:
 			return 0
@@ -202,7 +237,6 @@ class Module():
 		return used_space
 	#end define
 
-	@publick
 	def get_my_git_hash_and_branch(self):
 		git_path = self.get_my_git_path()
 		git_hash = get_git_hash(git_path, short=True)
@@ -211,14 +245,15 @@ class Module():
 	#end define
 
 	def get_my_git_path(self):
-		ton_storage = self.local.db.ton_storage
-		git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		#ton_storage = self.local.db.ton_storage
+		#git_path = f"{ton_storage.src_dir}/{self.go_package.repo}"
+		git_path = f"/usr/src/{self.go_package.repo}"
 		fix_git_config(git_path)
 		return git_path
 	#end define
 
 	@publick
-	def bags_list(self, args):
+	def print_bags_list(self, args):
 		api_data = self.get_api_data()
 		if api_data.bags == None:
 			print("no data")
@@ -246,8 +281,8 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, src_path, restart_service=False):
-		script_path = f"{src_path}/scripts/install_go_package.sh"
+	def get_update_args(self, restart_service=False, **kwargs):
+		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
 		update_args = [
 			"bash",	script_path, 
 			"-a", self.go_package.author, 
@@ -260,12 +295,7 @@ class Module():
 		return update_args
 	#end define
 
-	def install(
-			self, 
-			install_args: Dict, 
-			storage_path: str = None, 
-			**kwargs
-		):
+	def install(self, install_args, install_answers):
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		host = "localhost"
 		udp_port = randint(1024, 65000)
@@ -273,26 +303,26 @@ class Module():
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
-		db_dir = f"{storage_path}/db"
+		db_dir = f"{install_answers.storage_path}/db"
 		storage_config_path = f"{db_dir}/config.json"
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		process = subprocess.run(upgrade_args)
-		process.check_returncode()
+		run_subprocess(upgrade_args, timeout=60)
 
 		# Подготовить папку
-		os.makedirs(storage_path, exist_ok=True)
-		subprocess.run([
-			"chown", "-R", 
+		os.makedirs(install_answers.storage_path, exist_ok=True)
+		chown_args = [
+			"chown", 
 			install_args.user + ':' + install_args.user, 
-			storage_path
-		])
+			install_answers.storage_path
+		]
+		run_subprocess(chown_args, timeout=3)
 
 		# Создать службу
 		main_module = get_module_by_name(self.local, "main")
 		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --daemon --db {db_dir} --api {host}:{api_port} -network-config {main_module.global_config_path}"
-		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=storage_path, force=True)
+		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=install_answers.storage_path, force=True)
 
 		# Первый запуск - создание конфига
 		self.local.start_service(self.service_name, sleep=10)
@@ -313,7 +343,7 @@ class Module():
 
 		# edit mconfig config
 		ton_storage = Dict()
-		ton_storage.storage_path = storage_path
+		ton_storage.storage_path = install_answers.storage_path
 		ton_storage.src_dir = install_args.src_dir
 		ton_storage.config_path = storage_config_path
 
@@ -329,6 +359,5 @@ class Module():
 
 		# start service
 		self.local.start_service(self.service_name)
-		self.local.start_service("mytonproviderd")
 	#end define
 #end class

@@ -3,7 +3,6 @@
 
 import os
 import base64
-import subprocess
 import tonutils
 import tonutils.client
 import tonutils.wallet
@@ -38,7 +37,8 @@ from utils import (
 	get_service_status_color,
 	get_check_port_status,
 	set_check_data,
-	get_check_update_status
+	get_check_update_status,
+	run_subprocess
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -66,6 +66,15 @@ class Module():
 
 	@publick
 	def is_enabled(self):
+		git_path = self.get_my_git_path()
+		try:
+			get_git_branch(git_path)
+			return True
+		except:
+			return False
+	#end define
+	
+	def is_enabled_old(self):
 		if "ton_storage" in self.local.db:
 			if "provider" in self.local.db.ton_storage:
 				return True
@@ -98,7 +107,7 @@ class Module():
 	#end define
 
 	@publick
-	def check(self):
+	def pre_up(self):
 		self.local.start_thread(self.check_update)
 		self.local.start_thread(self.check_port)
 	#end define
@@ -363,7 +372,6 @@ class Module():
 		write_config_to_file(config_path=provider.config_path, data=provider_config)
 	#en define
 
-	@publick
 	def get_my_git_hash_and_branch(self):
 		git_path = self.get_my_git_path()
 		git_hash = get_git_hash(git_path, short=True)
@@ -372,8 +380,9 @@ class Module():
 	#end define
 
 	def get_my_git_path(self):
-		provider = self.local.db.ton_storage.provider
-		git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		#provider = self.local.db.ton_storage.provider
+		#git_path = f"{provider.src_dir}/{self.go_package.repo}"
+		git_path = f"/usr/src/{self.go_package.repo}"
 		fix_git_config(git_path)
 		return git_path
 	#end define
@@ -397,7 +406,7 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, src_path, restart_service=False):
+	def get_update_args(self, restart_service=False, **kwargs):
 		# Temporarily. Delete in TODO
 		if self.local.db.ton_storage != None:
 			provider_config = self.get_provider_config()
@@ -405,7 +414,7 @@ class Module():
 			self.set_provider_config(provider_config)
 		#end if
 
-		script_path = f"{src_path}/scripts/install_go_package.sh"
+		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
 		update_args = [
 			"bash",	script_path, 
 			"-a", self.go_package.author, 
@@ -418,36 +427,29 @@ class Module():
 		return update_args
 	#end define
 
-	def install(
-			self,
-			install_args: dict,
-			storage_path: str = None,
-			storage_cost: int = None,
-			space_to_provide_gigabytes: int = None,
-			**kwargs
-		):
+	def install(self, install_args, install_answers):
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		udp_port = randint(1024, 65000)
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
-		provider_path = f"{storage_path}/provider"
+		provider_path = f"{install_answers.storage_path}/provider"
 		db_dir = f"{provider_path}/db"
 		provider_config_path = f"{provider_path}/config.json"
 		provider_config_path
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		process = subprocess.run(upgrade_args)
-		process.check_returncode()
+		run_subprocess(upgrade_args, timeout=60)
 
 		# Подготовить папку
 		os.makedirs(provider_path, exist_ok=True)
-		subprocess.run([
-			"chown", "-R", 
+		chown_args = [
+			"chown", 
 			install_args.user + ':' + install_args.user, 
 			provider_path
-		])
+		]
+		run_subprocess(chown_args, timeout=3)
 
 		# Создать службу
 		main_module = get_module_by_name(self.local, "main")
@@ -469,25 +471,19 @@ class Module():
 		provider_config.ListenAddr = f"0.0.0.0:{udp_port}"
 		provider_config.ExternalIP = get_own_ip()
 		provider_config.MinSpan = 3600 *24 *7
-		provider_config.MaxSpan = self.calculate_MaxSpan(storage_cost)
-		provider_config.MinRatePerMBDay = self.calculate_MinRatePerMBDay(storage_cost)
+		provider_config.MaxSpan = self.calculate_MaxSpan(install_answers.storage_cost)
+		provider_config.MinRatePerMBDay = self.calculate_MinRatePerMBDay(install_answers.storage_cost)
 		provider_config.MaxBagSizeBytes = 40 * 1024**3 # 40GB
 		provider_config.Storages[0].BaseURL = f"http://{api.host}:{api.port}"
-		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(space_to_provide_gigabytes)
+		provider_config.Storages[0].SpaceToProvideMegabytes = self.calculate_space_to_provide(install_answers.space_to_provide_gigabytes)
 		provider_config.CRON.Enabled = True
 
 		# write provider config
 		write_config_to_file(config_path=provider_config_path, data=provider_config)
 
-		# get provider pubkey
-		#key_bytes = base64.b64decode(provider_config.ProviderKey)
-		#privkey_bytes = key_bytes[0:32]
-		#pubkey_bytes = key_bytes[32:64]
-
 		# edit mytoncore config
 		provider = Dict()
 		provider.config_path = provider_config_path
-		#provider.pubkey = pubkey_bytes.hex().upper()
 		provider.src_dir = install_args.src_dir
 		mconfig.ton_storage.provider = provider
 
@@ -496,7 +492,6 @@ class Module():
 
 		# start provider
 		self.local.start_service(self.service_name)
-		self.local.start_service("mytonproviderd")
 	#end define
 
 	def calculate_space_to_provide(self, input_space):
@@ -515,6 +510,8 @@ class Module():
 		max_span = int(min_proof_cost /(data *min_bag_size))
 		if max_span < min_span:
 			return min_span
+		if max_span > 4294967290:
+			max_span = 4294967290
 		return max_span
 	#end define
 
