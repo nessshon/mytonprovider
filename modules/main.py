@@ -6,7 +6,6 @@ import json
 import psutil
 import subprocess
 from random import randint
-from getpass import getuser
 from mypylib import (
 	Dict,
 	bcolors,
@@ -58,10 +57,11 @@ class Module():
 	#end define
 
 	@publick
-	def check(self):
+	def pre_up(self):
 		self.local.start_thread(self.check_update)
 	#end define
 
+	@publick
 	def check_update(self):
 		git_path = self.get_my_git_path()
 		is_update_available = check_git_update(git_path)
@@ -175,19 +175,15 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, src_path):
+	def get_update_args(self, user, **kwargs):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
-			"bash", script_path, "-u", getuser(), "-d", self.local.buffer.venvs_dir
+			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
 		return update_args
 	#end define
 
-	def install(
-			self, 
-			install_args: Dict, 
-			**kwargs
-		):
+	def install(self, install_args, install_answers):
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		# Проверить конфигурацию
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
@@ -206,6 +202,8 @@ class Module():
 		mconfig.config.logLevel = "debug"
 		mconfig.config.isLocaldbSaving = True
 		mconfig.config.isStartOnlyOneProcess = False
+		mconfig.install_args = install_args
+		mconfig.install_answers = install_answers
 
 		# Записать конфиг
 		write_config_to_file(config_path=mconfig_path, data=mconfig)

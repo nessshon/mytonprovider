@@ -54,7 +54,7 @@ install_pip_dependencies() {
 download_global_config() {
 	mkdir -p /var/ton
 	wget https://igroman787.github.io/global.config.json -O /var/ton/global.config.json
-	chown -R ${user}:${user} /var/ton
+	chown ${user}:${user} /var/ton/global.config.json
 }
 
 service_restart() {
