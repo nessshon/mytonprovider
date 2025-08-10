@@ -122,7 +122,8 @@ def get_save_answers():
 	install_args = parse_input_args()
 	file_path = f"/home/{install_args.user}/.local/share/mytonprovider/mytonprovider.db"
 	data = read_config_from_file(file_path)
-	return data.install_answers
+	save_answers = data.install_answers or Dict()
+	return save_answers
 #end define
 
 def create_questions():
