@@ -119,8 +119,11 @@ def calculate_traffic_cost(answers):
 #end define
 
 def get_save_answers():
+	save_answers = Dict()
 	install_args = parse_input_args()
 	file_path = f"/home/{install_args.user}/.local/share/mytonprovider/mytonprovider.db"
+	if os.path.isfile(file_path) == False:
+		return save_answers
 	data = read_config_from_file(file_path)
 	save_answers = data.install_answers or Dict()
 	return save_answers
