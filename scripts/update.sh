@@ -32,8 +32,10 @@ src_path="${src_dir}/${repo}"
 
 clone_repository() {
 	echo "https://github.com/${author}/${repo}.git -> ${branch}"
+	rm -rf ${src_path}_tmp
+	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}_tmp
 	rm -rf ${src_path}
-	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}
+	mv ${src_path}_tmp ${src_path}
 }
 
 install_apt_dependencies() {
