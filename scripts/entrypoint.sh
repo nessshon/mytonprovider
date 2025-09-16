@@ -32,7 +32,7 @@ start_if_present() {
   local u
   if unit_exists "$base"; then
     u="$(unit_exists "$base")"
-    systemctl start "$base" && echo "[ok] started $u" || echo "[warn] $u start failed"
+    systemctl start "$base" && echo "[ok] started!" || echo "[warn] $u start failed"
   else
     echo "[skip] $base: unit not found"
   fi
