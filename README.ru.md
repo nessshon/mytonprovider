@@ -16,7 +16,7 @@ ton_tunnel_provider - Заключает контракты на маршрут�
 1. **Клонируйте репозиторий и перейдите в каталог:**
 
    ```bash
-   git clone -b docker --single-branch https://github.com/nessshon/mytonprovider.git
+   git clone -b docker --single-branch https://github.com/igroman787/mytonprovider.git
    cd mytonprovider
    ```
 

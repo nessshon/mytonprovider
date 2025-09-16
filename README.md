@@ -18,7 +18,7 @@ ton_tunnel_provider  - Signs traffic-routing contracts. Lets you earn by proxyin
 1. **Clone the repository and enter the directory:**
 
    ```bash
-   git clone -b docker --single-branch https://github.com/nessshon/mytonprovider.git
+   git clone -b docker --single-branch https://github.com/igroman787/mytonprovider.git
    cd mytonprovider
    ```
 
