@@ -41,13 +41,13 @@ ton_tunnel_provider  - Signs traffic-routing contracts. Lets you earn by proxyin
 4. **Build the image:**
 
    ```bash
-   docker compose build
+   docker-compose build
    ```
 
 5. **Start the service:**
 
    ```bash
-   docker compose up -d
+   docker-compose up -d
    ```
 
 6. **Open the provider console:**
