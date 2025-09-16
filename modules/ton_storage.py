@@ -308,7 +308,7 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		run_subprocess(upgrade_args, timeout=60)
+		run_subprocess(upgrade_args, timeout=60 * 5)
 
 		# Подготовить папку
 		os.makedirs(install_answers.storage_path, exist_ok=True)
