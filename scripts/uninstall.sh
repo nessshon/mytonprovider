@@ -6,6 +6,10 @@ set -e
 COLOR='\033[92m'
 ENDC='\033[0m'
 
+systemctl stop mytonproviderd
+systemctl stop ton-storage
+systemctl stop ton-storage-provider
+systemctl stop adnl-tunnel
 
 rm -rf /var/storage
 
