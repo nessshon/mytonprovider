@@ -198,5 +198,10 @@
 		"ru": "aaa",
 		"en": "bbb",
 		"zh_TW": "ccc"
+	},
+	"check_ls_cmd": {
+		"ru": "Запустить тест лайт-серверов",
+		"en": "Run a Lite Server diagnostic test",
+		"zh_TW": "運行 Lite Server 診斷測試"
 	}
 }
