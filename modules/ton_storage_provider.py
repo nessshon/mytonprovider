@@ -3,9 +3,9 @@
 
 import os
 import base64
-import tonutils
-import tonutils.client
-import tonutils.wallet
+import time
+
+import pytoniq
 from random import randint
 from asgiref.sync import async_to_sync
 
@@ -38,7 +38,8 @@ from utils import (
 	get_check_port_status,
 	set_check_data,
 	get_check_update_status,
-	run_subprocess
+	run_subprocess,
+	create_wallet_transfer_payload,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -142,6 +143,8 @@ class Module():
 
 		# Проверить баланс провайдера
 		wallet = await self.get_provider_wallet()
+		await wallet.obj.provider.start_up()
+		await wallet.obj.update()
 		if wallet.balance < 0.03:
 			text = self.local.translate("low_provider_balance")
 			color_print(f"{{red}}{text}{{endc}}")
@@ -149,8 +152,9 @@ class Module():
 		#end if
 
 		# Проверить что кошелек активен
-		if wallet.status == "uninit":
+		if wallet.status == "uninitialized":
 			await self.do_deploy(wallet)
+			time.sleep(2)
 		#end if
 
 		# Зарегистрироваться в списке отправив транзакцию
@@ -159,6 +163,7 @@ class Module():
 		comment = f"tsp-{provider_pubkey.lower()}"
 		await self.do_register(wallet, destination, comment)
 		color_print("{green}provider regiser - OK{endc}")
+		await wallet.obj.provider.close_all()
 	#end define
 
 	async def do_deploy(self, wallet):
@@ -167,7 +172,12 @@ class Module():
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
-		msg_hash = await wallet.obj.deploy()
+		msg_boc, msg_hash = await create_wallet_transfer_payload(
+			wallet=wallet,
+			destination=wallet.obj.address,
+			amount=0.01,
+		)
+		await wallet.obj.provider.raw_send_message(msg_boc)
 		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
 	#end define
 
@@ -177,25 +187,29 @@ class Module():
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
-		msg_hash = await wallet.obj.transfer(
-			destination = destination, 
-			amount = 0.01, 
-			body = comment
+		msg_boc, msg_hash = await create_wallet_transfer_payload(
+			wallet=wallet,
+			destination=destination,
+			amount=0.01,
+			body=comment,
 		)
+		await wallet.obj.provider.raw_send_message(msg_boc)
 		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
 		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
 
 	async def get_provider_wallet(self):
 		provider_config = self.get_provider_config()
-		client = tonutils.client.LiteserverClient(is_testnet=False)
+		client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=2)
+		await client.start_up()
 		private_key = base64.b64decode(provider_config.ProviderKey)
 		wallet = Dict()
-		wallet.obj = tonutils.wallet.WalletV3R2.from_private_key(client, private_key)
-		wallet.addr = wallet.obj.address.to_str()
-		wallet.account = await client.get_raw_account(wallet.addr)
-		wallet.status = wallet.account.status.value
-		wallet.balance = wallet.account.balance /10**9
+		wallet.obj = await pytoniq.WalletV3R2.from_private_key(client, private_key)
+		wallet.addr = wallet.obj.address.to_str(is_bounceable=False)
+		wallet.account = wallet.obj.account
+		wallet.status = wallet.obj.account.state.type_
+		wallet.balance = wallet.obj.balance / 10**9
+		await client.close_all()
 		return wallet
 	#end define
 
