@@ -24,6 +24,15 @@ author="igroman787"
 repo="mytonprovider"
 branch="master"
 
+# Get arguments
+while getopts "a:r:b:" flag; do
+	case "${flag}" in
+		a) author=${OPTARG};;
+		r) repo=${OPTARG};;
+		b) branch=${OPTARG};;
+	esac
+done
+
 # Install parameters
 src_dir="/usr/src"
 bin_dir="/usr/bin"
