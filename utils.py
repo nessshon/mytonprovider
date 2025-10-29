@@ -327,7 +327,8 @@ def normalize_msg_hash(message):
 #end define
 
 async def create_wallet_transfer_payload(wallet, destination, amount, body=None):
-	if wallet.status == "uninitialized":
+	await wallet.obj.update()
+	if wallet.obj.account.is_uninitialized():
 		seqno = 0
 		state_init = wallet.obj.state_init
 	else:
