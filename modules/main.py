@@ -191,7 +191,7 @@ class Module():
 	@publick
 	def download_update_script(self, author, repo, branch, **kwargs):
 		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
-		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
+		script_path = f"{self.local.buffer.my_dir}scripts/update.sh"
 		download_file(url, script_path)
 		run_as_root(["bash", "-lc", f"chmod +x {script_path}"])
 	#end define
