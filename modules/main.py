@@ -180,11 +180,11 @@ class Module():
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
 		if author is not None:
-			update_args.extend(["-a", kwargs.get("author")])
+			update_args.extend(["-a", author])
 		if repo is not None:
-			update_args.extend(["-r", kwargs.get("repo")])
+			update_args.extend(["-r", repo])
 		if branch is not None:
-			update_args.extend(["-b", kwargs.get("branch")])
+			update_args.extend(["-b", branch])
 		return update_args
 	#end define
 
