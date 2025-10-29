@@ -155,7 +155,6 @@ class Module():
 		# Проверить что кошелек активен
 		if wallet.status == "uninitialized":
 			await self.do_deploy(wallet)
-			time.sleep(2)
 		#end if
 
 		# Зарегистрироваться в списке отправив транзакцию
