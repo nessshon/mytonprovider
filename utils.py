@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
+import json
 import shutil
 import random
 from string import digits, ascii_letters
@@ -10,6 +11,9 @@ import importlib
 from os import listdir
 from os.path import normpath, isdir
 import sys
+
+from pytoniq import LiteBalancer
+
 from mypylib import (
 	Dict,
 	bcolors,
@@ -287,4 +291,16 @@ def run_module_method_if_exist(local, module, method_name, *args, **kwargs):
 	if method == None:
 		return
 	return method(*args, **kwargs)
+#end define
+
+###
+### Для работы с lite серверами
+###
+
+def get_lite_balancer(local):
+	main_module = get_module_by_name(local, "main")
+	with open(main_module.global_config_path, "r") as f:
+		config = json.load(f)
+	client = LiteBalancer.from_config(config, trust_level=2)
+	return client
 #end define
