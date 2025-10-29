@@ -137,10 +137,10 @@ def update(args):
 		module,
 		"get_update_args",
 		user=user,
-		restart_service=True,
 		author=author,
 		repo=repo,
 		branch=branch,
+		restart_service=True,
 	)
 	# Запускаем команду обновления от root
 	exit_code = run_as_root(update_args)
