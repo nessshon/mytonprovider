@@ -4,15 +4,13 @@
 import time
 import asyncio
 from asgiref.sync import async_to_sync
-from pytoniq import LiteBalancer
 
 from mypylib import (
 	Dict,
 	print_table,
-	get_timestamp,
-	timeago,
 )
 from decorators import publick
+from utils import get_lite_balancer
 
 
 class Module():
@@ -22,8 +20,6 @@ class Module():
 		self.mandatory = True
 		self.daemon_interval = 60
 		self.local.add_log(f"{self.name} module init done", "debug")
-
-		self.client = LiteBalancer.from_mainnet_config(trust_level=2)
 	# end define
 
 	@publick
@@ -42,15 +38,7 @@ class Module():
 	@publick
 	@async_to_sync
 	async def run_check_ls(self, args):
-		use_cache = self.is_ls_check_done() and "--force" not in args
-
-		if use_cache:
-			ls_monitor = self.local.db.ls_monitor
-			print("last check ls time:", timeago(ls_monitor.timestamp))
-			print()
-			results = ls_monitor.results or []
-		else:
-			results = await self.do_ls_check()
+		results = await self.do_ls_check()
 
 		table = []
 		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno"]]
@@ -72,29 +60,9 @@ class Module():
 
 	async def do_ls_check(self):
 		self.local.add_log("LS check is running, it may take about a few seconds.", "debug")
-
 		servers = await self.get_public_ls_list()
 		results = await self._check_all_ls(servers)
-
-		self.save_ls_results(results)
 		return results
-	# end define
-
-	def is_ls_check_done(self):
-		life_time = 3600 * 24
-		if self.local.db.ls_monitor is None:
-			return False
-		if self.local.db.ls_monitor.timestamp + life_time < get_timestamp():
-			return False
-		return True
-	# end define
-
-	def save_ls_results(self, results):
-		obj = Dict()
-		obj.timestamp = get_timestamp()
-		obj.results = results or []
-		self.local.db.ls_monitor = obj
-		self.local.add_log("LS check results saved", "debug")
 	# end define
 
 	async def _check_all_ls(self, servers):
@@ -111,8 +79,9 @@ class Module():
 	# end define
 
 	async def get_public_ls_list(self):
+		client = get_lite_balancer(self.local)
 		ls_list = []
-		for index, lite_client in enumerate(self.client._peers):
+		for index, lite_client in enumerate(client._peers):
 			ls_list.append((index, lite_client))
 		return ls_list
 	# end define
@@ -149,18 +118,19 @@ class Module():
 			ls_last_block_seqno, request_timing = await self.get_last_block_seqno(lite_client)
 			if ls_last_block_seqno is not None:
 				data["get_last_block_seqno"] = ls_last_block_seqno
+			if request_timing is not None:
 				data["request_time"] = f"{int(request_timing)} ms"
-
-			if connected:
-				try:
-					await lite_client.close()
-				except (Exception,):
-					pass
 
 			return data
 		except (Exception,):
 			data["connected"] = False
 			return data
+		finally:
+			if connected:
+				try:
+					await lite_client.close()
+				except (Exception,):
+					pass
 	# end define
 
 	async def connect(self, lite_client):
