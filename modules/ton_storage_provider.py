@@ -39,6 +39,7 @@ from utils import (
 	set_check_data,
 	get_check_update_status,
 	run_subprocess,
+	get_lite_balancer,
 	create_wallet_transfer_payload,
 )
 from decorators import publick
@@ -168,7 +169,7 @@ class Module():
 
 	async def do_deploy(self, wallet):
 		self.local.add_log("start do_deploy function", "debug")
-		account, shard_account = await get_account(wallet.addr)
+		account, shard_account = await get_account(self.local, wallet.addr)
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
@@ -178,12 +179,12 @@ class Module():
 			amount=0.01,
 		)
 		await wallet.obj.provider.raw_send_message(msg_boc)
-		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
+		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
 	#end define
 
 	async def do_register(self, wallet, destination, comment):
 		self.local.add_log("start do_register function", "debug")
-		account, shard_account = await get_account(wallet.addr)
+		account, shard_account = await get_account(self.local, wallet.addr)
 		end_lt = shard_account.last_trans_hash
 		end_hash = shard_account.last_trans_hash.hex()
 
@@ -194,13 +195,13 @@ class Module():
 			body=comment,
 		)
 		await wallet.obj.provider.raw_send_message(msg_boc)
-		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
+		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
 		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
 
 	async def get_provider_wallet(self):
 		provider_config = self.get_provider_config()
-		client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=2)
+		client = get_lite_balancer(self.local)
 		await client.start_up()
 		private_key = base64.b64decode(provider_config.ProviderKey)
 		wallet = Dict()
@@ -450,7 +451,6 @@ class Module():
 		provider_path = f"{install_answers.storage_path}/provider"
 		db_dir = f"{provider_path}/db"
 		provider_config_path = f"{provider_path}/config.json"
-		provider_config_path
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)

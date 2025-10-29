@@ -3,26 +3,26 @@
 
 import time
 import types
-import asyncio
-import pytoniq
 from mypylib import Dict
+
+from utils import get_lite_balancer
 
 
 COMMENT_OP = bytes.fromhex("00000000")
 
-async def get_account(*args, **kwargs):
-	client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=1)
+async def get_account(local, *args, **kwargs):
+	client = get_lite_balancer(local)
 	await client.start_up()
 	account, shard_account = await client.raw_get_account_state(*args, **kwargs)
 	await client.close_all()
 	return account, shard_account
 #end define
 
-async def wait_message(addr, msg_hash, end_lt, end_hash, timeoute=30):
+async def wait_message(local, addr, msg_hash, end_lt, end_hash, timeoute=30):
 	start_time = int(time.time())
 	buff_lt = None
 	buff_hash = None
-	client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=1)
+	client = get_lite_balancer(local)
 	await client.start_up()
 	while True:
 		time_now = int(time.time())
@@ -47,9 +47,9 @@ async def wait_message(addr, msg_hash, end_lt, end_hash, timeoute=30):
 		#end for
 #end define
 
-async def get_messages(addr, count):
-	client = pytoniq.LiteBalancer.from_mainnet_config(trust_level=1)
-	#client = pytoniq.LiteBalancer.from_testnet_config(trust_level=1)
+async def get_messages(local, addr, count):
+	client = get_lite_balancer(local)
+	#client = get_lite_balancer(local)
 	await client.start_up()
 	transactions = await client.get_transactions(address=addr, count=count, only_archive=True)
 	await client.close_all()
