@@ -174,16 +174,16 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, **kwargs):
+	def get_update_args(self, user, author, repo, branch, **kwargs):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
-		if kwargs.get("author") is not None:
+		if author is not None:
 			update_args.extend(["-a", kwargs.get("author")])
-		if kwargs.get("repo") is not None:
+		if repo is not None:
 			update_args.extend(["-r", kwargs.get("repo")])
-		if kwargs.get("branch") is not None:
+		if branch is not None:
 			update_args.extend(["-b", kwargs.get("branch")])
 		return update_args
 	#end define
