@@ -12,7 +12,7 @@ from os import listdir
 from os.path import normpath, isdir
 import sys
 
-from pytoniq import LiteBalancer
+import pytoniq
 
 from mypylib import (
 	Dict,
@@ -301,6 +301,59 @@ def get_lite_balancer(local):
 	main_module = get_module_by_name(local, "main")
 	with open(main_module.global_config_path, "r") as f:
 		config = json.load(f)
-	client = LiteBalancer.from_config(config, trust_level=2)
+	client = pytoniq.LiteBalancer.from_config(config, trust_level=2)
 	return client
+#end define
+
+###
+### Для работы с кошельком провайдера
+###
+
+def normalize_msg_hash(message):
+	if not message.is_external:
+		return message.serialize().hash
+	cell = (
+		pytoniq.begin_cell()
+		.store_uint(2, 2)
+		.store_address(None)
+		.store_address(message.info.dest)
+		.store_coins(0)
+		.store_bool(False)
+		.store_bool(True)
+		.store_ref(message.body)
+		.end_cell()
+	)
+	return cell.hash.hex()
+#end define
+
+async def create_wallet_transfer_payload(wallet, destination, amount, body=None):
+	if wallet.status == "uninitialized":
+		seqno = 0
+		state_init = wallet.obj.state_init
+	else:
+		seqno = await wallet.obj.get_seqno()
+		state_init = None
+	if isinstance(destination, str):
+		destination = pytoniq.Address(destination)
+	msg = wallet.obj.create_wallet_internal_message(
+		destination=pytoniq.Address(destination),
+		value=int(amount * 1e9),
+		body=body
+	)
+	body = wallet.obj.raw_create_transfer_msg(
+		private_key=wallet.obj.private_key,
+		seqno=seqno,
+		wallet_id=wallet.obj.wallet_id,
+		messages=[msg]
+	)
+	message = wallet.obj.create_external_msg(
+		src=None,
+		dest=wallet.obj.address,
+		import_fee=0,
+		body=body,
+		state_init=state_init,
+	)
+	msg_boc = message.serialize().to_boc()
+	msg_hash = normalize_msg_hash(message)
+	return msg_boc, msg_hash
 #end define
