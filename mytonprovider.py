@@ -102,10 +102,10 @@ def update(args):
 		if url is not None and "github.com" not in url:
 			author = url
 			url = None
-		repo = next(islice(args, 2, None), None)
-		branch = next(islice(args, 3, None), None)
+		branch = next(islice(args, 2, None), None)
+		repo = next(islice(args, 3, None), None)
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<author>] [<repo>] [<branch>]")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<author>] [<branch>] [<repo>]")
 		return
 	#end try
 
