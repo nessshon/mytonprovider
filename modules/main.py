@@ -2,10 +2,9 @@
 # -*- coding: utf_8 -*-
 
 import os
-import json
+import stat
 import psutil
 import subprocess
-from random import randint
 from mypylib import (
 	Dict,
 	bcolors,
@@ -19,7 +18,7 @@ from mypylib import (
 	get_service_uptime,
 	time2human,
 	check_git_update,
-	get_load_avg
+	get_load_avg,
 )
 from utils import (
 	get_module_by_name,
@@ -27,7 +26,7 @@ from utils import (
 	get_service_status_color,
 	set_check_data,
 	get_check_update_status,
-	get_color_int
+	get_color_int, download_file
 )
 from server_info import (
 	get_cpu_name,
@@ -180,7 +179,25 @@ class Module():
 		update_args = [
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
+		if kwargs.get("author") is not None:
+			update_args.extend(["-a", kwargs.get("author")])
+		if kwargs.get("repo") is not None:
+			update_args.extend(["-r", kwargs.get("repo")])
+		if kwargs.get("branch") is not None:
+			update_args.extend(["-b", kwargs.get("branch")])
 		return update_args
+	#end define
+
+	@publick
+	def download_update_script(self, author, repo, branch, **kwargs):
+		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
+		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
+		download_file(url, script_path)
+		try:
+			os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
+		except PermissionError as e:
+			raise Exception(f"chmod failed: {e}")
+		# end try
 	#end define
 
 	def install(self, install_args, install_answers):
