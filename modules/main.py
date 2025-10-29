@@ -2,7 +2,6 @@
 # -*- coding: utf_8 -*-
 
 import os
-import stat
 import psutil
 import subprocess
 from mypylib import (
@@ -19,6 +18,7 @@ from mypylib import (
 	time2human,
 	check_git_update,
 	get_load_avg,
+	run_as_root,
 )
 from utils import (
 	get_module_by_name,
@@ -193,11 +193,7 @@ class Module():
 		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		download_file(url, script_path)
-		try:
-			os.chmod(script_path, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR)
-		except PermissionError as e:
-			raise Exception(f"chmod failed: {e}")
-		# end try
+		run_as_root(["bash", "-lc", f"chmod +x {script_path}"])
 	#end define
 
 	def install(self, install_args, install_answers):
