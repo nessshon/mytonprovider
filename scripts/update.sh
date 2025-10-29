@@ -7,31 +7,25 @@ if [ "$(id -u)" != "0" ]; then
 	exit 1
 fi
 
+# Set default arguments
+author="igroman787"
+repo="mytonprovider"
+branch="master"
+
 # Input args
-while getopts "u:d:" flag; do
+while getopts "u:d:a:r:b:" flag; do
 	case "${flag}" in
 		u) user=${OPTARG};;
 		d) venvs_dir=${OPTARG};;
+		a) author=${OPTARG};;
+		r) repo=${OPTARG};;
+		b) branch=${OPTARG};;
 	esac
 done
 
 # Colors
 COLOR='\033[95m'
 ENDC='\033[0m'
-
-# Set default arguments
-author="igroman787"
-repo="mytonprovider"
-branch="master"
-
-# Get arguments
-while getopts "a:r:b:" flag; do
-	case "${flag}" in
-		a) author=${OPTARG};;
-		r) repo=${OPTARG};;
-		b) branch=${OPTARG};;
-	esac
-done
 
 # Install parameters
 src_dir="/usr/src"
