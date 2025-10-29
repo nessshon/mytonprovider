@@ -26,7 +26,7 @@ from utils import (
 	get_service_status_color,
 	set_check_data,
 	get_check_update_status,
-	get_color_int, download_file
+	get_color_int,
 )
 from server_info import (
 	get_cpu_name,
@@ -192,7 +192,10 @@ class Module():
 	def download_update_script(self, author, repo, branch, **kwargs):
 		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
 		script_path = f"{self.local.buffer.my_dir}scripts/update.sh"
-		download_file(url, script_path)
+		download_cmd = f"wget -O {script_path} {url}"
+		exit_code = run_as_root(["bash", "-lc", download_cmd])
+		if exit_code != 0:
+			raise Exception(f"Failed to download {url} -> {script_path}")
 		run_as_root(["bash", "-lc", f"chmod +x {script_path}"])
 	#end define
 
