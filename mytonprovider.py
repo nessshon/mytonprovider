@@ -6,6 +6,8 @@ import sys
 import json
 #import threading
 from getpass import getuser
+from itertools import islice
+
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
@@ -23,7 +25,8 @@ from utils import (
 	run_module_method_if_exist,
 	init_localization,
 	set_check_data,
-	get_module_type
+	get_module_type,
+	parse_github_url,
 )
 
 
@@ -92,15 +95,54 @@ def status(args):
 
 def update(args):
 	try:
+		# парсинг аргументов
 		module_name = args[0]
+		url = next(islice(args, 1, None), None)
+		author = None
+		if url is not None and "github.com" not in url:
+			author = url
+			url = None
+		repo = next(islice(args, 2, None), None)
+		branch = next(islice(args, 3, None), None)
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name>")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<author>] [<repo>] [<branch>]")
 		return
 	#end try
 
 	user = getuser()
 	module = get_module_by_name(local, module_name)
-	update_args = run_module_method_if_exist(local, module, "get_update_args", user=user, restart_service=True)
+
+	# если в аргументах указан github url
+	if url is not None and module_name == "main":
+		try:
+			# парсим аргументы из url
+			author, repo, branch = parse_github_url(url)
+			# скачиваем скрипт update.sh и заменяем актуальный в "{self.local.buffer.my_dir}/scripts/update.sh"
+			run_module_method_if_exist(
+				local,
+				module,
+				"download_update_script",
+				author=author,
+				repo=repo,
+				branch=branch,
+			)
+		except Exception as e:
+			color_print("{red}" + str(e) + "{endc}")
+			return
+		# end try
+
+	# формируем команду для запуска обновления скрипт update.sh
+	update_args = run_module_method_if_exist(
+		local,
+		module,
+		"get_update_args",
+		user=user,
+		restart_service=True,
+		author=author,
+		repo=repo,
+		branch=branch,
+	)
+	# Запускаем команду обновления от root
 	exit_code = run_as_root(update_args)
 	if exit_code == 0:
 		set_check_data(module, check_name="update", data=False)
