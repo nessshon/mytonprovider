@@ -98,14 +98,14 @@ def update(args):
 		# парсинг аргументов
 		module_name = args[0]
 		url = next(islice(args, 1, None), None)
-		author = None
+		branch = None
 		if url is not None and "github.com" not in url:
-			author = url
+			branch = url
 			url = None
-		branch = next(islice(args, 2, None), None)
-		repo = next(islice(args, 3, None), None)
+		repo = next(islice(args, 2, None), None)
+		author = next(islice(args, 3, None), None)
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<author>] [<branch>] [<repo>]")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>] [<repo>] [<author>]")
 		return
 	#end try
 
