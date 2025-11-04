@@ -2,10 +2,8 @@
 # -*- coding: utf_8 -*-
 
 import os
-import json
 import psutil
 import subprocess
-from random import randint
 from mypylib import (
 	Dict,
 	bcolors,
@@ -19,7 +17,8 @@ from mypylib import (
 	get_service_uptime,
 	time2human,
 	check_git_update,
-	get_load_avg
+	get_load_avg,
+	run_as_root,
 )
 from utils import (
 	get_module_by_name,
@@ -27,7 +26,7 @@ from utils import (
 	get_service_status_color,
 	set_check_data,
 	get_check_update_status,
-	get_color_int
+	get_color_int,
 )
 from server_info import (
 	get_cpu_name,
@@ -175,12 +174,29 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, **kwargs):
+	def get_update_args(self, user, author, repo, branch, **kwargs):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
+		if author is not None:
+			update_args.extend(["-a", author])
+		if repo is not None:
+			update_args.extend(["-r", repo])
+		if branch is not None:
+			update_args.extend(["-b", branch])
 		return update_args
+	#end define
+
+	@publick
+	def download_update_script(self, author, repo, branch, **kwargs):
+		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
+		script_path = f"{self.local.buffer.my_dir}scripts/update.sh"
+		download_cmd = f"wget -O {script_path} {url}"
+		exit_code = run_as_root(["bash", "-lc", download_cmd])
+		if exit_code != 0:
+			raise Exception(f"Failed to download {url} -> {script_path}")
+		run_as_root(["bash", "-lc", f"chmod +x {script_path}"])
 	#end define
 
 	def install(self, install_args, install_answers):

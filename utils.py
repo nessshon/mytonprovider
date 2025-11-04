@@ -14,6 +14,8 @@ import sys
 
 import pytoniq
 
+from urllib.parse import urlparse
+
 from mypylib import (
 	Dict,
 	bcolors,
@@ -291,6 +293,30 @@ def run_module_method_if_exist(local, module, method_name, *args, **kwargs):
 	if method == None:
 		return
 	return method(*args, **kwargs)
+#end define
+
+def parse_github_url(url):
+	"""
+	Поддерживаемые варианты:
+		- https://github.com/<author>/<repo>
+		- https://github.com/<author>/<repo>#
+		- https://github.com/<author>/<repo>.git
+		- https://github.com/<author>/<repo>/tree/<branch>
+	Возвращает: (author, repo, branch)
+	"""
+	url = url.strip()
+	if "https://" not in url:
+		url = "https://" + url
+	u = urlparse(url.strip())
+	parts = [p for p in u.path.split("/") if p]
+	if len(parts) < 2:
+		raise ValueError("Invalid github url")
+	author = parts[0]
+	repo = parts[1].replace(".git", "")
+	branch = "HEAD"
+	if len(parts) >= 4 and parts[2] == "tree":
+		branch = parts[3]
+	return author, repo, branch
 #end define
 
 ###
