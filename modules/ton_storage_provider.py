@@ -26,9 +26,10 @@ from mypylib import (
 	check_git_update
 )
 from adnl_over_tcp import (
-	get_messages,
+	get_lite_balancer,
+	create_wallet_transfer_payload,
 	wait_message,
-	get_account
+	get_account,
 )
 from utils import (
 	get_module_by_name,
@@ -39,13 +40,10 @@ from utils import (
 	set_check_data,
 	get_check_update_status,
 	run_subprocess,
-	get_lite_balancer,
-	create_wallet_transfer_payload,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
 from addr_and_key import (
-	addr_to_bytes,
 	get_pubkey_from_privkey,
 	split_provider_key
 )

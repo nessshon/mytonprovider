@@ -5,12 +5,12 @@ import time
 import asyncio
 from asgiref.sync import async_to_sync
 
+from modules.adnl_over_tcp import get_lite_balancer
 from mypylib import (
 	Dict,
 	print_table,
 )
 from decorators import publick
-from utils import get_lite_balancer
 
 
 class Module():
