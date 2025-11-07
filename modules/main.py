@@ -174,15 +174,11 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, author, repo, branch, **kwargs):
+	def get_update_args(self, user, branch, **kwargs):
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
-		if author is not None:
-			update_args.extend(["-a", author])
-		if repo is not None:
-			update_args.extend(["-r", repo])
 		if branch is not None:
 			update_args.extend(["-b", branch])
 		return update_args
@@ -191,7 +187,7 @@ class Module():
 	@publick
 	def download_update_script(self, author, repo, branch, **kwargs):
 		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
-		script_path = f"{self.local.buffer.my_dir}scripts/update.sh"
+		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		download_cmd = f"wget -O {script_path} {url}"
 		exit_code = run_as_root(["bash", "-lc", download_cmd])
 		if exit_code != 0:

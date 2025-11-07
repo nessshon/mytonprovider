@@ -97,15 +97,16 @@ def update(args):
 	try:
 		# парсинг аргументов
 		module_name = args[0]
-		url = next(islice(args, 1, None), None)
-		branch = None
-		if url is not None and "github.com" not in url:
-			branch = url
-			url = None
-		repo = next(islice(args, 2, None), None)
-		author = next(islice(args, 3, None), None)
+		url = branch = None
+
+		arg_name = next(islice(args, 1, None), None)
+		if arg_name is not None:
+			if "github.com" in arg_name:
+				url = arg_name
+			else:
+				branch = arg_name
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>] [<repo>] [<author>]")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>]")
 		return
 	#end try
 
@@ -137,8 +138,6 @@ def update(args):
 		module,
 		"get_update_args",
 		user=user,
-		author=author,
-		repo=repo,
 		branch=branch,
 		restart_service=True,
 	)
