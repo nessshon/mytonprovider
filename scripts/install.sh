@@ -41,7 +41,7 @@ restart_yourself_via_root() {
 	fi
 
 	# Using sudo or su
-	cmd="bash ${0} -u ${user}"
+	cmd="bash ${0} -u ${user} -a ${author} -r ${repo} -b ${branch}"
 	if [[ ${user_groups} == *"sudo"* ]]; then
 		sudo ${cmd}
 		exit
@@ -108,6 +108,7 @@ activate_venv() {
 }
 
 install_pip_dependencies() {
+	pip3 uninstall -y pytoniq tonutils || true
 	pip3 install -r ${src_path}/resources/requirements.txt
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
