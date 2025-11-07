@@ -27,9 +27,9 @@ class Module():
 		commands = list()
 
 		cmd = Dict()
-		cmd.cmd = "check_ls"
-		cmd.func = self.run_check_ls
-		cmd.desc = self.local.translate("check_ls_cmd")
+		cmd.cmd = "ls_status"
+		cmd.func = self.run_ls_status
+		cmd.desc = self.local.translate("ls_status_cmd")
 		commands.append(cmd)
 
 		return commands
@@ -37,8 +37,8 @@ class Module():
 
 	@publick
 	@async_to_sync
-	async def run_check_ls(self, args):
-		results = await self.do_ls_check()
+	async def run_ls_status(self, args):
+		results = await self.do_ls_status()
 
 		table = []
 		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno"]]
@@ -58,8 +58,7 @@ class Module():
 		print_table(table)
 	# end define
 
-	async def do_ls_check(self):
-		self.local.add_log("LS check is running, it may take about a few seconds.", "debug")
+	async def do_ls_status(self):
 		servers = await self.get_public_ls_list()
 		results = await self._check_all_ls(servers)
 		return results
@@ -69,12 +68,7 @@ class Module():
 		if not servers:
 			return []
 
-		sem = asyncio.Semaphore(10)
-		async def run_one(index, lite_server):
-			async with sem:
-				return await self.probe_lite_server(index, lite_server)
-
-		tasks = [run_one(index, lite_server) for index, lite_server in servers]
+		tasks = [self.probe_lite_server(index, lite_server) for index, lite_server in servers]
 		return await asyncio.gather(*tasks, return_exceptions=False)
 	# end define
 
