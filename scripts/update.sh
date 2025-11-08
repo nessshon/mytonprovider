@@ -57,7 +57,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "u:a:r:b:" flag; do
+while getopts "u:a:r:b:ih" flag; do
 	case "${flag}" in
 		u) input_user=${OPTARG};;
 		a) author=${OPTARG};;
