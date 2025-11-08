@@ -3,7 +3,6 @@
 
 import os
 import base64
-import time
 
 import pytoniq
 from random import randint
@@ -12,7 +11,6 @@ from asgiref.sync import async_to_sync
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -25,13 +23,13 @@ from mypylib import (
 	time2human,
 	check_git_update
 )
-from adnl_over_tcp import (
+from utils.adnl_over_tcp import (
 	get_lite_balancer,
 	create_wallet_transfer_payload,
 	wait_message,
 	get_account,
 )
-from utils import (
+from utils.general import (
 	get_module_by_name,
 	convert_to_required_decimal,
 	fix_git_config,
@@ -41,9 +39,9 @@ from utils import (
 	get_check_update_status,
 	run_subprocess,
 )
-from decorators import publick
-from adnl_over_udp_checker import check_adnl_connection
-from addr_and_key import (
+from utils.decorators import publick
+from utils.adnl_over_udp_checker import check_adnl_connection
+from utils.addr_and_key import (
 	get_pubkey_from_privkey,
 	split_provider_key
 )
@@ -73,7 +71,7 @@ class Module():
 		except:
 			return False
 	#end define
-	
+
 	def is_enabled_old(self):
 		if "ton_storage" in self.local.db:
 			if "provider" in self.local.db.ton_storage:
@@ -122,7 +120,7 @@ class Module():
 		adnl_pubkey = self.get_adnl_pubkey()
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
-		
+
 		own_ip = get_own_ip()
 		if provider_config.ExternalIP != own_ip:
 			raise Exception("provider_config.ExternalIP != own_ip")
@@ -426,12 +424,12 @@ class Module():
 			self.set_provider_config(provider_config)
 		#end if
 
-		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
+		script_path = f"{self.local.buffer.my_root_dir}/scripts/ops/install_go_package.sh"
 		update_args = [
-			"bash",	script_path, 
-			"-a", self.go_package.author, 
-			"-r", self.go_package.repo, 
-			"-b", self.go_package.branch, 
+			"bash",	script_path,
+			"-a", self.go_package.author,
+			"-r", self.go_package.repo,
+			"-b", self.go_package.branch,
 			"-e", self.go_package.entry_point
 		]
 		if restart_service == True:
@@ -451,19 +449,19 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		run_subprocess(upgrade_args, timeout=60)
+		run_subprocess(upgrade_args, timeout=300)
 
 		# Подготовить папку
 		os.makedirs(provider_path, exist_ok=True)
 		chown_args = [
-			"chown", 
-			install_args.user + ':' + install_args.user, 
+			"chown",
+			install_args.user + ':' + install_args.user,
 			provider_path
 		]
 		run_subprocess(chown_args, timeout=3)
 
 		# Создать службу
-		main_module = get_module_by_name(self.local, "main")
+		main_module = get_module_by_name(self.local, "mytonproviderd")
 		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --db {db_dir} --config {provider_config_path} -network-config {main_module.global_config_path}"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=provider_path, force=True)
 

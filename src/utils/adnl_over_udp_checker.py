@@ -3,7 +3,6 @@
 
 import random
 import requests
-import base64
 from mypylib import Dict
 
 def check_adnl_connection(host, port, pubkey):

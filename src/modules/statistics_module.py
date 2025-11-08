@@ -7,11 +7,10 @@ from mypylib import (
 	Dict,
 	get_timestamp,
 	get_internet_interface_name,
-	print_table,
-	color_print
+	print_table
 )
-from decorators import publick
-from utils import convert_to_required_decimal
+from utils.decorators import publick
+from utils.general import convert_to_required_decimal
 
 
 class Module():

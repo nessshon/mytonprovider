@@ -1,23 +1,21 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import os
 import sys
 import json
-#import threading
 from getpass import getuser
 from itertools import islice
+from pathlib import Path
 
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
-	Dict,
 	run_as_root,
 	color_print,
 	thr_sleep,
 	print_table
 )
-from utils import (
+from utils.general import (
 	get_modules,
 	get_module_by_name,
 	import_commands,
@@ -29,8 +27,8 @@ from utils import (
 	parse_github_url,
 )
 
-
-local = MyPyClass(__file__)
+local = MyPyClass(__file__.replace("runner.py", "mytonprovider.py"))
+local.buffer.my_root_dir = str(Path(__file__).resolve().parent.parent)
 console = MyPyConsole()
 
 
@@ -39,7 +37,7 @@ def init():
 	import_modules(local)
 	init_localization(local)
 	import_commands(local, console)
-	
+
 	if "--daemon" in sys.argv:
 		init_daemon()
 	else:
@@ -114,11 +112,11 @@ def update(args):
 	module = get_module_by_name(local, module_name)
 
 	# если в аргументах указан github url
-	if url is not None and module_name == "main":
+	if url is not None and module_name == "mytonproviderd":
 		try:
 			# парсим аргументы из url
 			author, repo, branch = parse_github_url(url)
-			# скачиваем скрипт update.sh и заменяем актуальный в "{self.local.buffer.my_dir}/scripts/update.sh"
+			# скачиваем скрипт update.sh и заменяем актуальный в "{self.local.buffer.my_root_dir}/scripts/update.sh"
 			run_module_method_if_exist(
 				local,
 				module,
@@ -149,7 +147,7 @@ def update(args):
 	else:
 		text = f"Update {module_name} - {{red}}Error{{endc}}"
 	color_print(text)
-	if module_name == "main":
+	if module_name == "mytonproviderd":
 		local.exit()
 #end define
 

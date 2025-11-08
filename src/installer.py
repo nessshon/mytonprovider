@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
+from pathlib import Path
 
-from typing import Any
 import inquirer
 import sys
 import os
@@ -10,7 +10,7 @@ from mypylib import (
 	MyPyClass,
 	read_config_from_file
 )
-from utils import (
+from utils.general import (
 	import_modules,
 	get_modules_names,
 	get_module_by_name,
@@ -18,10 +18,9 @@ from utils import (
 	get_disk_space
 )
 
-
 local = MyPyClass(__file__)
 local.db.config.logLevel = "debug"
-
+local.buffer.my_root_dir = str(Path(__file__).resolve().parent.parent)
 
 default_storage_path = "/var/storage"
 default_storage_cost = 10
@@ -170,8 +169,22 @@ def create_questions():
 def main():
 	# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 	install_args = parse_input_args()
-	questions = create_questions()
-	install_answers = Dict(inquirer.prompt(questions))
+	noninteractive_args = ("utils", "storage_path", "storage_cost", "space_to_provide_gigabytes")
+
+	if all(k in install_args for k in noninteractive_args):
+		install_answers = Dict({
+			"utils": install_args.utils.split(","),
+			"storage_path": install_args.storage_path,
+			"storage_cost": str(install_args.storage_cost),
+			"space_to_provide_gigabytes": str(install_args.space_to_provide_gigabytes),
+			"traffic_cost": str(default_traffic_cost),
+		})
+		for k in noninteractive_args:
+			install_args.pop(k, None)
+	else:
+		questions = create_questions()
+		install_answers = Dict(inquirer.prompt(questions))
+
 	need_modules_names = install_answers.get("utils")
 	need_modules_names += get_modules_names(local, mandatory=True)
 	need_modules_names.sort()

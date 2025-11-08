@@ -1,16 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import threading
+from pathlib import Path
 from mypylib import MyPyClass
-from utils import (
+from utils.general import (
 	import_modules,
 	get_module_by_name
 )
 
+local = MyPyClass(__file__)
+local.buffer.my_root_dir = str(Path(__file__).resolve().parent.parent)
 
 if __name__ == "__main__":
-	local = MyPyClass(__file__)
 	#local.run()
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")

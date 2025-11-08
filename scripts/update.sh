@@ -2,9 +2,9 @@
 set -e
 
 # Set default arguments
-author="igroman787"
+author="nessshon"
 repo="mytonprovider"
-branch="master"
+branch="refactor"
 ignore=false
 
 # Colors
@@ -24,31 +24,29 @@ show_help_and_exit() {
 }
 
 restart_yourself_via_root() {
-	# Check for input_user
-	if [[ "${input_user}" != "" ]]; then
-		return
-	fi
+  if [[ -n "${input_user}" ]]; then
+    return
+  fi
 
-	# Get vars
-	user=$(whoami)
-	user_id=$(id -u)
-	user_groups=$(groups ${user})
+  script_path=$(readlink -f "$0")
 
-	# Check is running as a normal user
-	if [[ ${user_id} == 0 ]] && [[ ${ignore} == false ]]; then
-		echo "Please run script as non-root user. You can create a new non-root user with command 'sudo adduser'. Or use flag '-i' to ignore this check."
-		exit 1
-	fi
+  user=$(whoami)
+  user_id=$(id -u)
+  user_groups=$(groups "$user")
 
-	# Using sudo or su
-	cmd="bash ${0} -u ${user} -a ${author} -r ${repo} -b ${branch}"
-	if [[ ${user_groups} == *"sudo"* ]]; then
-		sudo ${cmd}
-		exit
-	else
-		su root -c "${cmd}"
-		exit
-	fi
+  if [[ ${user_id} == 0 ]] && [[ ${ignore} == false ]]; then
+    echo "Please run script as non-root user. Or use -i to ignore."
+    exit 1
+  fi
+
+  cmd=(bash "$script_path" -u "$user" -a "$author" -r "$repo" -b "$branch" -m "$modules" -p "$storage_path" -c "$storage_cost" -s "$space_to_provide")
+  if [[ ${user_groups} == *"sudo"* ]]; then
+    sudo "${cmd[@]}"
+    exit
+  else
+    su root -c "${cmd[*]}"
+    exit
+  fi
 }
 
 # Show help for --help
@@ -57,7 +55,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 # Input args
-while getopts "u:a:r:b:" flag; do
+while getopts "u:a:r:b:ih" flag; do
 	case "${flag}" in
 		u) input_user=${OPTARG};;
 		a) author=${OPTARG};;
@@ -69,7 +67,7 @@ while getopts "u:a:r:b:" flag; do
 done
 
 # Reboot yourself via root to continue the installation
-restart_yourself_via_root
+restart_yourself_via_root "$@"
 
 # Continue the installation
 user=${input_user}
@@ -104,7 +102,7 @@ activate_venv() {
 install_pip_dependencies() {
 	pip3 uninstall -y pytoniq tonutils || true
 	pip3 install -r ${src_path}/resources/requirements.txt
-	pip3 install -r ${src_path}/mypylib/requirements.txt
+	pip3 install -r ${src_path}/src/mypylib/requirements.txt
 }
 
 download_global_config() {

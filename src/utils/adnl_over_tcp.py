@@ -6,13 +6,13 @@ import time
 import types
 import pytoniq
 from mypylib import Dict
-from utils import get_module_by_name
+from utils.general import get_module_by_name
 
 COMMENT_OP = bytes.fromhex("00000000")
 
 
 def get_lite_balancer(local):
-	main_module = get_module_by_name(local, "main")
+	main_module = get_module_by_name(local, "mytonproviderd")
 	with open(main_module.global_config_path, "r") as f:
 		config = json.load(f)
 	client = pytoniq.LiteBalancer.from_config(config, trust_level=2)

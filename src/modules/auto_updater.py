@@ -4,19 +4,15 @@
 from os import stat
 from pwd import getpwuid
 from mypylib import (
-	MyPyClass,
 	add2systemd,
 	get_git_hash,
-	get_git_last_remote_commit,
-	get_service_status
+	get_git_last_remote_commit
 )
-from utils import (
-	get_module_by_name,
+from utils.general import (
 	run_module_method_if_exist,
-	set_check_data,
 	run_subprocess
 )
-from decorators import publick
+from utils.decorators import publick
 
 
 class Module():
@@ -70,7 +66,7 @@ class Module():
 	def install(self, install_args, install_answers):
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		# Создать службу
-		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/updater.py"
+		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/src/updater.py"
 		add2systemd(name=self.service_name, user="root", start=start_cmd, workdir=install_args.src_path, force=True)
 
 		# Запустить службу

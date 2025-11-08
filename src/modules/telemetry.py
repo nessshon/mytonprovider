@@ -16,13 +16,12 @@ from mypylib import (
 	get_timestamp,
 	get_service_uptime
 )
-from decorators import publick
-from utils import get_module_by_name, get_disk_space
-from server_info import (
+from utils.decorators import publick
+from utils.general import get_module_by_name, get_disk_space
+from utils.server_info import (
 	get_cpu_name,
 	get_product_name,
 	is_product_virtual,
-	do_beacon_ping,
 	get_pings_values,
 	get_storage_disk_name,
 	get_uname,

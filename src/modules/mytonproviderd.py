@@ -7,7 +7,6 @@ import subprocess
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	write_config_to_file,
@@ -20,7 +19,7 @@ from mypylib import (
 	get_load_avg,
 	run_as_root,
 )
-from utils import (
+from utils.general import (
 	get_module_by_name,
 	fix_git_config,
 	get_service_status_color,
@@ -28,22 +27,15 @@ from utils import (
 	get_check_update_status,
 	get_color_int,
 )
-from server_info import (
-	get_cpu_name,
-	get_product_name,
-	is_product_virtual,
-	do_beacon_ping,
-	get_pings_values,
-	get_storage_disk_name,
-	get_uname,
+from utils.server_info import (
 	get_ram_info,
 	get_swap_info
 )
-from decorators import publick
+from utils.decorators import publick
 
 class Module():
 	def __init__(self, local):
-		self.name = "main"
+		self.name = "mytonproviderd"
 		self.service_name = "mytonproviderd"
 		self.local = local
 		self.mandatory = True
@@ -168,14 +160,14 @@ class Module():
 	#end define
 
 	def get_my_git_path(self):
-		git_path = self.local.buffer.my_dir
+		git_path = self.local.buffer.my_root_dir
 		fix_git_config(git_path)
 		return git_path
 	#end define
 
 	@publick
 	def get_update_args(self, user, branch, **kwargs):
-		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
+		script_path = f"{self.local.buffer.my_root_dir}/scripts/update.sh"
 		update_args = [
 			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
 		]
@@ -187,7 +179,7 @@ class Module():
 	@publick
 	def download_update_script(self, author, repo, branch, **kwargs):
 		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
-		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
+		script_path = f"{self.local.buffer.my_root_dir}/scripts/update.sh"
 		download_cmd = f"wget -O {script_path} {url}"
 		exit_code = run_as_root(["bash", "-lc", download_cmd])
 		if exit_code != 0:
@@ -230,7 +222,7 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py"
+		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/src/runner.py"
 		start_daemon_cmd = f"{start_cmd} --daemon"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_daemon_cmd, force=True)
 

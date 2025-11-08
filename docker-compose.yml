@@ -1,0 +1,28 @@
+services:
+
+  mytonprovider:
+    container_name: mytonprovider
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MYTONPROVIDER_REPO: ${MYTONPROVIDER_REPO}
+        MYTONPROVIDER_AUTHOR: ${MYTONPROVIDER_AUTHOR}
+        MYTONPROVIDER_BRANCH: ${MYTONPROVIDER_BRANCH}
+        MYTONPROVIDER_MODULES: ${MYTONPROVIDER_MODULES}
+        MYTONPROVIDER_STORAGE_PATH: ${MYTONPROVIDER_STORAGE_PATH}
+        MYTONPROVIDER_STORAGE_COST: ${MYTONPROVIDER_STORAGE_COST}
+        MYTONPROVIDER_SPACE_TO_PROVIDE: ${MYTONPROVIDER_SPACE_TO_PROVIDE}
+    restart: always
+    tty: true
+    stdin_open: true
+    network_mode: host
+    env_file:
+      - .env
+    volumes:
+      - ${MYTONPROVIDER_STORAGE_PATH}:${MYTONPROVIDER_STORAGE_PATH}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: 100m
+        max-file: "3"

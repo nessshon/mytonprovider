@@ -3,22 +3,15 @@
 
 import os
 import time
-import json
-import subprocess
 from mypylib import (
-	MyPyClass,
 	Dict,
-	bcolors,
-	run_as_root,
-	color_print,
 	print_table,
 	get_timestamp,
-	timestamp2datetime,
 	timeago
 )
 from speedtest import Speedtest
-from decorators import publick
-from utils import run_subprocess
+from utils.decorators import publick
+from utils.general import run_subprocess
 
 
 class Module():

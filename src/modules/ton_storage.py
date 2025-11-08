@@ -9,7 +9,6 @@ from random import randint
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -24,7 +23,7 @@ from mypylib import (
 	check_git_update
 )
 
-from utils import (
+from utils.general import (
 	get_module_by_name,
 	get_disk_space,
 	convert_to_required_decimal,
@@ -36,8 +35,8 @@ from utils import (
 	get_check_update_status,
 	run_subprocess
 )
-from decorators import publick
-from adnl_over_udp_checker import check_adnl_connection
+from utils.decorators import publick
+from utils.adnl_over_udp_checker import check_adnl_connection
 
 
 class Module():
@@ -116,7 +115,7 @@ class Module():
 		storage_config = self.get_storage_config()
 		storage_pubkey = self.get_storage_pubkey()
 		listen_ip, storage_port = storage_config.ListenAddr.split(':')
-		
+
 		own_ip = get_own_ip()
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
@@ -282,12 +281,12 @@ class Module():
 
 	@publick
 	def get_update_args(self, restart_service=False, **kwargs):
-		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
+		script_path = f"{self.local.buffer.my_root_dir}/scripts/ops/install_go_package.sh"
 		update_args = [
-			"bash",	script_path, 
-			"-a", self.go_package.author, 
-			"-r", self.go_package.repo, 
-			"-b", self.go_package.branch, 
+			"bash",	script_path,
+			"-a", self.go_package.author,
+			"-r", self.go_package.repo,
+			"-b", self.go_package.branch,
 			"-e", self.go_package.entry_point
 		]
 		if restart_service == True:
@@ -308,19 +307,19 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		run_subprocess(upgrade_args, timeout=60)
+		run_subprocess(upgrade_args, timeout=300)
 
 		# Подготовить папку
 		os.makedirs(install_answers.storage_path, exist_ok=True)
 		chown_args = [
-			"chown", 
-			install_args.user + ':' + install_args.user, 
+			"chown",
+			install_args.user + ':' + install_args.user,
 			install_answers.storage_path
 		]
 		run_subprocess(chown_args, timeout=3)
 
 		# Создать службу
-		main_module = get_module_by_name(self.local, "main")
+		main_module = get_module_by_name(self.local, "mytonproviderd")
 		start_cmd = f"{install_args.bin_dir}/{self.go_package.repo} --daemon --db {db_dir} --api {host}:{api_port} -network-config {main_module.global_config_path} --no-verify"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_cmd, workdir=install_answers.storage_path, force=True)
 
@@ -350,7 +349,7 @@ class Module():
 		api = Dict()
 		api.host = host
 		api.port = api_port
-		
+
 		ton_storage.api = api
 		mconfig.ton_storage = ton_storage
 
