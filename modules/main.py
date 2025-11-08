@@ -27,6 +27,7 @@ from utils import (
 	set_check_data,
 	get_check_update_status,
 	get_color_int,
+	validate_github_repo,
 )
 from server_info import (
 	get_cpu_name,
@@ -174,13 +175,18 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, branch, **kwargs):
+	def get_update_args(self, user, author, repo,  branch, **kwargs):
+		if author is None:
+			author = "igroman787"
+		if repo is None:
+			repo = "mytonprovider"
+		if branch is None:
+			branch = "HEAD"
+		validate_github_repo(author, repo, branch)
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
-			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
-		]
-		if branch is not None:
-			update_args.extend(["-b", branch])
+			"bash", script_path, "-u", user, "-a", author, "-r", repo, "-b", branch
+	   ]
 		return update_args
 	#end define
 

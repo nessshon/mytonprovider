@@ -27,6 +27,7 @@ from utils import (
 	set_check_data,
 	get_module_type,
 	parse_github_url,
+	validate_github_repo,
 )
 
 
@@ -94,11 +95,14 @@ def status(args):
 #end define
 
 def update(args):
+	# значения поумолчанию
+	url = author = repo = branch = None
 	try:
+		if len(args) < 1 or len(args) > 2:
+			raise ValueError
+
 		# парсинг аргументов
 		module_name = args[0]
-		url = branch = None
-
 		arg_name = next(islice(args, 1, None), None)
 		if arg_name is not None:
 			if "github.com" in arg_name:
@@ -118,6 +122,7 @@ def update(args):
 		try:
 			# парсим аргументы из url
 			author, repo, branch = parse_github_url(url)
+			validate_github_repo(author, repo, branch)
 			# скачиваем скрипт update.sh и заменяем актуальный в "{self.local.buffer.my_dir}/scripts/update.sh"
 			run_module_method_if_exist(
 				local,
@@ -133,14 +138,22 @@ def update(args):
 		# end try
 
 	# формируем команду для запуска обновления скрипт update.sh
-	update_args = run_module_method_if_exist(
-		local,
-		module,
-		"get_update_args",
-		user=user,
-		branch=branch,
-		restart_service=True,
-	)
+	try:
+		update_args = run_module_method_if_exist(
+			local,
+			module,
+			"get_update_args",
+			user=user,
+			author=author,
+			repo=repo,
+			branch=branch,
+			restart_service=True,
+		)
+	except Exception as e:
+		color_print("{red}" + str(e) + "{endc}")
+		return
+	# end try
+
 	# Запускаем команду обновления от root
 	exit_code = run_as_root(update_args)
 	if exit_code == 0:
