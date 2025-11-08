@@ -315,3 +315,35 @@ def parse_github_url(url):
 		branch = parts[3]
 	return author, repo, branch
 #end define
+
+def validate_github_repo(author, repo, branch = "HEAD") -> None:
+	"""
+	Проверяет существование репозитория и ветки.
+	"""
+	url = f"https://github.com/{author}/{repo}.git"
+
+	# Проверка существования репо
+	try:
+		subprocess.run(
+			["git", "ls-remote", url],
+			stdout=subprocess.DEVNULL,
+			stderr=subprocess.DEVNULL,
+			check=True,
+		)
+	except subprocess.CalledProcessError:
+		raise ValueError(f"Repository not found: {url}")
+	# end try
+
+	# Проверка ветки
+	if branch != "HEAD":
+		try:
+			subprocess.run(
+				["git", "ls-remote", "--exit-code", "--heads", url, branch],
+				stdout=subprocess.DEVNULL,
+				stderr=subprocess.DEVNULL,
+				check=True,
+			)
+		except subprocess.CalledProcessError:
+			raise ValueError(f"Branch not found: {url} (branch={branch})")
+		# end try
+#end define
