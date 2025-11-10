@@ -69,7 +69,21 @@ class Module():
 			return []
 
 		tasks = [self.probe_lite_server(index, lite_server) for index, lite_server in servers]
-		return await asyncio.gather(*tasks, return_exceptions=False)
+		result = await asyncio.gather(*tasks, return_exceptions=False)
+
+		seqnos = [r["get_last_block_seqno"] for r in result if "get_last_block_seqno" in r]
+		if not seqnos:
+			return result
+
+		max_block_seqno = max(seqnos)
+
+		for r in result:
+			block_seqno = r.get("get_last_block_seqno")
+			if block_seqno is None:
+				continue
+			if block_seqno != max_block_seqno:
+				r["get_last_block_seqno"] = f"{block_seqno} (!)"
+		return result
 	# end define
 
 	async def get_public_ls_list(self):
