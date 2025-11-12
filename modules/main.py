@@ -181,7 +181,7 @@ class Module():
 		if repo is None:
 			repo = "mytonprovider"
 		if branch is None:
-			branch = "HEAD"
+			branch = "master"
 		validate_github_repo(author, repo, branch)
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = [
