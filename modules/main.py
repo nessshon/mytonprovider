@@ -7,7 +7,6 @@ import subprocess
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	write_config_to_file,
@@ -19,7 +18,6 @@ from mypylib import (
 	time2human,
 	check_git_update,
 	get_load_avg,
-	run_as_root,
 )
 from utils import (
 	get_module_by_name,
@@ -31,15 +29,8 @@ from utils import (
 	validate_github_repo,
 )
 from server_info import (
-	get_cpu_name,
-	get_product_name,
-	is_product_virtual,
-	do_beacon_ping,
-	get_pings_values,
-	get_storage_disk_name,
-	get_uname,
 	get_ram_info,
-	get_swap_info
+	get_swap_info,
 )
 from decorators import publick
 
@@ -50,6 +41,11 @@ class Module():
 		self.local = local
 		self.mandatory = True
 		self.local.add_log(f"{self.name} module init done", "debug")
+
+		self.py_package = Dict()
+		self.py_package.author = "igroman787"
+		self.py_package.repo = "mytonprovider"
+		self.py_package.branch = "master"
 
 		self.global_config_name = "global.config.json"
 		self.global_config_dir = "/var/ton"
@@ -181,26 +177,14 @@ class Module():
 		curr_branch = get_git_branch(git_path)
 		curr_author, curr_repo = get_git_author_and_repo(git_path)
 
-		author = author or curr_author or "igroman787"
-		repo = repo or curr_repo or "mytonprovider"
-		branch = branch or curr_branch or "master"
-
+		author = author or curr_author or self.py_package.author
+		repo = repo or curr_repo or self.py_package.repo
+		branch = branch or curr_branch or self.py_package.branch
 		validate_github_repo(author, repo, branch)
 
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
 		update_args = ["bash", script_path, "-u", user, "-a", author, "-r", repo, "-b", branch]
 		return update_args
-	#end define
-
-	@publick
-	def download_update_script(self, author, repo, branch, **kwargs):
-		url = f"https://raw.githubusercontent.com/{author}/{repo}/{branch}/scripts/update.sh"
-		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
-		download_cmd = f"wget -O {script_path} {url}"
-		exit_code = run_as_root(["bash", "-lc", download_cmd])
-		if exit_code != 0:
-			raise Exception(f"Failed to download {url} -> {script_path}")
-		run_as_root(["bash", "-lc", f"chmod +x {script_path}"])
 	#end define
 
 	def install(self, install_args, install_answers):

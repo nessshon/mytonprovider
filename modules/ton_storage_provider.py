@@ -3,7 +3,6 @@
 
 import os
 import base64
-import time
 
 import pytoniq
 from random import randint
@@ -12,7 +11,6 @@ from asgiref.sync import async_to_sync
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -23,7 +21,8 @@ from mypylib import (
 	get_service_status,
 	get_service_uptime,
 	time2human,
-	check_git_update
+	check_git_update,
+	get_git_author_and_repo,
 )
 from adnl_over_tcp import (
 	get_lite_balancer,
@@ -40,6 +39,7 @@ from utils import (
 	set_check_data,
 	get_check_update_status,
 	run_subprocess,
+	validate_github_repo,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -418,7 +418,7 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, restart_service=False, **kwargs):
+	def get_update_args(self, user, author, repo,  branch, restart_service=False, **kwargs):
 		# Temporarily. Delete in TODO
 		if self.local.db.ton_storage != None:
 			provider_config = self.get_provider_config()
@@ -426,14 +426,17 @@ class Module():
 			self.set_provider_config(provider_config)
 		#end if
 
+		git_path = self.get_my_git_path()
+		curr_branch = get_git_branch(git_path)
+		curr_author, curr_repo = get_git_author_and_repo(git_path)
+
+		author = author or curr_author or self.go_package.author
+		repo = repo or curr_repo or self.go_package.repo
+		branch = branch or curr_branch or self.go_package.branch
+		validate_github_repo(author, repo, branch)
+
 		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
-		update_args = [
-			"bash",	script_path, 
-			"-a", self.go_package.author, 
-			"-r", self.go_package.repo, 
-			"-b", self.go_package.branch, 
-			"-e", self.go_package.entry_point
-		]
+		update_args = ["bash",	script_path, "-a", author, "-r", repo, "-b", branch, "-e", self.go_package.entry_point]
 		if restart_service == True:
 			update_args += ["-s", self.service_name]
 		return update_args
