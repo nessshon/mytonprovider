@@ -1,21 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import os
 import sys
 import json
-#import threading
 from getpass import getuser
 from itertools import islice
 
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
-	Dict,
 	run_as_root,
 	color_print,
 	thr_sleep,
-	print_table
+	print_table,
 )
 from utils import (
 	get_modules,
@@ -27,7 +24,6 @@ from utils import (
 	set_check_data,
 	get_module_type,
 	parse_github_url,
-	validate_github_repo,
 )
 
 
@@ -95,49 +91,24 @@ def status(args):
 #end define
 
 def update(args):
-	# значения поумолчанию
-	url = author = repo = branch = None
 	try:
-		if len(args) < 1 or len(args) > 2:
+		if len(args) < 1 or len(args) > 4:
 			raise ValueError
-
-		# парсинг аргументов
 		module_name = args[0]
-		arg_name = next(islice(args, 1, None), None)
-		if arg_name is not None:
-			if "github.com" in arg_name:
-				url = arg_name
-			else:
-				branch = arg_name
+		branch = next(islice(args, 1, None), None)
+		author = next(islice(args, 2, None), None)
+		repo = next(islice(args, 3, None), None)
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>]")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>] [<author>] [<repo>]")
 		return
-	#end try
+	# end try
+
+	if branch is not None and "github.com" in branch:
+		author, repo, branch = parse_github_url(branch)
 
 	user = getuser()
 	module = get_module_by_name(local, module_name)
 
-	# если в аргументах указан github url
-	if url is not None and module_name == "main":
-		try:
-			# парсим аргументы из url
-			author, repo, branch = parse_github_url(url)
-			validate_github_repo(author, repo, branch)
-			# скачиваем скрипт update.sh и заменяем актуальный в "{self.local.buffer.my_dir}/scripts/update.sh"
-			run_module_method_if_exist(
-				local,
-				module,
-				"download_update_script",
-				author=author,
-				repo=repo,
-				branch=branch,
-			)
-		except Exception as e:
-			color_print("{red}" + str(e) + "{endc}")
-			return
-		# end try
-
-	# формируем команду для запуска обновления скрипт update.sh
 	try:
 		update_args = run_module_method_if_exist(
 			local,
