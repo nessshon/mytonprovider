@@ -13,6 +13,7 @@ from mypylib import (
 	write_config_to_file,
 	get_git_hash,
 	get_git_branch,
+	get_git_author_and_repo,
 	get_service_status,
 	get_service_uptime,
 	time2human,
@@ -176,17 +177,18 @@ class Module():
 
 	@publick
 	def get_update_args(self, user, author, repo,  branch, **kwargs):
-		if author is None:
-			author = "igroman787"
-		if repo is None:
-			repo = "mytonprovider"
-		if branch is None:
-			branch = "master"
+		git_path = self.get_my_git_path()
+		curr_branch = get_git_branch(git_path)
+		curr_author, curr_repo = get_git_author_and_repo(git_path)
+
+		author = author or curr_author or "igroman787"
+		repo = repo or curr_repo or "mytonprovider"
+		branch = branch or curr_branch or "master"
+
 		validate_github_repo(author, repo, branch)
+
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
-		update_args = [
-			"bash", script_path, "-u", user, "-a", author, "-r", repo, "-b", branch
-	   ]
+		update_args = ["bash", script_path, "-u", user, "-a", author, "-r", repo, "-b", branch]
 		return update_args
 	#end define
 
