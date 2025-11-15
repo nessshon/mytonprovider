@@ -418,7 +418,7 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, author, repo,  branch, restart_service=False, **kwargs):
+	def get_update_args(self, user=None, author=None, repo=None,  branch=None, restart_service=False, **kwargs):
 		# Temporarily. Delete in TODO
 		if self.local.db.ton_storage != None:
 			provider_config = self.get_provider_config()
@@ -426,9 +426,13 @@ class Module():
 			self.set_provider_config(provider_config)
 		#end if
 
-		git_path = self.get_my_git_path()
-		curr_branch = get_git_branch(git_path)
-		curr_author, curr_repo = get_git_author_and_repo(git_path)
+		try:
+			git_path = self.get_my_git_path()
+			curr_branch = get_git_branch(git_path)
+			curr_author, curr_repo = get_git_author_and_repo(git_path)
+		except Exception:
+			curr_author = curr_repo = curr_branch = None
+		#end try
 
 		author = author or curr_author or self.go_package.author
 		repo = repo or curr_repo or self.go_package.repo
