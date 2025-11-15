@@ -20,7 +20,7 @@ class Module():
 		self.mandatory = True
 		self.daemon_interval = 60
 		self.local.add_log(f"{self.name} module init done", "debug")
-	# end define
+	#end define
 
 	@publick
 	def get_console_commands(self):
@@ -33,7 +33,7 @@ class Module():
 		commands.append(cmd)
 
 		return commands
-	# end define
+	#end define
 
 	@publick
 	@async_to_sync
@@ -41,7 +41,7 @@ class Module():
 		results = await self.do_ls_status()
 
 		table = []
-		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno"]]
+		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno", "Archive depth"]]
 		for r in results:
 			table += [[
 				r.get("ls"),
@@ -54,9 +54,10 @@ class Module():
 				r.get("get_version", "-"),
 				r.get("get_time", "-"),
 				r.get("last_block_seqno", "-"),
+				r.get("archive_depth", "-")
 			]]
 		print_table(table)
-	# end define
+	#end define
 
 	async def do_ls_status(self):
 		servers = await self.get_public_ls_list()
@@ -102,7 +103,7 @@ class Module():
 
 			r["last_block_seqno"] = label
 		return results
-	# end define
+	#end define
 
 	async def get_public_ls_list(self):
 		client = get_lite_balancer(self.local)
@@ -110,7 +111,7 @@ class Module():
 		for index, lite_client in enumerate(client._peers):  # noqa
 			ls_list.append((index, lite_client))
 		return ls_list
-	# end define
+	#end define
 
 	async def _check_all_ls(self, servers):
 		if not servers:
@@ -118,7 +119,7 @@ class Module():
 
 		tasks = [self.probe_lite_server(index, lite_server) for index, lite_server in servers]
 		return await asyncio.gather(*tasks, return_exceptions=False)
-	# end define
+	#end define
 
 	async def probe_lite_server(self, index, lite_client):
 		data = {
@@ -174,7 +175,14 @@ class Module():
 					data["shards"] = shard_map
 			except Exception:
 				pass
-
+			#end try
+			try:
+				archive_depth = await self.check_archive_depth(lite_client, int(time.time()))
+				if archive_depth is not None:
+					data["archive_depth"] = archive_depth
+			except Exception:
+				pass
+			#end try
 			return data
 		except (Exception,):
 			data["connected"] = False
@@ -185,7 +193,9 @@ class Module():
 					await lite_client.close()
 				except (Exception,):
 					pass
-	# end define
+				#end
+		#end try
+	#end define
 
 	async def connect(self, lite_client):
 		start = time.perf_counter()
@@ -195,6 +205,8 @@ class Module():
 			return True, end
 		except (Exception,):
 			return False, None
+		#end try
+	#end define
 
 	async def get_version(self, lite_client):
 		try:
@@ -202,7 +214,8 @@ class Module():
 			return result.get("version")
 		except (Exception,):
 			return None
-	# end define
+		#end try
+	#end define
 
 	async def get_time(self, lite_client):
 		try:
@@ -210,7 +223,8 @@ class Module():
 			return result.get("now")
 		except (Exception,):
 			return None
-	# end define
+		#end try
+	#end define
 
 	async def get_ping(self, lite_client):
 		try:
@@ -222,7 +236,8 @@ class Module():
 			return end
 		except (Exception,):
 			return None
-	# end define
+		#end try
+	#end define
 
 	async def check_request_time(self, lite_client):
 		start = time.perf_counter()
@@ -231,11 +246,44 @@ class Module():
 			end = int((time.perf_counter() - start) * 1000.0)
 			return end
 		except (Exception,):
-			return None, None
-	# end define
+			return None
+		#end try
+	#end define
+
+	async def check_archive_depth(self, lite_client, now):
+		day = 86400
+		time_offsets = [
+			("1d", 1 * day),
+			("3d", 3 * day),
+			("7d", 7 * day),
+			("14d", 14 * day),
+			("1m", 30 * day),
+			("3m", 3 * 30 * day),
+			("6m", 6 * 30 * day),
+			("9m", 9 * 30 * day),
+			("1y", 365 * day),
+		]
+
+		async def _lookup(utime):
+			return await lite_client.lookup_block(
+				wc=-1,
+				shard=-(2 ** 63),
+				utime=utime,
+			)
+
+		tasks = [asyncio.create_task(_lookup(now - delta)) for _, delta in time_offsets]
+		raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+
+		archive_depth = None
+		for (label, _), res in zip(time_offsets, raw_results):
+			if isinstance(res, Exception):
+				break
+			archive_depth = label
+		return archive_depth
+	#end define
 
 	@publick
 	def daemon(self):
 		pass
-	# end define
-# end class
+	#end define
+#end class
