@@ -39,6 +39,8 @@ class Module():
 	@async_to_sync
 	async def run_ls_status(self, args):
 		use_exact = "--exact" in args
+		if use_exact:
+			self.local.add_log("LS status running in exact mode, this may take a few minutes")
 		results = await self.do_ls_status(use_exact)
 
 		table = []
