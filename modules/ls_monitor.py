@@ -38,7 +38,8 @@ class Module():
 	@publick
 	@async_to_sync
 	async def run_ls_status(self, args):
-		results = await self.do_ls_status()
+		use_exact = "--exact" in args
+		results = await self.do_ls_status(use_exact)
 
 		table = []
 		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno", "Archive depth"]]
@@ -59,9 +60,9 @@ class Module():
 		print_table(table)
 	#end define
 
-	async def do_ls_status(self):
+	async def do_ls_status(self, use_exact):
 		servers = await self.get_public_ls_list()
-		results = await self._check_all_ls(servers)
+		results = await self._check_all_ls(servers, use_exact=use_exact)
 
 		# находим максимальный seqno мастерчейна среди всех ls
 		max_last_block_seqno = 0
@@ -113,15 +114,15 @@ class Module():
 		return ls_list
 	#end define
 
-	async def _check_all_ls(self, servers):
+	async def _check_all_ls(self, servers, use_exact):
 		if not servers:
 			return []
 
-		tasks = [self.probe_lite_server(index, lite_server) for index, lite_server in servers]
+		tasks = [self.probe_lite_server(index, lite_server, use_exact) for index, lite_server in servers]
 		return await asyncio.gather(*tasks, return_exceptions=False)
 	#end define
 
-	async def probe_lite_server(self, index, lite_client):
+	async def probe_lite_server(self, index, lite_client, use_exact):
 		data = {
 			"ls": index,
 			"ip": lite_client.server.host,
@@ -177,7 +178,11 @@ class Module():
 				pass
 			#end try
 			try:
-				archive_depth = await self.check_archive_depth(lite_client, int(time.time()))
+				now = int(time.time())
+				if use_exact:
+					archive_depth = await self.check_archive_depth(lite_client, now)
+				else:
+					archive_depth = await self.check_archive_depth_quick(lite_client, now)
 				if archive_depth is not None:
 					data["archive_depth"] = archive_depth
 			except Exception:
@@ -267,6 +272,7 @@ class Module():
 				return True
 			except Exception:
 				return False
+			#end try
 		#end define
 
 		left = 0
@@ -297,6 +303,46 @@ class Module():
 			parts.append("-")
 
 		return " ".join(parts)
+	#end define
+
+	async def check_archive_depth_quick(self, lite_client, now):
+		day = 86400
+		time_offsets = [
+			("≈ 1d", 1 * day),
+			("≈ 3d", 3 * day),
+			("≈ 7d", 7 * day),
+			("≈ 14d", 14 * day),
+			("≈ 1m", 30 * day),
+			("≈ 3m", 3 * 30 * day),
+			("≈ 6m", 6 * 30 * day),
+			("≈ 9m", 9 * 30 * day),
+			("≈ 1y", 365 * day),
+		]
+
+		async def _probe_utime(utime):
+			try:
+				await lite_client.lookup_block(
+					wc=-1,
+					shard=-(2 ** 63),
+					utime=utime,
+				)
+				return True
+			except Exception:
+				return False
+			#end try
+		#end define
+
+		tasks = [
+			asyncio.create_task(_probe_utime(now - delta))
+			for _, delta in time_offsets
+		]
+		results = await asyncio.gather(*tasks, return_exceptions=False)
+
+		depth_label = None
+		for (label, _), is_available in zip(time_offsets, results):
+			if is_available:
+				depth_label = label
+		return depth_label
 	#end define
 
 	@publick
