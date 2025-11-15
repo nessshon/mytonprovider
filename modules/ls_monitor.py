@@ -252,34 +252,51 @@ class Module():
 
 	async def check_archive_depth(self, lite_client, now):
 		day = 86400
-		time_offsets = [
-			("1d", 1 * day),
-			("3d", 3 * day),
-			("7d", 7 * day),
-			("14d", 14 * day),
-			("1m", 30 * day),
-			("3m", 3 * 30 * day),
-			("6m", 6 * 30 * day),
-			("9m", 9 * 30 * day),
-			("1y", 365 * day),
-		]
+		first_block_utime = 1573822385
+		seconds_diff = now - first_block_utime
+		max_days = seconds_diff // day
 
-		async def _lookup(utime):
-			return await lite_client.lookup_block(
-				wc=-1,
-				shard=-(2 ** 63),
-				utime=utime,
-			)
+		async def _probe(_days):
+			utime = now - _days * day
+			try:
+				await lite_client.lookup_block(
+					wc=-1,
+					shard=-(2 ** 63),
+					utime=utime,
+				)
+				return True
+			except Exception:
+				return False
+		#end define
 
-		tasks = [asyncio.create_task(_lookup(now - delta)) for _, delta in time_offsets]
-		raw_results = await asyncio.gather(*tasks, return_exceptions=True)
+		left = 0
+		right = max_days
+		best_days = 0
 
-		archive_depth = None
-		for (label, _), res in zip(time_offsets, raw_results):
-			if isinstance(res, Exception):
-				break
-			archive_depth = label
-		return archive_depth
+		while left <= right:
+			mid = (left + right) // 2
+			if await _probe(mid):
+				best_days = mid
+				left = mid + 1
+			else:
+				right = mid - 1
+
+		years = best_days // 365
+		rem = best_days % 365
+		months = rem // 30
+		days = rem % 30
+
+		parts = []
+		if years > 0:
+			parts.append(f"{years}y")
+		if months > 0:
+			parts.append(f"{months}m")
+		if days > 0:
+			parts.append(f"{days}d")
+		if not parts:
+			parts.append("-")
+
+		return " ".join(parts)
 	#end define
 
 	@publick
