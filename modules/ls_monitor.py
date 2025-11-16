@@ -39,9 +39,12 @@ class Module():
 	@async_to_sync
 	async def run_ls_status(self, args):
 		use_exact = "--exact" in args
-		if use_exact:
-			self.local.add_log("LS status running in exact mode, this may take a few minutes")
+
+		self.local.add_log("LS status running, this may take a few minutes")
+
+		start_time = time.perf_counter()
 		results = await self.do_ls_status(use_exact)
+		end_time = time.perf_counter()
 
 		table = []
 		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno", "Archive depth"]]
@@ -60,6 +63,19 @@ class Module():
 				r.get("archive_depth", "-")
 			]]
 		print_table(table)
+
+		sec = int(end_time - start_time)
+		h = sec // 3600
+		sec %= 3600
+		m = sec // 60
+		sec %= 60
+		if h > 0:
+			formatted = f"{h}h {m}m {sec}s"
+		elif m > 0:
+			formatted = f"{m}m {sec}s"
+		else:
+			formatted = f"{sec}s"
+		self.local.add_log(f"LS status completed in {formatted}")
 	#end define
 
 	async def do_ls_status(self, use_exact):
