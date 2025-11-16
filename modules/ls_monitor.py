@@ -64,7 +64,13 @@ class Module():
 			]]
 		print_table(table)
 
-		sec = int(end_time - start_time)
+		elapsed = end_time - start_time
+		if elapsed < 1:
+			ms = int(elapsed * 1000)
+			self.local.add_log(f"LS status completed in {ms}ms")
+			return
+
+		sec = int(elapsed)
 		h = sec // 3600
 		sec %= 3600
 		m = sec // 60
