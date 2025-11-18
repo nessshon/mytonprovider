@@ -8,7 +8,7 @@ from asgiref.sync import async_to_sync
 from modules.adnl_over_tcp import get_lite_balancer
 from mypylib import (
 	Dict,
-	print_table,
+	print_table, color_print,
 )
 from decorators import publick
 
@@ -40,20 +40,20 @@ class Module():
 	async def run_ls_status(self, args):
 		use_exact = "--exact" in args
 
-		self.local.add_log("LS status running, this may take a few minutes")
+		color_print("{yellow}LS status running, this may take a few minutes{endc}")
 
 		start_time = time.perf_counter()
 		results = await self.do_ls_status(use_exact)
 		end_time = time.perf_counter()
 
+		# формируем основную таблицу статуса LS
 		table = []
-		table += [["LS", "IP", "PORT", "Connected", "Connect time", "Request time", "Ping", "Version", "Time", "Last block seqno", "Archive depth"]]
+		table += [["LS", "IP", "PORT", "Connect", "Request", "Ping", "Version", "Time", "Last block seqno", "Archive depth"]]
 		for r in results:
 			table += [[
 				r.get("ls"),
 				r.get("ip"),
 				r.get("port"),
-				f"true" if r.get("connected", False) else "false",
 				r.get("connect_time", "-"),
 				r.get("request_time", "-"),
 				r.get("get_ping", "-"),
@@ -64,10 +64,38 @@ class Module():
 			]]
 		print_table(table)
 
+		# проверяем, какие предупреждающие встречаются
+		has_mc_lag = False
+		has_shard_lag = False
+		has_time_lag = False
+
+		for r in results:
+			last_seq = r.get("last_block_seqno")
+			if isinstance(last_seq, str):
+				if "!" in last_seq:
+					has_mc_lag = True
+				if "!!" in last_seq:
+					has_shard_lag = True
+			time_val = r.get("get_time")
+			if isinstance(time_val, str) and "*" in time_val:
+				has_time_lag = True
+
+		# формируем таблицу по предупреждениям
+		legend = [["Mark", "Description"]]
+		if has_time_lag:
+			legend.append(["(*)", "LS time is behind maximum time across LS"])
+		if has_mc_lag:
+			legend.append(["(!)", "Masterchain seqno is behind maximum across LS"])
+		if has_shard_lag:
+			legend.append(["(!!)", "One or more shardchain seqno is behind maximum for that shard"])
+		if len(legend) > 1:
+			print_table(legend)
+
+		# сообщение о времени выполнения
 		elapsed = end_time - start_time
 		if elapsed < 1:
 			ms = int(elapsed * 1000)
-			self.local.add_log(f"LS status completed in {ms}ms")
+			color_print(f"{{green}}LS status completed in {ms}ms{{endc}}")
 			return
 
 		sec = int(elapsed)
@@ -81,7 +109,7 @@ class Module():
 			formatted = f"{m}m {sec}s"
 		else:
 			formatted = f"{sec}s"
-		self.local.add_log(f"LS status completed in {formatted}")
+		color_print(f"{{green}}LS status completed in {formatted}{{endc}}")
 	#end define
 
 	async def do_ls_status(self, use_exact):
@@ -127,6 +155,23 @@ class Module():
 						break
 
 			r["last_block_seqno"] = label
+			# находим максимальное время среди всех ls
+
+		max_time = 0
+		for r in results:
+			ls_time = r.get("get_time")
+			if isinstance(ls_time, int) and ls_time > max_time:
+				max_time = ls_time
+
+		# помечаем ls, у которых время меньше максимального
+		if max_time > 0:
+			for r in results:
+				ls_time = r.get("get_time")
+				if not isinstance(ls_time, int):
+					continue
+				if ls_time < max_time:
+					r["get_time"] = f"{ls_time} (*)"
+
 		return results
 	#end define
 
@@ -157,7 +202,6 @@ class Module():
 			# подключаемся к ls и измеряем время соединения
 			connected, connected_timing = await self.connect(lite_client)
 			connected = bool(connected)
-			data["connected"] = connected
 			if connected_timing is not None:
 				data["connect_time"] = f"{int(connected_timing)} ms"
 
@@ -214,7 +258,6 @@ class Module():
 			#end try
 			return data
 		except (Exception,):
-			data["connected"] = False
 			return data
 		finally:
 			if connected:
