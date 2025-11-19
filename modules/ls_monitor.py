@@ -8,7 +8,7 @@ from asgiref.sync import async_to_sync
 from modules.adnl_over_tcp import get_lite_balancer
 from mypylib import (
 	Dict,
-	print_table, color_print,
+	print_table, color_print, ERROR,
 )
 from decorators import publick
 
@@ -68,6 +68,7 @@ class Module():
 		has_mc_lag = False
 		has_shard_lag = False
 		has_time_lag = False
+		has_unknown_archive = False
 
 		for r in results:
 			last_seq = r.get("last_block_seqno")
@@ -79,11 +80,16 @@ class Module():
 			time_val = r.get("get_time")
 			if isinstance(time_val, str) and "*" in time_val:
 				has_time_lag = True
+			archive_depth = r.get("archive_depth")
+			if isinstance(archive_depth, str) and "?" in archive_depth:
+				has_unknown_archive = True
 
 		# формируем таблицу по предупреждениям
 		legend = [["Mark", "Description"]]
 		if has_time_lag:
 			legend.append(["(*)", "LS time is behind maximum time across LS"])
+		if has_unknown_archive:
+			legend.append(["(?)", "Failed to determine archive depth for this LS"])
 		if has_mc_lag:
 			legend.append(["(!)", "Masterchain seqno is behind maximum across LS"])
 		if has_shard_lag:
@@ -179,6 +185,7 @@ class Module():
 		client = get_lite_balancer(self.local)
 		ls_list = []
 		for index, lite_client in enumerate(client._peers):  # noqa
+			lite_client.timeout = 1
 			ls_list.append((index, lite_client))
 		return ls_list
 	#end define
@@ -367,7 +374,7 @@ class Module():
 		if days > 0:
 			parts.append(f"{days}d")
 		if not parts:
-			parts.append("-")
+			parts.append("(?)")
 
 		return " ".join(parts)
 	#end define
@@ -405,7 +412,7 @@ class Module():
 		]
 		results = await asyncio.gather(*tasks, return_exceptions=False)
 
-		depth_label = None
+		depth_label = "(?)"
 		for (label, _), is_available in zip(time_offsets, results):
 			if is_available:
 				depth_label = label
