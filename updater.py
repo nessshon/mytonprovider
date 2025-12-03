@@ -14,5 +14,5 @@ if __name__ == "__main__":
 	#local.run()
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")
-	local.cycle(func=auto_updater_module.update_modules, sec=86400, args=None)
+	local.cycle(func=auto_updater_module.update_modules, sec=60 * 2, args=None)
 #end if
