@@ -46,7 +46,8 @@ class Module():
 		local_hash = get_git_hash(git_path)
 		last_commit_hash, days_ago = get_git_last_remote_commit(git_path, with_days_ago=True)
 		#print(module.name, local_hash, last_commit_hash, days_ago)
-		if local_hash != last_commit_hash and days_ago > 7:
+		# if local_hash != last_commit_hash and days_ago > 7:
+		if local_hash != last_commit_hash:
 			self.local.add_log(f"{module.name} module update available")
 			self.update_module(module)
 	#end define
