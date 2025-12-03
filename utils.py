@@ -323,16 +323,18 @@ def validate_github_repo(author, repo, branch = "HEAD") -> None:
 	url = f"https://github.com/{author}/{repo}.git"
 
 	# Проверка существования репо
-	try:
-		subprocess.run(
-			["git", "ls-remote", url],
-			stdout=subprocess.DEVNULL,
-			stderr=subprocess.DEVNULL,
-			check=True,
+	result = subprocess.run(
+		["git", "ls-remote", url],
+		stdout=subprocess.DEVNULL,
+		stderr=subprocess.PIPE,
+		text=True,
+	)
+
+	if result.returncode != 0:
+		raise RuntimeError(
+			f"git ls-remote failed for {url!r} "
+			f"(code={result.returncode}): {result.stderr.strip()}"
 		)
-	except subprocess.CalledProcessError:
-		raise ValueError(f"Repository not found: {url}")
-	# end try
 
 	# Проверка ветки
 	if branch != "HEAD":
