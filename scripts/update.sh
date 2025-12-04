@@ -82,13 +82,15 @@ venvs_dir="/home/${user}/.local/venv"
 venv_path="${venvs_dir}/${repo}"
 src_path="${src_dir}/${repo}"
 
+cd "${src_dir}"
+
 
 clone_repository() {
 	echo "https://github.com/${author}/${repo}.git -> ${branch}"
-	rm -rf ${src_path}_tmp
-	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${src_path}_tmp
-	rm -rf ${src_path}
-	mv ${src_path}_tmp ${src_path}
+	rm -rf ${repo}_tmp
+	git clone --branch ${branch} --recursive https://github.com/${author}/${repo}.git ${repo}_tmp
+	rm -rf ${repo}
+	mv ${repo}_tmp ${repo}
 }
 
 install_apt_dependencies() {
