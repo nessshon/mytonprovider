@@ -6,6 +6,7 @@ import json
 from getpass import getuser
 from itertools import islice
 
+from modules.ls_monitor import LSMonitor
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
@@ -68,6 +69,7 @@ def init_console():
 	console.add_item("get", get_settings, local.translate("get_cmd"))
 	console.add_item("set", set_settings, local.translate("set_cmd"))
 	console.add_item("modules_list", modules_list, local.translate("modules_list_cmd"))
+	console.add_item("ls_status", ls_status, local.translate("ls_status_cmd"))
 	console.run()
 #end define
 
@@ -172,6 +174,10 @@ def modules_list(args):
 	print_table(table)
 #end define
 
+def ls_status(args):
+	ls_monitor = LSMonitor(local)
+	ls_monitor.run_ls_status(args)
+#end define
 
 
 if __name__ == "__main__":

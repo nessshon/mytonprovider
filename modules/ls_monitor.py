@@ -8,34 +8,16 @@ from asgiref.sync import async_to_sync
 from modules.adnl_over_tcp import get_lite_balancer
 from mypylib import (
 	Dict,
-	print_table, color_print, ERROR,
+	print_table,
+	color_print,
 )
-from decorators import publick
 
 
-class Module():
+class LSMonitor():
 	def __init__(self, local):
-		self.name = "ls_monitor"
 		self.local = local
-		self.mandatory = True
-		self.daemon_interval = 60
-		self.local.add_log(f"{self.name} module init done", "debug")
 	#end define
 
-	@publick
-	def get_console_commands(self):
-		commands = list()
-
-		cmd = Dict()
-		cmd.cmd = "ls_status"
-		cmd.func = self.run_ls_status
-		cmd.desc = self.local.translate("ls_status_cmd")
-		commands.append(cmd)
-
-		return commands
-	#end define
-
-	@publick
 	@async_to_sync
 	async def run_ls_status(self, args):
 		use_exact = "--exact" in args
@@ -417,10 +399,5 @@ class Module():
 			if is_available:
 				depth_label = label
 		return depth_label
-	#end define
-
-	@publick
-	def daemon(self):
-		pass
 	#end define
 #end class
