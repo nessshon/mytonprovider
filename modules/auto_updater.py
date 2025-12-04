@@ -8,7 +8,7 @@ from mypylib import (
 	add2systemd,
 	get_git_hash,
 	get_git_last_remote_commit,
-	get_service_status
+	get_service_status, get_git_branch
 )
 from utils import (
 	get_module_by_name,
@@ -43,10 +43,9 @@ class Module():
 		git_path = run_module_method_if_exist(self.local, module, "get_my_git_path")
 		if git_path is None:
 			return
-		_, git_branch = run_module_method_if_exist(self.local, module, "get_my_git_hash_and_branch")
-		git_branch = git_branch or "master"
+		local_branch = get_git_branch(git_path)
 		local_hash = get_git_hash(git_path)
-		last_commit_hash, days_ago = get_git_last_remote_commit(git_path, branch=git_branch, with_days_ago=True)
+		last_commit_hash, days_ago = get_git_last_remote_commit(git_path, local_branch, with_days_ago=True)
 		#print(module.name, local_hash, last_commit_hash, days_ago)
 		# if local_hash != last_commit_hash and days_ago > 7:
 		if local_hash != last_commit_hash:
