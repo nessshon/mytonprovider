@@ -72,7 +72,7 @@ class Module():
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		# Создать службу
 		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/updater.py"
-		add2systemd(name=self.service_name, user="root", start=start_cmd, workdir=install_args.src_path, force=True)
+		add2systemd(name=self.service_name, user="root", start=start_cmd, force=True)
 
 		# Запустить службу
 		self.local.start_service(self.service_name)
