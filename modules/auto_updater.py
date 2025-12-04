@@ -37,6 +37,7 @@ class Module():
 		for module in self.local.buffer.modules:
 			self.local.add_log(f"check module {module.name}")
 			self.check_update_module(module)
+		self.local.add_log("modules check completed")
 	#end define
 
 	def check_update_module(self, module):
