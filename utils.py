@@ -330,8 +330,16 @@ def validate_github_repo(author, repo, branch = "HEAD") -> None:
 			stderr=subprocess.DEVNULL,
 			check=True,
 		)
-	except subprocess.CalledProcessError:
-		raise ValueError(f"Repository not found: {url}")
+	except subprocess.CalledProcessError as e:
+		stderr = e.stderr.strip()
+
+		if "not found" in stderr.lower() or "repository" in stderr.lower():
+			raise ValueError(f"Repository does not exist: {url}\nGit error: {stderr}") from e
+
+		raise RuntimeError(
+			f"Failed to check repository: {url}\nGit error: {stderr}"
+		) from e
+
 	# end try
 
 	# Проверка ветки
@@ -339,11 +347,21 @@ def validate_github_repo(author, repo, branch = "HEAD") -> None:
 		try:
 			subprocess.run(
 				["git", "ls-remote", "--exit-code", "--heads", url, branch],
-				stdout=subprocess.DEVNULL,
-				stderr=subprocess.DEVNULL,
+				stdout=subprocess.PIPE,
+				stderr=subprocess.PIPE,
+				text=True,
 				check=True,
 			)
-		except subprocess.CalledProcessError:
-			raise ValueError(f"Branch not found: {url} (branch={branch})")
+		except subprocess.CalledProcessError as e:
+			stderr = e.stderr.strip()
+
+			if e.returncode == 2:
+				raise ValueError(
+					f"Branch does not exist: {url} (branch={branch})\nGit error: {stderr}"
+				) from e
+
+			raise RuntimeError(
+				f"Failed to check branch: {url} (branch={branch})\nGit error: {stderr}"
+			) from e
 		# end try
 #end define
