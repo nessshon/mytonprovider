@@ -3,6 +3,7 @@
 
 from os import stat
 from pwd import getpwuid
+from time import sleep
 from urllib.error import HTTPError
 
 from mypylib import (
@@ -36,6 +37,7 @@ class Module():
 		for module in self.local.buffer.modules:
 			self.local.add_log(f"check module {module.name}")
 			self.check_update_module(module)
+			sleep(1)
 		self.local.add_log("modules check completed")
 	#end define
 
