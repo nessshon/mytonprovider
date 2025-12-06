@@ -36,3 +36,4 @@ if __name__ == "__main__":
 		local.add_log(f"[auto-updater] sleep {INTERVAL} seconds")
 		time.sleep(INTERVAL)
 #end if
+
