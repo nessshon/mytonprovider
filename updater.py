@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import threading
 import time
 import traceback
 
@@ -11,7 +10,7 @@ from utils import (
 	get_module_by_name
 )
 
-INTERVAL = 5 * 60
+INTERVAL = 10 * 60
 
 if __name__ == "__main__":
 	local = MyPyClass(__file__)
