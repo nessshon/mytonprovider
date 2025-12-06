@@ -4,17 +4,14 @@
 from os import stat
 from pwd import getpwuid
 from mypylib import (
-	MyPyClass,
 	add2systemd,
 	get_git_hash,
 	get_git_last_remote_commit,
-	get_service_status, get_git_branch
+	get_git_branch,
 )
 from utils import (
-	get_module_by_name,
 	run_module_method_if_exist,
-	set_check_data,
-	run_subprocess
+	run_subprocess,
 )
 from decorators import publick
 

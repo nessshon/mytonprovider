@@ -19,10 +19,10 @@ if __name__ == "__main__":
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")
 
-	local.add_log("[updater] started")
+	local.add_log("[auto-updater] started")
 
 	while True:
-		local.add_log("[updater] tick: calling update_modules()")
+		local.add_log("[auto-updater] tick: calling update_modules()")
 		try:
 			auto_updater_module.update_modules()
 		except SystemExit as e:
@@ -33,6 +33,6 @@ if __name__ == "__main__":
 			tb = traceback.format_exc()
 			local.add_log(f"[auto-updater] traceback:\n{tb}")
 
-		local.add_log(f"[updater] sleep {INTERVAL} seconds")
+		local.add_log(f"[auto-updater] sleep {INTERVAL} seconds")
 		time.sleep(INTERVAL)
 #end if
