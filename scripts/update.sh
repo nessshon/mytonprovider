@@ -117,6 +117,7 @@ download_global_config() {
 
 service_restart() {
 	systemctl restart mytonproviderd
+	systemctl restart mytonprovider-updater.service 2>/dev/null || true
 }
 
 
