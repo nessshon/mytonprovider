@@ -11,6 +11,7 @@ from utils import (
 	get_module_by_name
 )
 
+INTERVAL = 2 * 60
 
 if __name__ == "__main__":
 	local = MyPyClass(__file__)
@@ -24,5 +25,5 @@ if __name__ == "__main__":
 			local.add_log(f"[auto-updater] error: {e!r}")
 			tb = traceback.format_exc()
 			local.add_log(f"[auto-updater] traceback:\n{tb}")
-		time.sleep(300)
+		time.sleep(INTERVAL)
 #end if
