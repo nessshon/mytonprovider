@@ -9,7 +9,6 @@ from utils import (
 
 if __name__ == "__main__":
 	local = MyPyClass(__file__)
-	#local.run()
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")
 	local.cycle(func=auto_updater_module.update_modules, sec=5 * 60, args=None)
