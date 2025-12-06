@@ -3,6 +3,8 @@
 
 from os import stat
 from pwd import getpwuid
+from urllib.error import HTTPError
+
 from mypylib import (
 	add2systemd,
 	get_git_hash,
@@ -43,8 +45,20 @@ class Module():
 			return
 		local_branch = get_git_branch(git_path)
 		local_hash = get_git_hash(git_path)
-		last_commit_hash, days_ago = get_git_last_remote_commit(git_path, local_branch, with_days_ago=True)
-		#print(module.name, local_hash, last_commit_hash, days_ago)
+
+		try:
+			last_commit_hash, days_ago = get_git_last_remote_commit(git_path, local_branch, with_days_ago=True)
+		except HTTPError as e:
+			msg = str(e).lower()
+			if e.code == 403 and "rate limit" in msg:
+				self.local.add_log(f"GitHub rate limit exceeded for module `{module.name}`", mode="error")
+				return
+			self.local.add_log(f"HTTP error for module `{module.name}`: {e!r}", mode="error")
+			return
+		except Exception as e:
+			self.local.add_log(f"Failed to check `{module.name}`: {e!r}", mode="error")
+			return
+
 		# if local_hash != last_commit_hash and days_ago > 7:
 		if local_hash != last_commit_hash:
 			self.local.add_log(f"{module.name} module update available")
