@@ -18,15 +18,9 @@ if __name__ == "__main__":
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")
 
-	local.add_log("[auto-updater] started")
-
 	while True:
-		local.add_log("[auto-updater] tick: calling update_modules()")
 		try:
 			auto_updater_module.update_modules()
-		except SystemExit as e:
-			local.add_log(f"[auto-updater] SystemExit caught: code={e.code!r}")
-			continue
 		except Exception as e:
 			local.add_log(f"[auto-updater] error: {e!r}")
 			tb = traceback.format_exc()
