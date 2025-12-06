@@ -2,6 +2,8 @@
 # -*- coding: utf_8 -*-
 
 import threading
+import time
+
 from mypylib import MyPyClass
 from utils import (
 	import_modules,
@@ -14,6 +16,8 @@ if __name__ == "__main__":
 	#local.run()
 	import_modules(local)
 	auto_updater_module = get_module_by_name(local, "auto-updater")
-	local.cycle(func=auto_updater_module.update_modules, sec=300, args=None)
+	while True:
+		auto_updater_module.update_modules()
+		time.sleep(300)
 #end if
 
