@@ -11,7 +11,7 @@ from utils import (
 	get_module_by_name
 )
 
-INTERVAL = 2 * 60
+INTERVAL = 5 * 60
 
 if __name__ == "__main__":
 	local = MyPyClass(__file__)
