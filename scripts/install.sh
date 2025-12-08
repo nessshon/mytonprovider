@@ -108,7 +108,6 @@ activate_venv() {
 }
 
 install_pip_dependencies() {
-	pip3 uninstall -y pytoniq tonutils || true
 	pip3 install -r ${src_path}/resources/requirements.txt
 	pip3 install -r ${src_path}/mypylib/requirements.txt
 }
