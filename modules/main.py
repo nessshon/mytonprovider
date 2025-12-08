@@ -226,7 +226,7 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py"
+		start_cmd = f"{install_args.venv_path}/bin/python3 -u {install_args.src_path}/mytonprovider.py"
 		start_daemon_cmd = f"{start_cmd} --daemon"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_daemon_cmd, force=True)
 
