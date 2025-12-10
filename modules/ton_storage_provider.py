@@ -26,7 +26,7 @@ from mypylib import (
 )
 from adnl_over_tcp import (
 	get_lite_balancer,
-	create_wallet_transfer_payload,
+	wallet_transfer_return_hash,
 	wait_message,
 	get_account,
 )
@@ -45,7 +45,7 @@ from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
 from addr_and_key import (
 	get_pubkey_from_privkey,
-	split_provider_key
+	split_provider_key,
 )
 
 
@@ -142,17 +142,10 @@ class Module():
 
 		# Проверить баланс провайдера
 		wallet = await self.get_provider_wallet()
-		await wallet.obj.provider.start_up()
-		await wallet.obj.update()
 		if wallet.balance < 0.03:
 			text = self.local.translate("low_provider_balance")
 			color_print(f"{{red}}{text}{{endc}}")
 			return
-		#end if
-
-		# Проверить что кошелек активен
-		if wallet.status == "uninitialized":
-			await self.do_deploy(wallet)
 		#end if
 
 		# Зарегистрироваться в списке отправив транзакцию
@@ -161,37 +154,21 @@ class Module():
 		comment = f"tsp-{provider_pubkey.lower()}"
 		await self.do_register(wallet, destination, comment)
 		color_print("{green}provider regiser - OK{endc}")
-		await wallet.obj.provider.close_all()
-	#end define
-
-	async def do_deploy(self, wallet):
-		self.local.add_log("start do_deploy function", "debug")
-		account, shard_account = await get_account(self.local, wallet.addr)
-		end_lt = shard_account.last_trans_hash
-		end_hash = shard_account.last_trans_hash.hex()
-
-		msg_boc, msg_hash = await create_wallet_transfer_payload(
-			wallet=wallet,
-			destination=wallet.obj.address,
-			amount=0.01,
-		)
-		await wallet.obj.provider.raw_send_message(msg_boc)
-		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
 	#end define
 
 	async def do_register(self, wallet, destination, comment):
 		self.local.add_log("start do_register function", "debug")
 		account, shard_account = await get_account(self.local, wallet.addr)
-		end_lt = shard_account.last_trans_hash
+		end_lt = shard_account.last_trans_lt
 		end_hash = shard_account.last_trans_hash.hex()
 
-		msg_boc, msg_hash = await create_wallet_transfer_payload(
+		msg_hash = await wallet_transfer_return_hash(
+			local=self.local,
 			wallet=wallet,
 			destination=destination,
 			amount=0.01,
 			body=comment,
 		)
-		await wallet.obj.provider.raw_send_message(msg_boc)
 		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
 		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
