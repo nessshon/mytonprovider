@@ -198,5 +198,10 @@
 		"ru": "aaa",
 		"en": "bbb",
 		"zh_TW": "ccc"
+	},
+	"ls_status_cmd": {
+		"ru": "Отобразить статус лайт-серверов",
+		"en": "Display lite server status",
+		"zh_TW": "顯示 lite server 狀態"
 	}
 }

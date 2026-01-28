@@ -41,7 +41,7 @@ restart_yourself_via_root() {
 	fi
 
 	# Using sudo or su
-	cmd="bash ${0} -u ${user}"
+	cmd="bash ${0} -u ${user} -a ${author} -r ${repo} -b ${branch}"
 	if [[ ${user_groups} == *"sudo"* ]]; then
 		sudo ${cmd}
 		exit

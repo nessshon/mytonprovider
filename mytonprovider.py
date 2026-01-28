@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
-import os
 import sys
 import json
-#import threading
 from getpass import getuser
+from itertools import islice
+
+from modules.ls_monitor import LSMonitor
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
-	Dict,
 	run_as_root,
 	color_print,
 	thr_sleep,
-	print_table
+	print_table,
 )
 from utils import (
 	get_modules,
@@ -23,7 +23,8 @@ from utils import (
 	run_module_method_if_exist,
 	init_localization,
 	set_check_data,
-	get_module_type
+	get_module_type,
+	parse_github_url,
 )
 
 
@@ -68,6 +69,7 @@ def init_console():
 	console.add_item("get", get_settings, local.translate("get_cmd"))
 	console.add_item("set", set_settings, local.translate("set_cmd"))
 	console.add_item("modules_list", modules_list, local.translate("modules_list_cmd"))
+	console.add_item("ls_status", ls_status, local.translate("ls_status_cmd"))
 	console.run()
 #end define
 
@@ -92,15 +94,40 @@ def status(args):
 
 def update(args):
 	try:
+		if len(args) < 1 or len(args) > 4:
+			raise ValueError
 		module_name = args[0]
+		branch = next(islice(args, 1, None), None)
+		author = next(islice(args, 2, None), None)
+		repo = next(islice(args, 3, None), None)
 	except:
-		color_print("{red}Bad args. Usage:{endc} update <module-name>")
+		color_print("{red}Bad args. Usage:{endc} update <module-name> [<url>] | [<branch>] [<author>] [<repo>]")
 		return
-	#end try
+	# end try
+
+	if branch is not None and "github.com" in branch:
+		author, repo, branch = parse_github_url(branch)
 
 	user = getuser()
 	module = get_module_by_name(local, module_name)
-	update_args = run_module_method_if_exist(local, module, "get_update_args", user=user, restart_service=True)
+
+	try:
+		update_args = run_module_method_if_exist(
+			local,
+			module,
+			"get_update_args",
+			user=user,
+			author=author,
+			repo=repo,
+			branch=branch,
+			restart_service=True,
+		)
+	except Exception as e:
+		color_print("{red}" + str(e) + "{endc}")
+		return
+	# end try
+
+	# Запускаем команду обновления от root
 	exit_code = run_as_root(update_args)
 	if exit_code == 0:
 		set_check_data(module, check_name="update", data=False)
@@ -147,6 +174,10 @@ def modules_list(args):
 	print_table(table)
 #end define
 
+def ls_status(args):
+	ls_monitor = LSMonitor(local)
+	ls_monitor.run_ls_status(args)
+#end define
 
 
 if __name__ == "__main__":

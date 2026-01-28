@@ -9,7 +9,6 @@ from random import randint
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -21,7 +20,8 @@ from mypylib import (
 	get_service_status,
 	get_service_uptime,
 	time2human,
-	check_git_update
+	check_git_update,
+	get_git_author_and_repo,
 )
 
 from utils import (
@@ -34,7 +34,8 @@ from utils import (
 	get_check_port_status,
 	set_check_data,
 	get_check_update_status,
-	run_subprocess
+	run_subprocess,
+	validate_github_repo,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -281,13 +282,26 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, restart_service=False, **kwargs):
+	def get_update_args(self, user=None, author=None, repo=None,  branch=None, restart_service=False, **kwargs):
+		try:
+			git_path = self.get_my_git_path()
+			curr_branch = get_git_branch(git_path)
+			curr_author, curr_repo = get_git_author_and_repo(git_path)
+		except Exception:
+			curr_author = curr_repo = curr_branch = None
+		#end try
+
+		author = author or curr_author or self.go_package.author
+		repo = repo or curr_repo or self.go_package.repo
+		branch = branch or curr_branch or self.go_package.branch
+		validate_github_repo(author, repo, branch)
+
 		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
 		update_args = [
 			"bash",	script_path, 
-			"-a", self.go_package.author, 
-			"-r", self.go_package.repo, 
-			"-b", self.go_package.branch, 
+			"-a", author,
+			"-r", repo,
+			"-b", branch,
 			"-e", self.go_package.entry_point
 		]
 		if restart_service == True:

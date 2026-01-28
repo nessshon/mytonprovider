@@ -3,16 +3,14 @@
 
 import os
 import base64
-import tonutils
-import tonutils.client
-import tonutils.wallet
+
+import pytoniq
 from random import randint
 from asgiref.sync import async_to_sync
 
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -23,12 +21,14 @@ from mypylib import (
 	get_service_status,
 	get_service_uptime,
 	time2human,
-	check_git_update
+	check_git_update,
+	get_git_author_and_repo,
 )
 from adnl_over_tcp import (
-	get_messages,
+	get_lite_balancer,
+	wallet_transfer_return_hash,
 	wait_message,
-	get_account
+	get_account,
 )
 from utils import (
 	get_module_by_name,
@@ -38,14 +38,14 @@ from utils import (
 	get_check_port_status,
 	set_check_data,
 	get_check_update_status,
-	run_subprocess
+	run_subprocess,
+	validate_github_repo,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
 from addr_and_key import (
-	addr_to_bytes,
 	get_pubkey_from_privkey,
-	split_provider_key
+	split_provider_key,
 )
 
 
@@ -148,11 +148,6 @@ class Module():
 			return
 		#end if
 
-		# Проверить что кошелек активен
-		if wallet.status == "uninit":
-			await self.do_deploy(wallet)
-		#end if
-
 		# Зарегистрироваться в списке отправив транзакцию
 		destination = "0:7777777777777777777777777777777777777777777777777777777777777777"
 		provider_pubkey = self.get_provider_pubkey()
@@ -161,41 +156,35 @@ class Module():
 		color_print("{green}provider regiser - OK{endc}")
 	#end define
 
-	async def do_deploy(self, wallet):
-		self.local.add_log("start do_deploy function", "debug")
-		account, shard_account = await get_account(wallet.addr)
-		end_lt = shard_account.last_trans_hash
-		end_hash = shard_account.last_trans_hash.hex()
-
-		msg_hash = await wallet.obj.deploy()
-		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
-	#end define
-
 	async def do_register(self, wallet, destination, comment):
 		self.local.add_log("start do_register function", "debug")
-		account, shard_account = await get_account(wallet.addr)
-		end_lt = shard_account.last_trans_hash
+		account, shard_account = await get_account(self.local, wallet.addr)
+		end_lt = shard_account.last_trans_lt
 		end_hash = shard_account.last_trans_hash.hex()
 
-		msg_hash = await wallet.obj.transfer(
-			destination = destination, 
-			amount = 0.01, 
-			body = comment
+		msg_hash = await wallet_transfer_return_hash(
+			local=self.local,
+			wallet=wallet,
+			destination=destination,
+			amount=0.01,
+			body=comment,
 		)
-		await wait_message(wallet.addr, msg_hash, end_lt, end_hash)
+		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
 		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
 
 	async def get_provider_wallet(self):
 		provider_config = self.get_provider_config()
-		client = tonutils.client.LiteserverClient(is_testnet=False)
+		client = get_lite_balancer(self.local)
+		await client.start_up()
 		private_key = base64.b64decode(provider_config.ProviderKey)
 		wallet = Dict()
-		wallet.obj = tonutils.wallet.WalletV3R2.from_private_key(client, private_key)
-		wallet.addr = wallet.obj.address.to_str()
-		wallet.account = await client.get_raw_account(wallet.addr)
-		wallet.status = wallet.account.status.value
-		wallet.balance = wallet.account.balance /10**9
+		wallet.obj = await pytoniq.WalletV3R2.from_private_key(client, private_key)
+		wallet.addr = wallet.obj.address.to_str(is_bounceable=False)
+		wallet.account = wallet.obj.account
+		wallet.status = wallet.obj.account.state.type_
+		wallet.balance = wallet.obj.balance / 10**9
+		await client.close_all()
 		return wallet
 	#end define
 
@@ -406,7 +395,7 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, restart_service=False, **kwargs):
+	def get_update_args(self, user=None, author=None, repo=None,  branch=None, restart_service=False, **kwargs):
 		# Temporarily. Delete in TODO
 		if self.local.db.ton_storage != None:
 			provider_config = self.get_provider_config()
@@ -414,14 +403,21 @@ class Module():
 			self.set_provider_config(provider_config)
 		#end if
 
+		try:
+			git_path = self.get_my_git_path()
+			curr_branch = get_git_branch(git_path)
+			curr_author, curr_repo = get_git_author_and_repo(git_path)
+		except Exception:
+			curr_author = curr_repo = curr_branch = None
+		#end try
+
+		author = author or curr_author or self.go_package.author
+		repo = repo or curr_repo or self.go_package.repo
+		branch = branch or curr_branch or self.go_package.branch
+		validate_github_repo(author, repo, branch)
+
 		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
-		update_args = [
-			"bash",	script_path, 
-			"-a", self.go_package.author, 
-			"-r", self.go_package.repo, 
-			"-b", self.go_package.branch, 
-			"-e", self.go_package.entry_point
-		]
+		update_args = ["bash",	script_path, "-a", author, "-r", repo, "-b", branch, "-e", self.go_package.entry_point]
 		if restart_service == True:
 			update_args += ["-s", self.service_name]
 		return update_args
@@ -436,7 +432,6 @@ class Module():
 		provider_path = f"{install_answers.storage_path}/provider"
 		db_dir = f"{provider_path}/db"
 		provider_config_path = f"{provider_path}/config.json"
-		provider_config_path
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)

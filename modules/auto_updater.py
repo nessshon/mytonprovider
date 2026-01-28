@@ -3,17 +3,16 @@
 
 from os import stat
 from pwd import getpwuid
+from urllib.error import HTTPError
+
 from mypylib import (
-	MyPyClass,
 	add2systemd,
 	get_git_hash,
 	get_git_last_remote_commit,
-	get_service_status
+	get_git_branch,
 )
 from utils import (
-	get_module_by_name,
 	run_module_method_if_exist,
-	set_check_data,
 	run_subprocess
 )
 from decorators import publick
@@ -44,8 +43,21 @@ class Module():
 		if git_path is None:
 			return
 		local_hash = get_git_hash(git_path)
-		last_commit_hash, days_ago = get_git_last_remote_commit(git_path, with_days_ago=True)
-		#print(module.name, local_hash, last_commit_hash, days_ago)
+		local_branch = get_git_branch(git_path)
+
+		try:
+			last_commit_hash, days_ago = get_git_last_remote_commit(git_path, local_branch, with_days_ago=True)
+		except HTTPError as e:
+			msg = str(e).lower()
+			if e.code == 403 and "rate limit" in msg:
+				self.local.add_log(f"GitHub rate limit exceeded for module `{module.name}`", mode="error")
+				return
+			self.local.add_log(f"HTTP error for module `{module.name}`: {e!r}", mode="error")
+			return
+		except Exception as e:
+			self.local.add_log(f"Failed to check `{module.name}`: {e!r}", mode="error")
+			return
+
 		if local_hash != last_commit_hash and days_ago > 7:
 			self.local.add_log(f"{module.name} module update available")
 			self.update_module(module)
@@ -70,8 +82,8 @@ class Module():
 	def install(self, install_args, install_answers):
 		# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 		# Создать службу
-		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/updater.py"
-		add2systemd(name=self.service_name, user="root", start=start_cmd, workdir=install_args.src_path, force=True)
+		start_cmd = f"{install_args.venv_path}/bin/python3 -u {install_args.src_path}/updater.py"
+		add2systemd(name=self.service_name, user="root", start=start_cmd, force=True)
 
 		# Запустить службу
 		self.local.start_service(self.service_name)

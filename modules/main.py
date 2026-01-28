@@ -2,24 +2,22 @@
 # -*- coding: utf_8 -*-
 
 import os
-import json
 import psutil
 import subprocess
-from random import randint
 from mypylib import (
 	Dict,
 	bcolors,
-	MyPyClass,
 	color_print,
 	add2systemd,
 	write_config_to_file,
 	get_git_hash,
 	get_git_branch,
+	get_git_author_and_repo,
 	get_service_status,
 	get_service_uptime,
 	time2human,
 	check_git_update,
-	get_load_avg
+	get_load_avg,
 )
 from utils import (
 	get_module_by_name,
@@ -27,18 +25,12 @@ from utils import (
 	get_service_status_color,
 	set_check_data,
 	get_check_update_status,
-	get_color_int
+	get_color_int,
+	validate_github_repo,
 )
 from server_info import (
-	get_cpu_name,
-	get_product_name,
-	is_product_virtual,
-	do_beacon_ping,
-	get_pings_values,
-	get_storage_disk_name,
-	get_uname,
 	get_ram_info,
-	get_swap_info
+	get_swap_info,
 )
 from decorators import publick
 
@@ -49,6 +41,11 @@ class Module():
 		self.local = local
 		self.mandatory = True
 		self.local.add_log(f"{self.name} module init done", "debug")
+
+		self.py_package = Dict()
+		self.py_package.author = "igroman787"
+		self.py_package.repo = "mytonprovider"
+		self.py_package.branch = "master"
 
 		self.global_config_name = "global.config.json"
 		self.global_config_dir = "/var/ton"
@@ -175,11 +172,22 @@ class Module():
 	#end define
 
 	@publick
-	def get_update_args(self, user, **kwargs):
+	def get_update_args(self, user=None, author=None, repo=None,  branch=None, **kwargs):
+		try:
+			git_path = self.get_my_git_path()
+			curr_branch = get_git_branch(git_path)
+			curr_author, curr_repo = get_git_author_and_repo(git_path)
+		except Exception:
+			curr_author = curr_repo = curr_branch = None
+		# end try
+
+		author = author or curr_author or self.py_package.author
+		repo = repo or curr_repo or self.py_package.repo
+		branch = branch or curr_branch or self.py_package.branch
+		validate_github_repo(author, repo, branch)
+
 		script_path = f"{self.local.buffer.my_dir}/scripts/update.sh"
-		update_args = [
-			"bash", script_path, "-u", user, "-d", self.local.buffer.venvs_dir
-		]
+		update_args = ["bash", script_path, "-u", user, "-a", author, "-r", repo, "-b", branch]
 		return update_args
 	#end define
 
@@ -218,7 +226,7 @@ class Module():
 		])
 
 		# Создать службу
-		start_cmd = f"{install_args.venv_path}/bin/python3 {install_args.src_path}/mytonprovider.py"
+		start_cmd = f"{install_args.venv_path}/bin/python3 -u {install_args.src_path}/mytonprovider.py"
 		start_daemon_cmd = f"{start_cmd} --daemon"
 		add2systemd(name=self.service_name, user=install_args.user, start=start_daemon_cmd, force=True)
 
