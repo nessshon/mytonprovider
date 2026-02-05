@@ -194,14 +194,24 @@
 		"en": "Display module status",
 		"zh_TW": "顯示模組狀態"
 	},
-	"123": {
-		"ru": "aaa",
-		"en": "bbb",
-		"zh_TW": "ccc"
-	},
 	"ls_status_cmd": {
 		"ru": "Отобразить статус лайт-серверов",
 		"en": "Display lite server status",
 		"zh_TW": "顯示 lite server 狀態"
+	},
+	"verify_bag_cmd": {
+		"ru": "Проверить целостность контейнера",
+		"en": "Verify container integrity",
+		"zh_TW": "驗證容器完整性"
+	},
+	"storage_log_cmd": {
+		"ru": "Установить уровень логирования ton-storage",
+		"en": "Set ton-storage log level",
+		"zh_TW": "設定 ton-storage 日誌等級"
+	},
+	"123": {
+		"ru": "aaa",
+		"en": "bbb",
+		"zh_TW": "ccc"
 	}
 }
