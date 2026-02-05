@@ -22,6 +22,7 @@ from mypylib import (
 	time2human,
 	check_git_update,
 	get_git_author_and_repo,
+	get_timestamp,
 )
 
 from utils import (
@@ -56,6 +57,13 @@ class Module():
 		self.go_package.entry_point = "cli/main.go"
 
 		self.daemon_interval = 86400
+		self.extra_daemons = [
+			Dict(
+				name="ton-storage-verify",
+				func=self.verify_daemon,
+				interval=600,
+			),
+		]
 	#end define
 
 	@publick
@@ -70,6 +78,18 @@ class Module():
 			if bag_id not in bags_list:
 				self.local.add_log(f"Cleaning up old BAGs: {bags_dir}/{bag_id}", "warning")
 				shutil.rmtree(f"{bags_dir}/{bag_id}")
+	#end define
+
+	def verify_daemon(self):
+		try:
+			bag_id = self.get_next_bag_to_verify()
+			if bag_id is None:
+				return
+			self.local.add_log(f"Verifying BAG: {bag_id}", "debug")
+			result = self.do_verify_bag(bag_id)
+			self.save_verify_result(bag_id, result)
+		except Exception as ex:
+			self.local.add_log(f"verify_daemon error: {ex}", "error")
 	#end define
 
 	@publick
@@ -95,8 +115,20 @@ class Module():
 		bags_list.cmd = "bags_list"
 		bags_list.func = self.print_bags_list
 		bags_list.desc = self.local.translate("bags_list_cmd")
-
 		commands.append(bags_list)
+
+		verify_bag = Dict()
+		verify_bag.cmd = "verify_bag"
+		verify_bag.func = self.cmd_verify_bag
+		verify_bag.desc = self.local.translate("verify_bag_cmd")
+		commands.append(verify_bag)
+
+		storage_log = Dict()
+		storage_log.cmd = "storage_log"
+		storage_log.func = self.cmd_storage_log
+		storage_log.desc = self.local.translate("storage_log_cmd")
+		commands.append(storage_log)
+
 		return commands
 	#end define
 
@@ -117,7 +149,7 @@ class Module():
 		storage_config = self.get_storage_config()
 		storage_pubkey = self.get_storage_pubkey()
 		listen_ip, storage_port = storage_config.ListenAddr.split(':')
-		
+
 		own_ip = get_own_ip()
 		if storage_config.ExternalIP != own_ip:
 			raise Exception("storage_config.ExternalIP != own_ip")
@@ -253,6 +285,120 @@ class Module():
 		return git_path
 	#end define
 
+	def get_next_bag_to_verify(self):
+		api_data = self.get_api_data()
+		bags_list = self.get_bags_list(api_data)
+		if not bags_list:
+			return None
+
+		bags_verify_state = self.get_bags_verify_state()
+		now = get_timestamp()
+
+		oldest_bag_id = None
+		oldest_time = now
+
+		for bag_id in bags_list:
+			bag_id = bag_id.upper()
+			last_verified = bags_verify_state.get(bag_id, 0)
+			# Проверяем, что с момента последней проверки прошло ≥ 30 дней
+			if now - last_verified >= 30 * 86400:
+				if last_verified < oldest_time:
+					oldest_time = last_verified
+					oldest_bag_id = bag_id
+
+		return oldest_bag_id
+	#end define
+
+	def get_bags_verify_state(self):
+		if self.local.db.ton_storage is None:
+			return dict()
+		return self.local.db.ton_storage.get("bags_verify_state", dict())
+	#end define
+
+	def save_verify_result(self, bag_id, result):
+		if self.local.db.ton_storage is None:
+			return
+		if self.local.db.ton_storage.bags_verify_state is None:
+			self.local.db.ton_storage.bags_verify_state = dict()
+
+		now = get_timestamp()
+		bag_id = bag_id.upper()
+		self.local.db.ton_storage.bags_verify_state[bag_id] = now
+
+		if result:
+			self.local.add_log(f"BAG {bag_id} verified OK", "info")
+		else:
+			self.local.add_log(f"BAG {bag_id} verification FAILED, redownload started", "warning")
+	#end define
+
+	def do_verify_bag(self, bag_id):
+		api = self.local.db.ton_storage.api
+		api_url = f"http://{api.host}:{api.port}/api/v1/verify"
+		data = {"bag_id": bag_id}
+		resp = requests.post(api_url, json=data, timeout=60)
+		if resp.status_code != 200:
+			try:
+				resp_data = resp.json()
+				error = resp_data.get("error", "unknown error")
+			except:
+				error = resp.text
+			raise Exception(f"Failed to verify bag {bag_id}: HTTP {resp.status_code} ({error})")
+		result = resp.json()
+		return result.get("ok", False)
+	#end define
+
+	def cmd_verify_bag(self, args):
+		try:
+			bag_id = args[0].upper()
+		except:
+			color_print("{red}Bad args. Usage:{endc} verify_bag <bag_id>")
+			return
+
+		if len(bag_id) != 64:
+			color_print("{red}Error: bag_id must be 64 characters{endc}")
+			return
+
+		color_print(f"Verifying BAG: {{yellow}}{bag_id}{{endc}}")
+		try:
+			result = self.do_verify_bag(bag_id)
+			self.save_verify_result(bag_id, result)
+			if result:
+				color_print("{green}BAG verified OK - files are intact{endc}")
+			else:
+				color_print("{yellow}BAG verification failed - redownload started{endc}")
+		except Exception as ex:
+			color_print(f"{{red}}Error: {ex}{{endc}}")
+	#end define
+
+	def set_log_level(self, verbosity):
+		api = self.local.db.ton_storage.api
+		api_url = f"http://{api.host}:{api.port}/api/v1/logger"
+		data = {"verbosity": verbosity}
+		resp = requests.post(api_url, json=data, timeout=3)
+		if resp.status_code != 200:
+			raise Exception(f"Failed to set log level: HTTP {resp.status_code}")
+		return True
+	#end define
+
+	def cmd_storage_log(self, args):
+		try:
+			verbosity = int(args[0])
+		except:
+			color_print("{red}Bad args. Usage:{endc} storage_log <verbosity>")
+			color_print("Verbosity: 0-1=error, 2=info, 3-10=debug, 11-13=debug+loggers")
+			return
+
+		if verbosity < 0 or verbosity > 13:
+			color_print("{red}Error: verbosity must be 0-13{endc}")
+			return
+
+		try:
+			self.set_log_level(verbosity)
+			color_print(f"ton-storage log level set to {{green}}{verbosity}{{endc}}")
+		except Exception as ex:
+			color_print(f"{{red}}Error: {ex}{{endc}}")
+	#end define
+
 	@publick
 	def print_bags_list(self, args):
 		api_data = self.get_api_data()
@@ -298,7 +444,7 @@ class Module():
 
 		script_path = f"{self.local.buffer.my_dir}/scripts/install_go_package.sh"
 		update_args = [
-			"bash",	script_path, 
+			"bash",	script_path,
 			"-a", author,
 			"-r", repo,
 			"-b", branch,
@@ -327,8 +473,8 @@ class Module():
 		# Подготовить папку
 		os.makedirs(install_answers.storage_path, exist_ok=True)
 		chown_args = [
-			"chown", 
-			install_args.user + ':' + install_args.user, 
+			"chown",
+			install_args.user + ':' + install_args.user,
 			install_answers.storage_path
 		]
 		run_subprocess(chown_args, timeout=3)
@@ -364,7 +510,7 @@ class Module():
 		api = Dict()
 		api.host = host
 		api.port = api_port
-		
+
 		ton_storage.api = api
 		mconfig.ton_storage = ton_storage
 
