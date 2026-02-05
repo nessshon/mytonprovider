@@ -47,11 +47,19 @@ def init():
 def init_daemon():
 	#threading.current_thread().name = "daemon"
 	for module in get_modules(local):
+		# Основной daemon
 		method = getattr(module, "daemon", None)
 		if method == None:
 			continue
 		cycle_name = f"{module.name}-daemon"
 		local.start_cycle(module.daemon, name=cycle_name, sec=module.daemon_interval)
+
+		# Дополнительные daemons
+		extra_daemons = getattr(module, "extra_daemons", None)
+		if extra_daemons == None:
+			continue
+		for extra_daemon in extra_daemons:
+			local.start_cycle(extra_daemon.func, name=extra_daemon.name, sec=extra_daemon.interval)
 	thr_sleep()
 #end define
 
