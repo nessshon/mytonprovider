@@ -23,6 +23,7 @@ from mypylib import (
 	check_git_update,
 	get_git_author_and_repo,
 	get_timestamp,
+	timeago,
 )
 
 from utils import (
@@ -405,7 +406,8 @@ class Module():
 		if api_data.bags == None:
 			print("no data")
 			return
-		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed"]]
+		bags_verify_state = self.get_bags_verify_state()
+		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed", "Last verified"]]
 		for bag in api_data.bags:
 			bag_id = reduct(bag.bag_id)
 			progress = self.get_progress(bag)
@@ -416,7 +418,12 @@ class Module():
 			size_text = f"{size} GB"
 			download_speed_text = f"{download_speed} MB/s"
 			upload_speed_text = f"{upload_speed} MB/s"
-			table += [[bag_id, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text]]
+			last_verified = bags_verify_state.get(bag.bag_id.upper(), 0)
+			if last_verified == 0:
+				last_verified_text = "never"
+			else:
+				last_verified_text = timeago(last_verified)
+			table += [[bag_id, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text, last_verified_text]]
 		print_table(table)
 	#end define
 
