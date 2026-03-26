@@ -200,9 +200,9 @@
 		"zh_TW": "顯示 lite server 狀態"
 	},
 	"verify_bag_cmd": {
-		"ru": "Проверить целостность контейнера",
-		"en": "Verify container integrity",
-		"zh_TW": "驗證容器完整性"
+		"ru": "Проверить целостность бэга",
+		"en": "Verify bag integrity",
+		"zh_TW": "驗證 bag 完整性"
 	},
 	"storage_log_cmd": {
 		"ru": "Установить уровень логирования ton-storage",
