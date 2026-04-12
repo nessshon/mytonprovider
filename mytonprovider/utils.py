@@ -109,7 +109,7 @@ def _run_git_local(args: list[str], cwd: Path) -> str:
     """Run a git command in *cwd* and return stripped stdout."""
     try:
         result = subprocess.run(
-            ["git", *args],
+            ["git", "-c", f"safe.directory={cwd}", *args],
             cwd=str(cwd),
             capture_output=True,
             check=False,

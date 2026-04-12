@@ -112,7 +112,7 @@ clone_repository() {
 	rm -rf "${SRC_PATH}"
 	mv "${SRC_PATH}_tmp" "${SRC_PATH}"
 	# Allow non-root users (daemon) to read git metadata for update checks.
-	git config --global --add safe.directory "${SRC_PATH}"
+	git config --system --add safe.directory "${SRC_PATH}"
 }
 
 compile() {
