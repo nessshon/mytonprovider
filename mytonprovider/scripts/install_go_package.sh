@@ -9,6 +9,16 @@ readonly C_STEP='\033[92m'
 readonly C_ERROR='\033[91m'
 readonly C_RESET='\033[0m'
 
+die() {
+	echo -e "${C_ERROR}${*}${C_RESET}" >&2
+	exit 1
+}
+
+step() {
+	local number="$1" total="$2" message="$3"
+	echo -e "${C_STEP}[${number}/${total}]${C_RESET} ${message}"
+}
+
 # Run silently; dump full output only on failure.
 run_quiet() {
 	local log
@@ -51,8 +61,7 @@ if [[ "${1-}" =~ ^-*h(elp)?$ ]]; then
 fi
 
 if [[ "$(id -u)" != "0" ]]; then
-	echo "Please run script as root"
-	exit 1
+	die "Please run script as root"
 fi
 
 while getopts "a:r:b:t:e:s:h" flag; do
@@ -72,12 +81,10 @@ while getopts "a:r:b:t:e:s:h" flag; do
 done
 
 if [[ -n "${branch}" ]] && [[ -n "${tag}" ]]; then
-	echo "Error: -b and -t are mutually exclusive"
-	exit 1
+	die "Error: -b and -t are mutually exclusive"
 fi
 if [[ -z "${branch}" ]] && [[ -z "${tag}" ]]; then
-	echo "Error: one of -b or -t must be provided"
-	exit 1
+	die "Error: one of -b or -t must be provided"
 fi
 
 readonly SRC_DIR="/usr/src"
@@ -148,17 +155,17 @@ service_restart() {
 }
 
 main() {
-	echo -e "${C_STEP}[1/4]${C_RESET} Cloning ${repo} repository"
+	step 1 4 "Cloning ${repo} repository"
 	clone_repository
 
-	echo -e "${C_STEP}[2/4]${C_RESET} Installing required packages"
+	step 2 4 "Installing required packages"
 	check_go_version "${SRC_PATH}/go.mod" "${GO_PATH}"
 
-	echo -e "${C_STEP}[3/4]${C_RESET} Source compilation"
+	step 3 4 "Source compilation"
 	compile
 	service_restart
 
-	echo -e "${C_STEP}[4/4]${C_RESET} ${repo} installation complete"
+	step 4 4 "${repo} installation complete"
 }
 
-main
+main "$@"
