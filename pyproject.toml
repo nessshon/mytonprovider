@@ -9,7 +9,7 @@ dynamic = ["version"]
 dependencies = [
     "asgiref==3.8.1",
     "inquirer==3.4.0",
-    "mypylib @ git+https://github.com/nessshon/mypylib@v1.1.0",
+    "mypylib @ git+https://github.com/nessshon/mypylib@v1.0.0",
     "mypyconsole @ git+https://github.com/nessshon/mypyconsole@v1.0.0",
     "speedtest-cli",
     "tonutils==2.1.0"
