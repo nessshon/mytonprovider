@@ -45,7 +45,6 @@ from mytonprovider.modules.core import (
 from mytonprovider.types import Command, InstallContext
 from mytonprovider.utils import (
     check_adnl_connection,
-    get_config_path,
     get_service_status_color,
     read_git_clone_version,
 )
@@ -240,17 +239,14 @@ class TonStorageModule(
             storage_config.ExternalIP = get_own_ip()
             write_config_to_file(str(storage_config_path), storage_config)
 
-            config_path = get_config_path()
-            mconfig = read_config_from_file(str(config_path))
             ton_storage = Dict()
             ton_storage.storage_path = str(storage_path)
             ton_storage.config_path = str(storage_config_path)
             ton_storage.api = Dict()
             ton_storage.api.host = API_HOST
             ton_storage.api.port = api_port
-            mconfig.ton_storage = ton_storage
-            write_config_to_file(str(config_path), mconfig)
             self.app.db.ton_storage = ton_storage
+            self.app.save()
 
             self.app.add_log(f"Starting {self.service_name} service")
             self.app.start_service(self.service_name)
@@ -260,22 +256,12 @@ class TonStorageModule(
             raise
 
     def _rollback_mconfig(self) -> None:
-        """Best-effort removal of the ``ton_storage`` section from mconfig."""
-        config_path = get_config_path()
-        try:
-            mconfig = read_config_from_file(str(config_path))
-        except Exception as exc:
-            self.app.add_log(f"{self.name}: rollback read failed: {exc}", ERROR)
-            return
-        if "ton_storage" not in mconfig:
-            return
-        del mconfig["ton_storage"]
-        try:
-            write_config_to_file(str(config_path), mconfig)
-        except Exception as exc:
-            self.app.add_log(f"{self.name}: rollback write failed: {exc}", ERROR)
-            return
+        """Best-effort removal of the ``ton_storage`` section from db."""
         self.app.db.pop("ton_storage", None)
+        try:
+            self.app.save()
+        except Exception as exc:
+            self.app.add_log(f"{self.name}: rollback save failed: {exc}", ERROR)
 
     def _check_update_background(self) -> None:
         try:
@@ -353,7 +339,7 @@ class TonStorageModule(
         if self.app.db.ton_storage.bags_verify_state is None:
             self.app.db.ton_storage.bags_verify_state = Dict()
         self.app.db.ton_storage.bags_verify_state[bag_id.upper()] = get_timestamp()
-        write_config_to_file(str(get_config_path()), self.app.db)
+        self.app.save()
         if ok:
             self.app.add_log(f"BAG {bag_id} verified OK", INFO)
         else:

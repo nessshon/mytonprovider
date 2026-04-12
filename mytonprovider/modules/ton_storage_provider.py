@@ -50,7 +50,6 @@ from mytonprovider.modules.ton_storage import TonStorageModule
 from mytonprovider.types import Command, InstallContext
 from mytonprovider.utils import (
     check_adnl_connection,
-    get_config_path,
     get_service_status_color,
     read_git_clone_version,
 )
@@ -285,14 +284,11 @@ class TonStorageProviderModule(
             provider_config.CRON.Enabled = True
             write_config_to_file(str(provider_config_path), provider_config)
 
-            config_path = get_config_path()
-            mconfig = read_config_from_file(str(config_path))
             provider = Dict()
             provider.config_path = str(provider_config_path)
             provider.is_already_registered = False
-            mconfig.ton_storage.provider = provider
-            write_config_to_file(str(config_path), mconfig)
             self.app.db.ton_storage.provider = provider
+            self.app.save()
 
             self.app.add_log(f"Starting {self.service_name} service")
             self.app.start_service(self.service_name)
@@ -302,22 +298,16 @@ class TonStorageProviderModule(
             raise
 
     def _rollback_mconfig(self) -> None:
-        """Best-effort removal of the ``ton_storage.provider`` section from mconfig."""
-        config_path = get_config_path()
+        """Best-effort removal of the ``ton_storage.provider`` section from db."""
+        if self.app.db.ton_storage is None:
+            return
+        if "provider" not in self.app.db.ton_storage:
+            return
+        del self.app.db.ton_storage["provider"]
         try:
-            mconfig = read_config_from_file(str(config_path))
+            self.app.save()
         except Exception as exc:
-            self.app.add_log(f"{self.name}: rollback read failed: {exc}", ERROR)
-            return
-        if mconfig.ton_storage is None or "provider" not in mconfig.ton_storage:
-            return
-        del mconfig.ton_storage["provider"]
-        try:
-            write_config_to_file(str(config_path), mconfig)
-        except Exception as exc:
-            self.app.add_log(f"{self.name}: rollback write failed: {exc}", ERROR)
-            return
-        if self.app.db.ton_storage is not None:
+            self.app.add_log(f"{self.name}: rollback save failed: {exc}", ERROR)
             self.app.db.ton_storage.pop("provider", None)
 
     def _check_update_background(self) -> None:
@@ -463,7 +453,7 @@ class TonStorageProviderModule(
             return
 
         self.app.db.ton_storage.provider.is_already_registered = True
-        write_config_to_file(str(get_config_path()), self.app.db)
+        self.app.save()
         color_print("provider register {green}OK{endc}")
 
     def _cmd_import_wallet(self, args: list[str]) -> None:

@@ -35,6 +35,7 @@ readonly APT_BASE_PACKAGES=(
 	curl
 	wget
 	fio
+	build-essential
 	software-properties-common
 )
 

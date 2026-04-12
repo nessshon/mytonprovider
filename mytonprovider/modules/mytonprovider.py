@@ -10,7 +10,6 @@ from typing import TYPE_CHECKING, Final
 from mypylib import (
     DEBUG,
     INFO,
-    Dict,
     add2systemd,
     bcolors,
     color_print,
@@ -22,7 +21,6 @@ from mypylib import (
     get_service_uptime,
     get_swap_info,
     time2human,
-    write_config_to_file,
 )
 
 from mytonprovider import constants
@@ -127,7 +125,6 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         user_home = Path(user_info.pw_dir)
 
         work_dir = user_home / constants.WORK_DIR
-        config_path = user_home / constants.CONFIG_PATH
         venv_path = user_home / constants.VENV_PATH
         venv_exe = venv_path / "bin" / constants.APP_NAME
 
@@ -145,13 +142,11 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
 
         global_config_path.write_text(get_request(constants.GLOBAL_CONFIG_URL))
 
-        mconfig = Dict()
-        mconfig.config = Dict()
-        mconfig.config.logLevel = "debug"
-        mconfig.config.isLocaldbSaving = True
-        mconfig.config.isStartOnlyOneProcess = False
-        mconfig.install_user = context.user
-        write_config_to_file(str(config_path), mconfig)
+        self.app.db.config.logLevel = "debug"
+        self.app.db.config.isLocaldbSaving = True
+        self.app.db.config.isStartOnlyOneProcess = False
+        self.app.db.install_user = context.user
+        self.app.save()
 
         subprocess.run(
             [
