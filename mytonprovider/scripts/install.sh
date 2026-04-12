@@ -221,7 +221,10 @@ install_matching_venv_package() {
 
 create_venv() {
 	local user="$1" venv_path="$2"
-	sudo -u "${user}" mkdir -p "$(dirname "${venv_path}")"
+	local venvs_dir
+	venvs_dir="$(dirname "${venv_path}")"
+	mkdir -p "${venvs_dir}"
+	chown "${user}:${user}" "${venvs_dir}"
 	rm -rf "${venv_path}"
 	sudo -u "${user}" "${python_bin}" -m venv "${venv_path}"
 	sudo -u "${user}" "${venv_path}/bin/pip" install --upgrade pip
