@@ -52,6 +52,20 @@ step() {
 	echo -e "${C_STEP}[${number}/${total}]${C_RESET} ${message}"
 }
 
+# Run a command silently; on failure dump captured output and exit.
+run_quiet() {
+	local log
+	log=$(mktemp)
+	if "$@" > "${log}" 2>&1; then
+		rm -f "${log}"
+	else
+		echo -e "${C_ERROR}Command failed: $*${C_RESET}" >&2
+		cat "${log}" >&2
+		rm -f "${log}"
+		exit 1
+	fi
+}
+
 show_help() {
 	cat <<EOF
 Usage: $(basename "$0") [options] [-- <init args>...]
@@ -139,8 +153,8 @@ resolve_user_home() {
 }
 
 install_system_packages() {
-	apt update
-	apt install -y "${APT_BASE_PACKAGES[@]}"
+	run_quiet apt update
+	run_quiet apt install -y "${APT_BASE_PACKAGES[@]}"
 }
 
 # True if $1 is a python binary with version >= REQUIRED.
@@ -171,9 +185,9 @@ install_fallback_python() {
 
 	case "${ID:-}" in
 		ubuntu)
-			add-apt-repository -y ppa:deadsnakes/ppa
-			apt update
-			apt install -y \
+			run_quiet add-apt-repository -y ppa:deadsnakes/ppa
+			run_quiet apt update
+			run_quiet apt install -y \
 				"${FALLBACK_PYTHON}" \
 				"${FALLBACK_PYTHON}-venv" \
 				"${FALLBACK_PYTHON}-dev"
@@ -205,7 +219,7 @@ install_matching_venv_package() {
 	else
 		pkg="${python_bin}-venv"
 	fi
-	apt install -y "${pkg}"
+	run_quiet apt install -y "${pkg}"
 }
 
 create_venv() {
@@ -215,14 +229,14 @@ create_venv() {
 	mkdir -p "${venvs_dir}"
 	chown "${user}:${user}" "${venvs_dir}"
 	rm -rf "${venv_path}"
-	sudo -u "${user}" "${python_bin}" -m venv "${venv_path}"
-	sudo -u "${user}" "${venv_path}/bin/pip" install --upgrade pip
+	run_quiet sudo -u "${user}" "${python_bin}" -m venv "${venv_path}"
+	run_quiet sudo -u "${user}" "${venv_path}/bin/pip" install --upgrade pip
 }
 
 # pip install from git populates PEP 610 direct_url.json (needed for self-update).
 install_package_from_git() {
 	local user="$1" venv_path="$2"
-	sudo -u "${user}" "${venv_path}/bin/pip" install \
+	run_quiet sudo -u "${user}" "${venv_path}/bin/pip" install \
 		"git+https://github.com/${author}/${repo}@${branch}"
 }
 
