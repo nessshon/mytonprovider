@@ -41,11 +41,11 @@ from mytonprovider.modules.core import (
     Statusable,
     Updatable,
 )
-from mytonprovider.types import Command, InstallContext
+from mytonprovider.types import Command, InstallContext, StatusBlock
 from mytonprovider.utils import (
     check_adnl_connection,
-    get_service_status_color,
     read_git_clone_version,
+    render_status_block,
 )
 
 if TYPE_CHECKING:
@@ -134,13 +134,19 @@ class TonStorageModule(
         return args
 
     def show_status(self) -> None:
-        color_print("{cyan}===[ Local storage status ]==={endc}")
-        self._print_module_name()
-        self._print_bags_num()
-        self._print_disk_space()
-        self._print_port_status()
-        self._print_service_status()
-        self._print_version()
+        block = StatusBlock(
+            name=self.name,
+            version=self.format_version(),
+            card=self._get_card(),
+            rows=[
+                self._get_bags_num(),
+                self._get_disk_space(),
+                self._get_port_status(),
+            ],
+            service_text=self._get_service_text(),
+            update_text=self._get_update_text(),
+        )
+        render_status_block(block)
 
     def get_used_space_gb(self) -> float:
         """Return total size of tracked BAGs in GB."""
@@ -311,7 +317,7 @@ class TonStorageModule(
         return Dict(response.json())
 
     @staticmethod
-    def _get_bags_num(api_data: Dict) -> int:
+    def _get_bags_num_count(api_data: Dict) -> int:
         bags = api_data.bags or []
         return len(bags)
 
@@ -451,54 +457,62 @@ class TonStorageModule(
             return 0.0
         return round(float(bag.downloaded) / float(bag.size) * 100, 2)
 
-    def _print_module_name(self) -> None:
-        module_name = bcolors.yellow_text(self.name)
-        text = self.app.translate("module_name").format(module_name)
-        print(text)
+    def _get_card(self) -> list[tuple[str, str]]:
+        card: list[tuple[str, str]] = []
+        try:
+            card.append(("Storage path", bcolors.yellow_text(self.app.db.ton_storage.storage_path)))
+        except (AttributeError, TypeError):
+            card.append(("Storage path", bcolors.red_text("n/a")))
+        try:
+            card.append(("ADNL key", bcolors.yellow_text(self.get_storage_pubkey())))
+        except (RuntimeError, AttributeError, TypeError):
+            card.append(("ADNL key", bcolors.red_text("n/a")))
+        return card
 
-    def _print_bags_num(self) -> None:
+    def _get_bags_num(self) -> tuple[str, str]:
         try:
             api_data = self._get_api_data()
-            bags_num_text = bcolors.green_text(self._get_bags_num(api_data))
-            used_text = bcolors.green_text(self._get_bags_size_gb(api_data))
+            count = bcolors.green_text(self._get_bags_num_count(api_data))
+            size = bcolors.green_text(f"{self._get_bags_size_gb(api_data)} GB")
+            return ("Stored containers", f"{count} ({size})")
         except (RuntimeError, AttributeError, TypeError):
-            bags_num_text = bcolors.red_text("n/a")
-            used_text = bcolors.red_text("n/a")
-        text = self.app.translate("bags_num").format(bags_num_text, used_text)
-        print(text)
+            return ("Stored containers", bcolors.red_text("n/a"))
 
-    def _print_disk_space(self) -> None:
+    def _get_disk_space(self) -> tuple[str, str]:
         try:
             storage_path = self.app.db.ton_storage.storage_path
             disk = get_disk_space(storage_path, unit=ByteUnit.GB, ndigits=2)
-            used_text = bcolors.green_text(disk.used)
-            total_text = bcolors.yellow_text(disk.total)
+            used = bcolors.green_text(disk.used)
+            total = bcolors.yellow_text(disk.total)
+            return ("Disk space used / total", f"{used} / {total} GB")
         except (RuntimeError, OSError, AttributeError):
-            used_text = bcolors.red_text("n/a")
-            total_text = bcolors.red_text("n/a")
-        text = self.app.translate("disk_space").format(used_text, total_text)
-        print(text)
+            return ("Disk space used / total", bcolors.red_text("n/a"))
 
-    def _print_port_status(self) -> None:
+    def _get_port_status(self) -> tuple[str, str]:
         try:
             storage_config = self._read_storage_config()
-            _, storage_port_str = storage_config.ListenAddr.split(":")
+            _, port_str = storage_config.ListenAddr.split(":")
         except (RuntimeError, AttributeError, ValueError):
-            storage_port_str = "?"
-        port_color = bcolors.yellow_text(f"{storage_port_str} udp")
+            port_str = "?"
         if self._port_check_ok:
-            status_color = bcolors.green_text("open")
+            status = f"{bcolors.green_text('✓')} {bcolors.green_text('open')}"
         elif self._port_check_ok is False:
-            status_color = bcolors.red_text("closed")
+            status = f"{bcolors.red_text('✗')} {bcolors.red_text('closed')}"
         else:
-            status_color = bcolors.red_text("n/a")
-        text = self.app.translate("port_status").format(port_color, status_color)
-        color_print(text)
+            status = bcolors.red_text("n/a")
+        return (f"Port {port_str} udp", status)
 
-    def _print_service_status(self) -> None:
+    def _get_service_text(self) -> str:
         is_active = get_service_status(self.service_name)
         uptime = get_service_uptime(self.service_name) or 0
-        status_color = get_service_status_color(is_active)
-        uptime_color = bcolors.green_text(time2human(uptime))
-        text = self.app.translate("service_status_and_uptime").format(status_color, uptime_color)
-        color_print(text)
+        if is_active:
+            indicator = bcolors.green_text("✓")
+            status = bcolors.green_text("working")
+            return f"{indicator} {status}, uptime {bcolors.green_text(time2human(uptime))}"
+        return f"{bcolors.red_text('✗')} {bcolors.red_text('not working')}"
+
+    def _get_update_text(self) -> str | None:
+        status = self._update_status
+        if status and status.available and status.target:
+            return f"Update available: {status.target.ref}"
+        return None

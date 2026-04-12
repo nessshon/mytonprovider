@@ -47,11 +47,11 @@ from mytonprovider.modules.core import (
     Updatable,
 )
 from mytonprovider.modules.ton_storage import TonStorageModule
-from mytonprovider.types import Command, InstallContext
+from mytonprovider.types import Command, InstallContext, StatusBlock
 from mytonprovider.utils import (
     check_adnl_connection,
-    get_service_status_color,
     read_git_clone_version,
+    render_status_block,
 )
 
 if TYPE_CHECKING:
@@ -158,17 +158,16 @@ class TonStorageProviderModule(
         return args
 
     def show_status(self) -> None:
-        color_print("{cyan}===[ Local provider status ]==={endc}")
-        self._print_module_name()
-        self._print_provider_pubkey()
-        self._print_provider_wallet()
-        self._print_storage_cost()
-        self._print_profit()
-        self._print_provider_space()
-        self._print_max_bag_size()
-        self._print_port_status()
-        self._print_service_status()
-        self._print_version()
+        card, rows = self._get_card_and_rows()
+        block = StatusBlock(
+            name=self.name,
+            version=self.format_version(),
+            card=card,
+            rows=rows,
+            service_text=self._get_service_text(),
+            update_text=self._get_update_text(),
+        )
+        render_status_block(block)
 
     def get_commands(self) -> list[Command]:
         return [
@@ -623,92 +622,89 @@ class TonStorageProviderModule(
 
         color_print(f"set_max_bag_size = {gb} GB {{green}}OK{{endc}}")
 
-    def _print_module_name(self) -> None:
-        module_name = bcolors.yellow_text(self.name)
-        text = self.app.translate("module_name").format(module_name)
-        print(text)
-
-    def _print_provider_pubkey(self) -> None:
-        try:
-            pubkey = self.get_provider_pubkey()
-            pubkey_text = bcolors.yellow_text(pubkey)
-        except (RuntimeError, AttributeError, TypeError):
-            pubkey_text = bcolors.red_text("n/a")
-        print(self.app.translate("provider_pubkey").format(pubkey_text))
-
     @async_to_sync
-    async def _print_provider_wallet(self) -> None:
+    async def _get_card_and_rows(
+        self,
+    ) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
+        card: list[tuple[str, str]] = []
+        try:
+            card.append(("Public key", bcolors.yellow_text(self.get_provider_pubkey())))
+        except (RuntimeError, AttributeError, TypeError):
+            card.append(("Public key", bcolors.red_text("n/a")))
+        try:
+            card.append(("ADNL key", bcolors.yellow_text(self.get_adnl_pubkey())))
+        except (RuntimeError, AttributeError, TypeError):
+            card.append(("ADNL key", bcolors.red_text("n/a")))
         try:
             async with self.ton_client:
                 wallet = await self._get_refreshed_wallet()
-            addr_text = bcolors.yellow_text(wallet.address.to_str(is_bounceable=False))
-            balance_text = bcolors.green_text(to_amount(wallet.balance, precision=4))
+            card.append(("Wallet", bcolors.yellow_text(wallet.address.to_str(is_bounceable=False))))
+            balance_ton = to_amount(wallet.balance, precision=4)
+            card.append(("Balance", f"{bcolors.yellow_text(wallet.balance)} ({bcolors.green_text(balance_ton)} TON)"))
         except Exception as exc:
             self.app.add_log(f"{self.name}: wallet fetch failed: {exc}", DEBUG)
-            addr_text = bcolors.red_text("n/a")
-            balance_text = bcolors.red_text("n/a")
-        print(self.app.translate("provider_wallet").format(addr_text))
-        print(self.app.translate("provider_balance").format(balance_text))
+            card.append(("Wallet", bcolors.red_text("n/a")))
+            card.append(("Balance", bcolors.red_text("n/a")))
 
-    def _print_storage_cost(self) -> None:
+        rows: list[tuple[str, str]] = []
         try:
             cost = self._get_storage_cost()
-            cost_text = bcolors.yellow_text(cost)
+            rows.append(("Storage price (200 GB/month)", f"{bcolors.yellow_text(cost)} TON"))
         except (RuntimeError, AttributeError, TypeError):
-            cost_text = bcolors.red_text("n/a")
-        print(self.app.translate("storage_cost").format(cost_text))
-
-    def _print_profit(self) -> None:
+            rows.append(("Storage price (200 GB/month)", bcolors.red_text("n/a")))
         try:
             real_profit, max_profit = self._get_profit()
-            real_text = bcolors.green_text(real_profit)
-            max_text = bcolors.yellow_text(max_profit)
+            rows.append((
+                "Profit per month (real / max)",
+                f"{bcolors.green_text(real_profit)} / {bcolors.yellow_text(max_profit)} TON",
+            ))
         except (RuntimeError, AttributeError, TypeError):
-            real_text = bcolors.red_text("n/a")
-            max_text = bcolors.red_text("n/a")
-        print(self.app.translate("provider_profit").format(real_text, max_text))
-
-    def _print_provider_space(self) -> None:
+            rows.append(("Profit per month (real / max)", bcolors.red_text("n/a")))
         try:
             used_gb = self.registry.get_by_class(TonStorageModule).get_used_space_gb()
             total_gb = self.get_total_space_gb()
-            used_text = bcolors.green_text(used_gb)
-            total_text = bcolors.yellow_text(total_gb)
+            rows.append((
+                "Provider space (used / total)",
+                f"{bcolors.green_text(used_gb)} / {bcolors.yellow_text(total_gb)} GB",
+            ))
         except (RuntimeError, AttributeError, TypeError, KeyError):
-            used_text = bcolors.red_text("n/a")
-            total_text = bcolors.red_text("n/a")
-        print(self.app.translate("provider_space").format(used_text, total_text))
-
-    def _print_max_bag_size(self) -> None:
+            rows.append(("Provider space (used / total)", bcolors.red_text("n/a")))
         try:
-            gb_text = bcolors.yellow_text(self.get_max_bag_size_gb())
+            rows.append(("Max BAG size", f"{bcolors.yellow_text(self.get_max_bag_size_gb())} GB"))
         except (RuntimeError, AttributeError, TypeError, ValueError):
-            gb_text = bcolors.red_text("n/a")
-        print(self.app.translate("max_bag_size").format(gb_text))
+            rows.append(("Max BAG size", bcolors.red_text("n/a")))
 
-    def _print_port_status(self) -> None:
+        rows.append(self._get_port_status())
+        return card, rows
+
+    def _get_port_status(self) -> tuple[str, str]:
         try:
             provider_config = self._read_provider_config()
             _, port_str = provider_config.ListenAddr.split(":")
         except (RuntimeError, AttributeError, ValueError):
             port_str = "?"
-        port_color = bcolors.yellow_text(f"{port_str} udp")
         if self._port_check_ok:
-            status_color = bcolors.green_text("open")
+            status = f"{bcolors.green_text('✓')} {bcolors.green_text('open')}"
         elif self._port_check_ok is False:
-            status_color = bcolors.red_text("closed")
+            status = f"{bcolors.red_text('✗')} {bcolors.red_text('closed')}"
         else:
-            status_color = bcolors.red_text("n/a")
-        text = self.app.translate("port_status").format(port_color, status_color)
-        color_print(text)
+            status = bcolors.red_text("n/a")
+        return (f"Port {port_str} udp", status)
 
-    def _print_service_status(self) -> None:
+    def _get_service_text(self) -> str:
         is_active = get_service_status(self.service_name)
         uptime = get_service_uptime(self.service_name) or 0
-        status_color = get_service_status_color(is_active)
-        uptime_color = bcolors.green_text(time2human(uptime))
-        text = self.app.translate("service_status_and_uptime").format(status_color, uptime_color)
-        color_print(text)
+        if is_active:
+            indicator = bcolors.green_text("✓")
+            status = bcolors.green_text("working")
+            return f"{indicator} {status}, uptime {bcolors.green_text(time2human(uptime))}"
+        return f"{bcolors.red_text('✗')} {bcolors.red_text('not working')}"
+
+    def _get_update_text(self) -> str | None:
+        status = self._update_status
+        if status and status.available and status.target:
+            return f"Update available: {status.target.ref}"
+        return None
 
     def _get_storage_cost(self) -> float:
         """Reverse ``MinRatePerMBDay`` into the user-facing ``200GB/month`` price."""

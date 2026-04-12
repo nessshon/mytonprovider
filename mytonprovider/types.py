@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Literal, NamedTuple
 
 if TYPE_CHECKING:
@@ -44,6 +44,18 @@ class UpdateStatus:
     target: Channel | None
     target_commit: str | None
     mature: bool = True
+
+
+@dataclass(frozen=True)
+class StatusBlock:
+    """Structured status data for a single module, rendered by ``render_status_block``."""
+
+    name: str
+    version: str
+    card: list[tuple[str, str]] = field(default_factory=list)
+    rows: list[tuple[str, str]] = field(default_factory=list)
+    service_text: str = ""
+    update_text: str | None = None
 
 
 class Command(NamedTuple):

@@ -4,7 +4,7 @@ from abc import abstractmethod
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, ClassVar, cast
 
-from mypylib import bcolors, fetch_remote_branch_head, get_github_release
+from mypylib import fetch_remote_branch_head, get_github_release
 
 from mytonprovider.types import Channel, InstalledVersion, UpdateStatus
 from mytonprovider.utils import is_newer_version
@@ -159,16 +159,6 @@ class Updatable(BaseModule):
         if channel.author != self.github_author or channel.repo != self.github_repo:
             text += f" [{channel.author}/{channel.repo}]"
         return text
-
-    def _print_version(self) -> None:
-        """Print the version line with an optional update marker."""
-        version_text = bcolors.yellow_text(self.format_version())
-        text = self.app.translate("package_version").format(version_text)
-        status = self._update_status
-        if status and status.available and status.target:
-            update_text = self.app.translate("update_available").format(status.target.ref)
-            text += ", " + bcolors.magenta_text(update_text)
-        print(text)
 
 
 class Commandable(BaseModule):

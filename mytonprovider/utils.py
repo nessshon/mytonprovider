@@ -18,7 +18,7 @@ from mypylib import (
 )
 
 from mytonprovider import constants
-from mytonprovider.types import Channel, InstalledVersion, RefKind
+from mytonprovider.types import Channel, InstalledVersion, RefKind, StatusBlock
 
 CLASSIFY_REF_TIMEOUT_SEC: Final[int] = 10
 GIT_SUBPROCESS_TIMEOUT_SEC: Final[int] = 5
@@ -210,13 +210,6 @@ def get_threshold_color(
     return bcolors.red_text(value, ending)
 
 
-def get_service_status_color(is_active: bool) -> str:
-    """Color-format a service status flag as 'working' / 'not working'."""
-    if is_active:
-        return bcolors.green_text("working")
-    return bcolors.red_text("not working")
-
-
 def resolve_app_home() -> Path:
     """Return the home directory, resolving SUDO_USER when running as root."""
     if os.geteuid() != 0:
@@ -255,3 +248,63 @@ def is_newer_version(current: str, other: str) -> bool:
         return tuple(int(p) for p in core.split("."))
 
     return core_parts(other) > core_parts(current)
+
+
+_ANSI_RE = re.compile(r"\033\[[0-9;]*m")
+
+
+def _visible_len(text: str) -> int:
+    """Return the visible length of *text* after stripping ANSI escape codes."""
+    return len(_ANSI_RE.sub("", text))
+
+
+def render_status_block(block: StatusBlock) -> None:
+    """Render a ``StatusBlock`` as a box-style status panel."""
+    print(bcolors.cyan_text(f"● {block.name} {block.version}"))
+
+    if block.card:
+        max_card_label = max(len(label) for label, _ in block.card)
+        for label, value in block.card:
+            print(f"  {label + ':':<{max_card_label + 2}} {value}")
+
+    print()
+
+    if not block.rows:
+        return
+
+    content_rows = block.rows
+    max_label = max((_visible_len(label) for label, _ in content_rows if label), default=0)
+
+    lines: list[str] = []
+    for label, value in content_rows:
+        if not label and not value:
+            lines.append("")
+        else:
+            pad = max_label - _visible_len(label)
+            lines.append(f"  {label}{' ' * pad}   {value}")
+
+    max_content = max((_visible_len(line) for line in lines if line), default=0)
+
+    frame_label = f"status {block.service_text}"
+    frame_label_vis = _visible_len(frame_label)
+    # inner = visible chars between │ and │ (including padding)
+    # top border: ╭─·label·─...─╮  →  needs frame_label_vis + 4 chars for "╭─ " and " ─╮"
+    # content:    │content...pad│  →  needs max_content + 2 for "│" margins
+    inner = max(max_content + 2, frame_label_vis + 4)
+
+    top_fill = inner - frame_label_vis - 4
+    print(f"╭─ {frame_label} {'─' * top_fill}─╮")
+
+    for line in lines:
+        if not line:
+            print(f"│{' ' * inner}│")
+        else:
+            pad_right = inner - _visible_len(line)
+            print(f"│{line}{' ' * pad_right}│")
+
+    print(f"╰{'─' * inner}╯")
+
+    if block.update_text:
+        update_icon = bcolors.yellow_text("⚡")
+        update_msg = bcolors.green_text(block.update_text)
+        print(f"\n  {update_icon} {update_msg}")

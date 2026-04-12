@@ -120,8 +120,11 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         return read_pep610_version(constants.APP_NAME)
 
     def build_update_args(self, target: Channel) -> list[str]:
+        import sys
+
+        pip_path = Path(sys.executable).parent / "pip"
         return [
-            "pip",
+            str(pip_path),
             "install",
             "--upgrade",
             "--quiet",
@@ -239,73 +242,66 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         state = bcolors.green_text("ON") if not current else bcolors.red_text("OFF")
         color_print(f"auto update: {state}")
 
-    def _print_cpu_load(self) -> None:
+    def _get_cpu_load(self) -> tuple[str, str]:
         cpu_count = get_cpu_count()
-        cpu_load1, cpu_load5, cpu_load15 = get_load_avg()
-        cpu_count_text = bcolors.yellow_text(cpu_count)
-        cpu_load1_text = get_threshold_color(cpu_load1, cpu_count, logic="less")
-        cpu_load5_text = get_threshold_color(cpu_load5, cpu_count, logic="less")
-        cpu_load15_text = get_threshold_color(cpu_load15, cpu_count, logic="less")
-        text = self.app.translate("cpu_load").format(cpu_count_text, cpu_load1_text, cpu_load5_text, cpu_load15_text)
-        print(text)
+        avg1, avg5, avg15 = get_load_avg()
+        load1 = get_threshold_color(avg1, cpu_count, logic="less")
+        load5 = get_threshold_color(avg5, cpu_count, logic="less")
+        load15 = get_threshold_color(avg15, cpu_count, logic="less")
+        return f"CPU load [{bcolors.yellow_text(cpu_count)}]", f"{load1}, {load5}, {load15}"
 
-    def _print_memory_load(self) -> None:
-        # Decimal GB (bytes / 10^9) to match old server_info output and telemetry contract.
+    def _get_ram_load(self) -> tuple[str, str]:
         vm = psutil.virtual_memory()
+        used = get_threshold_color(round(vm.used / 10**9, 2), MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
+        pct = get_threshold_color(vm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
+        return ("RAM", f"{used}, {pct}")
+
+    def _get_swap_load(self) -> tuple[str, str]:
         sm = psutil.swap_memory()
-        ram_used = round(vm.used / 10**9, 2)
-        swap_used = round(sm.used / 10**9, 2)
-        ram_usage_text = get_threshold_color(ram_used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
-        ram_percent_text = get_threshold_color(vm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
-        swap_usage_text = get_threshold_color(swap_used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
-        swap_percent_text = get_threshold_color(sm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
-        ram_load_text = (
-            f"{bcolors.cyan}ram:[{bcolors.default}{ram_usage_text}, {ram_percent_text}{bcolors.cyan}]{bcolors.endc}"
-        )
-        swap_load_text = (
-            f"{bcolors.cyan}swap:[{bcolors.default}{swap_usage_text}, {swap_percent_text}{bcolors.cyan}]{bcolors.endc}"
-        )
-        text = self.app.translate("memory_load").format(ram_load_text, swap_load_text)
-        print(text)
+        used = get_threshold_color(round(sm.used / 10**9, 2), MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
+        pct = get_threshold_color(sm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
+        return "Swap", f"{used}, {pct}"
 
-    def _print_network_load(self) -> None:
+    def _get_network_load(self) -> tuple[str, str]:
         stats = self.registry.get_by_class(StatisticsModule)
-        net_load1, net_load5, net_load15 = stats.get_net_load_avg()
-        net_load1_text = get_threshold_color(net_load1, NET_LOAD_BORDERLINE_MBIT, logic="less")
-        net_load5_text = get_threshold_color(net_load5, NET_LOAD_BORDERLINE_MBIT, logic="less")
-        net_load15_text = get_threshold_color(net_load15, NET_LOAD_BORDERLINE_MBIT, logic="less")
-        text = self.app.translate("net_load").format(net_load1_text, net_load5_text, net_load15_text)
-        print(text)
+        load1, load5, load15 = stats.get_net_load_avg()
+        t1 = get_threshold_color(load1, NET_LOAD_BORDERLINE_MBIT, logic="less")
+        t5 = get_threshold_color(load5, NET_LOAD_BORDERLINE_MBIT, logic="less")
+        t15 = get_threshold_color(load15, NET_LOAD_BORDERLINE_MBIT, logic="less")
+        return ("Network load average (Mbit/s)", f"{t1}, {t5}, {t15}")
 
-    def _print_disks_load(self) -> None:
+    def _get_disks_load(self) -> tuple[str, str]:
         stats = self.registry.get_by_class(StatisticsModule)
         disks_load_avg = stats.get_disks_load_avg()
         disks_load_percent_avg = stats.get_disks_load_percent_avg()
-
-        disks_load_list: list[str] = []
-        for name, data in disks_load_avg.items():
-            disk_load_text = bcolors.green_text(data[2])  # [1m, 5m, 15m]
-            disk_load_percent_text = get_threshold_color(
-                disks_load_percent_avg[name][2],
+        entries: list[str] = []
+        for disk_name, data in disks_load_avg.items():
+            speed = bcolors.green_text(data[2])
+            pct = get_threshold_color(
+                disks_load_percent_avg[disk_name][2],
                 DISK_LOAD_BORDERLINE_PERCENT,
                 logic="less",
                 ending="%",
             )
-            entry = (
-                f"{bcolors.cyan}{name}:[{bcolors.default}"
-                f"{disk_load_text}, {disk_load_percent_text}"
+            entries.append(
+                f"{bcolors.cyan}{disk_name}:[{bcolors.default}"
+                f"{speed}, {pct}"
                 f"{bcolors.cyan}]{bcolors.endc}"
             )
-            disks_load_list.append(entry)
+        return ("Disks load (MB/s)", ", ".join(entries))
 
-        text = self.app.translate("disks_load").format(", ".join(disks_load_list))
-        print(text)
+    def _get_service_text(self) -> str:
+        is_active = get_service_status(self.service_name)
+        uptime = get_service_uptime(self.service_name) or 0
+        if is_active:
+            indicator = bcolors.green_text("✓")
+            status = bcolors.green_text("working")
+            return f"{indicator} {status}, uptime {bcolors.green_text(time2human(uptime))}"
+        return f"{bcolors.red_text('✗')} {bcolors.red_text('not working')}"
 
-    def _print_service_status(self) -> None:
-        service_status = get_service_status(self.service_name)
-        service_uptime = get_service_uptime(self.service_name) or 0
-        status_color = get_service_status_color(service_status)
-        uptime_color = bcolors.green_text(time2human(service_uptime))
-        text = self.app.translate("service_status_and_uptime").format(status_color, uptime_color)
-        color_print(text)
+    def _get_update_text(self) -> str | None:
+        status = self._update_status
+        if status and status.available and status.target:
+            return f"Update available: {status.target.ref}"
+        return None
 

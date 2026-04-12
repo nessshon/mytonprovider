@@ -22,7 +22,11 @@ def cmd_console(app: MyPyClass, registry: ModuleRegistry) -> None:
     console.name = "MyTonProvider"
     console.local = app
     console.debug = bool(app.db.get("debug"))
-    console.start_function = lambda: _run_pre_up(app, registry)
+    def _on_start() -> None:
+        _run_pre_up(app, registry)
+        _console_status(registry)
+
+    console.start_function = _on_start
 
     if console.debug:
         color_print("{red}Debug mode enabled{endc}")
@@ -75,11 +79,14 @@ def _safe_pre_up(app: MyPyClass, startable: Startable) -> None:
 
 
 def _console_status(registry: ModuleRegistry) -> None:
-    """Print status blocks for every Statusable module."""
+    """Print status blocks for every Statusable module, main module last."""
     statusables = registry.statusables()
-    for index, module in enumerate(statusables):
+    main = [m for m in statusables if m.mandatory]
+    rest = [m for m in statusables if not m.mandatory]
+    ordered = rest + main
+    for index, module in enumerate(ordered):
         module.show_status()
-        if index < len(statusables) - 1:
+        if index < len(ordered) - 1:
             print()
 
 
