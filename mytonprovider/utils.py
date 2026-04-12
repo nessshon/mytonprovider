@@ -293,16 +293,16 @@ def render_status_block(block: StatusBlock) -> None:
     inner = max(max_content + 2, frame_label_vis + 4)
 
     top_fill = inner - frame_label_vis - 4
-    print(f"╭─ {frame_label} {'─' * top_fill}─╮")
+    print(f"  ╭─ {frame_label} {'─' * top_fill}─╮")
 
     for line in lines:
         if not line:
-            print(f"│{' ' * inner}│")
+            print(f"  │{' ' * inner}│")
         else:
             pad_right = inner - _visible_len(line)
-            print(f"│{line}{' ' * pad_right}│")
+            print(f"  │{line}{' ' * pad_right}│")
 
-    print(f"╰{'─' * inner}╯")
+    print(f"  ╰{'─' * inner}╯")
 
     if block.update_text:
         update_icon = bcolors.yellow_text("⚡")
