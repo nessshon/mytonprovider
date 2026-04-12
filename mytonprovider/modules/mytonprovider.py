@@ -140,7 +140,6 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         config_path = user_home / constants.CONFIG_PATH
         venv_path = user_home / constants.VENV_PATH
         venv_exe = venv_path / "bin" / constants.APP_NAME
-        system_bin = Path("/usr/local/bin") / constants.APP_NAME
 
         global_config_path = constants.GLOBAL_CONFIG_PATH
         global_config_dir = global_config_path.parent
@@ -176,9 +175,15 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
             check=True,
         )
 
-        if system_bin.exists() or system_bin.is_symlink():
-            system_bin.unlink()
-        system_bin.symlink_to(venv_exe)
+        for name, target in (
+            (constants.APP_NAME, venv_exe),
+            ("tonutils", venv_path / "bin" / "tonutils"),
+        ):
+            link = Path("/usr/local/bin") / name
+            if link.exists() or link.is_symlink():
+                link.unlink()
+            if target.exists():
+                link.symlink_to(target)
 
         self._write_sudoers(context.user)
 

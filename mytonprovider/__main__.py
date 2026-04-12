@@ -11,7 +11,6 @@ from mytonprovider.commands import (
     cmd_console,
     cmd_daemon,
     cmd_init,
-    cmd_status,
     cmd_update,
 )
 from mytonprovider.commands.init import is_initialized
@@ -101,15 +100,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="Enable module auto-update daemon.",
     )
 
-    status_p = subparsers.add_parser("status", help="Print module status and exit.")
-    status_p.add_argument(
-        "subcommand",
-        nargs="?",
-        choices=["ls", "dht"],
-        default=None,
-        help="'ls' for lite-server monitor, 'dht' for DHT monitor.",
-    )
-
     update_p = subparsers.add_parser("update", help="Update modules.")
     update_p.add_argument(
         "module",
@@ -185,12 +175,6 @@ def main() -> None:
             max_bag_size_gigabytes=args.max_bag_size,
             auto_update_enabled=auto_update_enabled,
         )
-        return
-
-    if args.command == "status":
-        require_initialized()
-        app, registry = setup_app()
-        cmd_status(app, registry, kind=args.subcommand)
         return
 
     if args.command == "update":

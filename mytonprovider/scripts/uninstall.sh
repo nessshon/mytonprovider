@@ -39,6 +39,7 @@ readonly GO_SOURCES=(
 readonly GLOBAL_CONFIG_FILE="/var/ton/global.config.json"
 readonly GLOBAL_CONFIG_DIR="/var/ton"
 readonly SYSTEM_BIN="/usr/local/bin/${APP_NAME}"
+readonly TONUTILS_BIN="/usr/local/bin/tonutils"
 
 readonly C_STEP='\033[92m'
 readonly C_WARN='\033[93m'
@@ -141,6 +142,7 @@ remove_systemd_units() {
 
 remove_binaries_and_sources() {
 	rm -f "${SYSTEM_BIN}"
+	rm -f "${TONUTILS_BIN}"
 	rm -f "${GO_BINARIES[@]}"
 	rm -rf "${GO_SOURCES[@]}"
 }
