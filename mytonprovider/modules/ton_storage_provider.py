@@ -284,6 +284,10 @@ class TonStorageProviderModule(
             )
             provider_config.CRON.Enabled = True
             atomic_write_config(str(provider_config_path), provider_config)
+            subprocess.run(
+                ["chown", f"{context.user}:{context.user}", str(provider_config_path)],
+                check=True,
+            )
 
             config_path = get_config_path()
             mconfig = read_config_from_file(str(config_path))
