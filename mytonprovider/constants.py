@@ -31,7 +31,7 @@ BENCHMARK_URL: Final[str] = "https://mytonprovider.org/api/v1/benchmarks"
 
 MYTONPROVIDER_AUTHOR: Final[str] = "nessshon"
 MYTONPROVIDER_REPO: Final[str] = "mytonprovider"
-MYTONPROVIDER_VERSION: Final[str] = "v1.0.5"
+MYTONPROVIDER_VERSION: Final[str] = "v1.0.6"
 
 TON_STORAGE_AUTHOR: Final[str] = "xssnick"
 TON_STORAGE_REPO: Final[str] = "tonutils-storage"

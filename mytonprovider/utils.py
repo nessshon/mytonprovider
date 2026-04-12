@@ -260,27 +260,28 @@ def _visible_len(text: str) -> int:
 
 def render_status_block(block: StatusBlock) -> None:
     """Render a ``StatusBlock`` as a unified box-style status panel."""
-    all_rows: list[tuple[str, str]] = []
-    if block.card:
-        for label, value in block.card:
-            all_rows.append((label + ":", value))
-        all_rows.append(("", ""))
-
-    if block.rows:
-        all_rows.extend(block.rows)
-
-    if not all_rows:
+    if not block.card and not block.rows:
         return
 
-    max_label = max((_visible_len(l) for l, _ in all_rows if l), default=0)
+    def _format_group(group: list[tuple[str, str]]) -> list[str]:
+        max_lbl = max((_visible_len(l) for l, _ in group if l), default=0)
+        result: list[str] = []
+        for label, value in group:
+            if not label and not value:
+                result.append("")
+            else:
+                pad = max_lbl - _visible_len(label)
+                result.append(f"  {label}{' ' * pad}   {value}")
+        return result
 
     lines: list[str] = []
-    for label, value in all_rows:
-        if not label and not value:
+    if block.card:
+        card_rows = [(l + ":", v) for l, v in block.card]
+        lines.extend(_format_group(card_rows))
+        if block.rows:
             lines.append("")
-        else:
-            pad = max_label - _visible_len(label)
-            lines.append(f"  {label}{' ' * pad}   {value}")
+    if block.rows:
+        lines.extend(_format_group(block.rows))
 
     max_content = max((_visible_len(line) for line in lines if line), default=0)
 
