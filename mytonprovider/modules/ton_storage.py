@@ -12,7 +12,6 @@ import requests
 from mypylib import (
     DEBUG,
     ERROR,
-    INFO,
     WARNING,
     ByteUnit,
     Dict,
@@ -340,10 +339,6 @@ class TonStorageModule(
             self.app.db.ton_storage.bags_verify_state = Dict()
         self.app.db.ton_storage.bags_verify_state[bag_id.upper()] = get_timestamp()
         self.app.save()
-        if ok:
-            self.app.add_log(f"BAG {bag_id} verified OK", INFO)
-        else:
-            self.app.add_log(f"BAG {bag_id} verification FAILED, redownload started", WARNING)
 
     def _do_verify_bag(self, bag_id: str) -> bool:
         api = self.app.db.ton_storage.api
