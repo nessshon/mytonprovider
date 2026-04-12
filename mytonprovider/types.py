@@ -43,6 +43,7 @@ class UpdateStatus:
     available: bool
     target: Channel | None
     target_commit: str | None
+    mature: bool = True
 
 
 class Command(NamedTuple):

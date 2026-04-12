@@ -112,9 +112,10 @@ class Updatable(BaseModule):
             ref_kind="tag",
         )
         return UpdateStatus(
-            available=age_days > self.update_cooldown_days,
+            available=True,
             target=target,
             target_commit=None,
+            mature=age_days > self.update_cooldown_days,
         )
 
     def _check_branch_update(self, installed: InstalledVersion) -> UpdateStatus:
@@ -129,9 +130,10 @@ class Updatable(BaseModule):
             return UpdateStatus(available=False, target=None, target_commit=None)
 
         return UpdateStatus(
-            available=days_ago > self.update_cooldown_days,
+            available=True,
             target=channel,
             target_commit=sha,
+            mature=days_ago > self.update_cooldown_days,
         )
 
     @staticmethod

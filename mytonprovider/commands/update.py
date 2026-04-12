@@ -36,9 +36,10 @@ def apply_updates(
     override: Channel | None = None,
     force: bool = False,
     check_only: bool = False,
+    auto: bool = False,
 ) -> list[UpdateResult]:
     """Check and optionally install updates for each module."""
-    return [_apply_one(app, module, override, force, check_only) for module in modules]
+    return [_apply_one(app, module, override, force, check_only, auto) for module in modules]
 
 
 def _apply_one(
@@ -47,6 +48,7 @@ def _apply_one(
     override: Channel | None,
     force: bool,
     check_only: bool,
+    auto: bool,
 ) -> UpdateResult:
     target: Channel | None
     if override is not None:
@@ -68,6 +70,9 @@ def _apply_one(
         return UpdateResult(module.name, "checked", module.format_version())
 
     if not force and (not status.available or target is None):
+        return UpdateResult(module.name, "up_to_date", module.format_version())
+
+    if auto and not status.mature:
         return UpdateResult(module.name, "up_to_date", module.format_version())
 
     if target is None:

@@ -89,7 +89,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         updatables = self.registry.updatables()
         if not updatables:
             return
-        results = apply_updates(self.app, updatables)
+        results = apply_updates(self.app, updatables, auto=True)
         self_updated = any(
             r.module == self.name and r.action == "updated" for r in results
         )
