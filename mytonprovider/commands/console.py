@@ -81,12 +81,15 @@ def _safe_pre_up(app: MyPyClass, startable: Startable) -> None:
 
 
 def _console_status(registry: ModuleRegistry) -> None:
-    """Print status blocks for every Statusable module in registration order."""
+    """Print status blocks for every Statusable module, main module last."""
     print()
     statusables = registry.statusables()
-    for index, module in enumerate(statusables):
+    main = [m for m in statusables if m.mandatory]
+    rest = [m for m in statusables if not m.mandatory]
+    ordered = rest + main
+    for index, module in enumerate(ordered):
         module.show_status()
-        if index < len(statusables) - 1:
+        if index < len(ordered) - 1:
             print()
 
 
