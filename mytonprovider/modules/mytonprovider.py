@@ -32,11 +32,11 @@ from mytonprovider.modules.core import (
     Updatable,
 )
 from mytonprovider.modules.statistics import StatisticsModule
-from mytonprovider.types import Command
+from mytonprovider.types import Command, StatusBlock
 from mytonprovider.utils import (
-    get_service_status_color,
     get_threshold_color,
     read_pep610_version,
+    render_status_block,
 )
 
 if TYPE_CHECKING:
@@ -101,14 +101,20 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
             self.app.exit()
 
     def show_status(self) -> None:
-        color_print("{cyan}===[ Main status ]==={endc}")
-        self._print_module_name()
-        self._print_cpu_load()
-        self._print_network_load()
-        self._print_disks_load()
-        self._print_memory_load()
-        self._print_service_status()
-        self._print_version()
+        block = StatusBlock(
+            name=self.name,
+            version=self.format_version(),
+            rows=[
+                self._get_cpu_load(),
+                self._get_ram_load(),
+                self._get_swap_load(),
+                self._get_network_load(),
+                self._get_disks_load(),
+            ],
+            service_text=self._get_service_text(),
+            update_text=self._get_update_text(),
+        )
+        render_status_block(block)
 
     def get_installed_version(self) -> InstalledVersion:
         return read_pep610_version(constants.APP_NAME)
@@ -186,7 +192,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         add2systemd(
             name=self.service_name,
             user=context.user,
-            start=f"{venv_exe} --daemon",
+            start=f"/usr/bin/env PYTHONUNBUFFERED=1 {venv_exe} --daemon",
             force=True,
         )
 
@@ -224,11 +230,6 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         except (RuntimeError, ValueError) as exc:
             self.app.add_log(f"Failed to check for updates: {exc}", DEBUG)
             self._update_status = None
-
-    def _print_module_name(self) -> None:
-        module_name = bcolors.yellow_text(self.name)
-        text = self.app.translate("module_name").format(module_name)
-        print(text)
 
     def _cmd_toggle_auto_update(self, _args: list[str]) -> None:
         """Toggle auto-update on/off."""
