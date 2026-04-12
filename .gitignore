@@ -141,8 +141,6 @@ uv.lock
 # Project-specific exclusions
 old/
 tests/
-REVIEW.md
-requirements.txt
 
 # Claude Code
 CLAUDE.md
