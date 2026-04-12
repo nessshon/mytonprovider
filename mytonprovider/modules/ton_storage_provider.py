@@ -6,7 +6,7 @@ import os
 import pwd
 import subprocess
 import time
-from contextlib import redirect_stdout
+from contextlib import asynccontextmanager, redirect_stdout
 from pathlib import Path
 from random import randint
 from typing import TYPE_CHECKING, ClassVar, Final
@@ -57,7 +57,7 @@ from mytonprovider.utils import (
 )
 
 if TYPE_CHECKING:
-    from collections.abc import Callable
+    from collections.abc import AsyncIterator, Callable
 
     from mypylib import MyPyClass
 
@@ -118,15 +118,21 @@ class TonStorageProviderModule(
 
     @property
     def ton_client(self) -> LiteBalancer:
+        """Return current LiteBalancer (created lazily, usable inside ``_use_ton_client``)."""
         if self._ton_client is None:
             self._ton_client = LiteBalancer.from_config(
                 network=NetworkGlobalID.MAINNET,
                 config=str(constants.GLOBAL_CONFIG_PATH),
-                connect_timeout=1.5,
-                client_connect_timeout=1.0,
                 retry_policy=DEFAULT_ADNL_RETRY_POLICY,
             )
         return self._ton_client
+
+    @asynccontextmanager
+    async def _use_ton_client(self) -> AsyncIterator[None]:
+        """Connect, yield, close, and reset so the next call gets a fresh client."""
+        async with self.ton_client:
+            yield
+        self._ton_client = None
 
     @property
     def is_enabled(self) -> bool:
@@ -439,7 +445,7 @@ class TonStorageProviderModule(
             return
 
         try:
-            async with self.ton_client:
+            async with self._use_ton_client():
                 wallet = await self._get_refreshed_wallet()
                 if wallet.balance < to_nano(constants.REGISTRATION_MIN_BALANCE):
                     color_print(f"{{red}}{self.app.translate('low_provider_balance')}{{endc}}")
@@ -486,7 +492,7 @@ class TonStorageProviderModule(
     @async_to_sync
     async def _cmd_export_wallet(self, args: list[str]) -> None:
         try:
-            async with self.ton_client:
+            async with self._use_ton_client():
                 wallet = await self._get_refreshed_wallet()
         except Exception as exc:
             color_print(f"{{red}}Error:{{endc}} {exc}")
@@ -529,7 +535,7 @@ class TonStorageProviderModule(
             return
 
         try:
-            async with self.ton_client:
+            async with self._use_ton_client():
                 wallet = await self._get_refreshed_wallet()
                 msg_hash = await self._send_and_wait(
                     wallet,
@@ -641,7 +647,7 @@ class TonStorageProviderModule(
         except (RuntimeError, AttributeError, TypeError):
             card.append(("ADNL key", bcolors.red_text("n/a")))
         try:
-            async with self.ton_client:
+            async with self._use_ton_client():
                 wallet = await self._get_refreshed_wallet()
             card.append(("Wallet", bcolors.yellow_text(wallet.address.to_str(is_bounceable=False))))
             balance_ton = to_amount(wallet.balance, precision=4)
