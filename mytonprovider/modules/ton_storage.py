@@ -186,7 +186,7 @@ class TonStorageModule(
 
     def install(self, context: InstallContext) -> None:
         """Build tonutils-storage, configure storage dir, create service."""
-        self.app.add_log(f"Installing {self.name} module")
+        print(f"Installing {self.name} module")
 
         if os.geteuid() != 0:
             raise RuntimeError(f"{self.name}: install must be run as root (use sudo)")
@@ -230,7 +230,7 @@ class TonStorageModule(
                 force=True,
             )
 
-            self.app.add_log(f"Starting {self.service_name} to materialize storage config")
+            print(f"Starting {self.service_name} to generate config")
             self.app.start_service(self.service_name, sleep=SERVICE_START_SLEEP_SEC)
             self.app.stop_service(self.service_name)
 
@@ -248,10 +248,10 @@ class TonStorageModule(
             self.app.db.ton_storage = ton_storage
             self.app.save()
 
-            self.app.add_log(f"Starting {self.service_name} service")
+            print(f"Starting {self.service_name} service")
             self.app.start_service(self.service_name)
         except Exception:
-            self.app.add_log(f"{self.name}: install failed, rolling back mconfig", ERROR)
+            color_print(f"{{red}}{self.name}: install failed, rolling back{{endc}}")
             self._rollback_mconfig()
             raise
 

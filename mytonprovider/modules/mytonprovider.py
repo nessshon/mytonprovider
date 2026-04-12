@@ -123,7 +123,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
 
     def install(self, context: InstallContext) -> None:
         """Set up config, symlinks, sudoers, and systemd unit."""
-        self.app.add_log(f"Installing {self.name} module")
+        print(f"Installing {self.name} module")
 
         if os.geteuid() != 0:
             raise RuntimeError(f"{self.name}: install must be run as root (use sudo)")
@@ -152,7 +152,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
 
         global_config_path.write_text(get_request(constants.GLOBAL_CONFIG_URL))
 
-        self.app.db.config.logLevel = "debug"
+        self.app.db.config.logLevel = "info"
         self.app.db.config.isLocaldbSaving = True
         self.app.db.config.isStartOnlyOneProcess = False
         self.app.db.install_user = context.user
@@ -188,9 +188,6 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
             start=f"{venv_exe} --daemon",
             force=True,
         )
-
-        self.app.add_log(f"Starting {self.service_name} service")
-        self.app.start_service(self.service_name)
 
     @staticmethod
     def _write_sudoers(user: str) -> None:

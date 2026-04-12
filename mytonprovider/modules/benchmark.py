@@ -73,7 +73,7 @@ class BenchmarkModule(Daemonic, Commandable):
         return bool(bench.timestamp + BENCHMARK_LIFETIME_SEC >= get_timestamp())
 
     def _do_benchmark(self) -> tuple[Dict, Dict]:
-        self.app.add_log("Running benchmark, this may take about two minutes")
+        print("Running benchmark, this may take about two minutes")
         disk = self._disk_benchmark()
         network = self._network_benchmark()
         self._save_benchmark(disk, network)
@@ -161,7 +161,7 @@ class BenchmarkModule(Daemonic, Commandable):
         if idx < 0:
             raise RuntimeError(f"{self.name}: fio output missing '{mode}:' line")
         # Expected fio line shape: "read: IOPS=1234, BW=12.3MiB/s ..."
-        parts = output[idx:].split(" ")
+        parts = output[idx:].split()
         iops = parts[1].split("=")[1].replace(",", "")
         bw = parts[2].split("=")[1]
         return bw, iops

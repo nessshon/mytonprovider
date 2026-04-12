@@ -334,3 +334,8 @@ def cmd_init(
 
     _run_installs(app, registry, context)
     _save_install_state(app, context, final_auto_update)
+
+    daemon_module = registry.get("mytonprovider")
+    if daemon_module.service_name:
+        print(f"Starting {daemon_module.service_name} service")
+        app.start_service(daemon_module.service_name)

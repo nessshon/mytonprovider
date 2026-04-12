@@ -211,7 +211,7 @@ class TonStorageProviderModule(
 
     def install(self, context: InstallContext) -> None:
         """Build tonutils-storage-provider, materialize config, create service."""
-        self.app.add_log(f"Installing {self.name} module")
+        print(f"Installing {self.name} module")
 
         if os.geteuid() != 0:
             raise RuntimeError(f"{self.name}: install must be run as root (use sudo)")
@@ -265,7 +265,7 @@ class TonStorageProviderModule(
                 force=True,
             )
 
-            self.app.add_log(f"Starting {self.service_name} to materialize provider config")
+            print(f"Starting {self.service_name} to generate config")
             self.app.start_service(self.service_name, sleep=SERVICE_START_SLEEP_SEC)
             self.app.stop_service(self.service_name)
 
@@ -290,10 +290,10 @@ class TonStorageProviderModule(
             self.app.db.ton_storage.provider = provider
             self.app.save()
 
-            self.app.add_log(f"Starting {self.service_name} service")
+            print(f"Starting {self.service_name} service")
             self.app.start_service(self.service_name)
         except Exception:
-            self.app.add_log(f"{self.name}: install failed, rolling back mconfig", ERROR)
+            color_print(f"{{red}}{self.name}: install failed, rolling back{{endc}}")
             self._rollback_mconfig()
             raise
 
@@ -449,7 +449,6 @@ class TonStorageProviderModule(
                 )
         except Exception as exc:
             color_print(f"{{red}}Register failed:{{endc}} {exc}")
-            self.app.add_log(f"register failed: {exc}", ERROR)
             return
 
         self.app.db.ton_storage.provider.is_already_registered = True
@@ -471,7 +470,6 @@ class TonStorageProviderModule(
                 )
         except Exception as exc:
             color_print(f"{{red}}Error:{{endc}} invalid key or mnemonic: {exc}")
-            self.app.add_log(f"import_wallet failed: {exc}", ERROR)
             return
 
         provider_config = self._read_provider_config()
@@ -487,7 +485,6 @@ class TonStorageProviderModule(
                 wallet = await self._get_refreshed_wallet()
         except Exception as exc:
             color_print(f"{{red}}Error:{{endc}} {exc}")
-            self.app.add_log(f"export_wallet failed: {exc}", ERROR)
             return
 
         private_key = PrivateKey(self._read_provider_config().ProviderKey)
@@ -538,7 +535,6 @@ class TonStorageProviderModule(
                 )
         except Exception as exc:
             color_print(f"{{red}}transfer_ton failed:{{endc}} {exc}")
-            self.app.add_log(f"transfer_ton failed: {exc}", ERROR)
             return
 
         color_print(f"transfer_ton {{green}}OK{{endc}} — hash: {msg_hash}")
@@ -561,7 +557,6 @@ class TonStorageProviderModule(
             self._apply_provider_config(mutate)
         except Exception as exc:
             color_print(f"{{red}}set_storage_cost failed:{{endc}} {exc}")
-            self.app.add_log(f"set_storage_cost failed: {exc}", ERROR)
             return
 
         color_print(f"set_storage_cost = {cost} TON {{green}}OK{{endc}}")
@@ -600,7 +595,6 @@ class TonStorageProviderModule(
             self._apply_provider_config(mutate)
         except Exception as exc:
             color_print(f"{{red}}set_provider_space failed:{{endc}} {exc}")
-            self.app.add_log(f"set_provider_space failed: {exc}", ERROR)
             return
 
         color_print(f"set_provider_space = {requested_gb} GB {{green}}OK{{endc}}")
@@ -625,7 +619,6 @@ class TonStorageProviderModule(
             self._apply_provider_config(mutate)
         except Exception as exc:
             color_print(f"{{red}}set_max_bag_size failed:{{endc}} {exc}")
-            self.app.add_log(f"set_max_bag_size failed: {exc}", ERROR)
             return
 
         color_print(f"set_max_bag_size = {gb} GB {{green}}OK{{endc}}")

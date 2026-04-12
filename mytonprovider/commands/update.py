@@ -65,10 +65,10 @@ def _apply_one(
             return UpdateResult(
                 module.name, "checked", f"update available: {target.ref}", target,
             )
-        return UpdateResult(module.name, "checked", "up to date")
+        return UpdateResult(module.name, "checked", module.format_version())
 
     if not force and (not status.available or target is None):
-        return UpdateResult(module.name, "up_to_date", "up to date")
+        return UpdateResult(module.name, "up_to_date", module.format_version())
 
     if target is None:
         # force=True but no target known -- reinstall current channel
