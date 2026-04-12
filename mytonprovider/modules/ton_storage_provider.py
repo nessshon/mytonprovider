@@ -122,10 +122,8 @@ class TonStorageProviderModule(
             self._ton_client = LiteBalancer.from_config(
                 network=NetworkGlobalID.MAINNET,
                 config=str(constants.GLOBAL_CONFIG_PATH),
-                connect_timeout=1.0,
-                request_timeout=10,
+                connect_timeout=1.5,
                 client_connect_timeout=1.0,
-                client_request_timeout=2,
                 retry_policy=DEFAULT_ADNL_RETRY_POLICY,
             )
         return self._ton_client
@@ -163,8 +161,9 @@ class TonStorageProviderModule(
             args = ["sudo", *args]
         return args
 
-    def show_status(self) -> None:
-        card, rows = self._get_card_and_rows()
+    @async_to_sync
+    async def show_status(self) -> None:
+        card, rows = await self._get_card_and_rows()
         block = StatusBlock(
             name=self.name,
             version=self.format_version(),
