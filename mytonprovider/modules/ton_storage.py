@@ -97,7 +97,7 @@ class TonStorageModule(
     github_author = constants.TON_STORAGE_AUTHOR
     github_repo = constants.TON_STORAGE_REPO
     default_version = constants.TON_STORAGE_VERSION
-    entry_point: ClassVar[str] = "cmd/main.go"
+    entry_point: ClassVar[str] = "cli/main.go"
 
     def __init__(self, app: MyPyClass) -> None:
         super().__init__(app)
