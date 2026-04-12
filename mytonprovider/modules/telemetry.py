@@ -202,9 +202,7 @@ class TelemetryModule(Daemonic, Commandable):
         with self._log_on_error("provider total_space"):
             section["total_provider_space"] = provider.get_total_space_gb()
         with self._log_on_error("provider max_bag_size"):
-            max_bag_gb = provider.get_max_bag_size_gb()
-            if max_bag_gb is not None:
-                section["max_bag_size_bytes"] = int(max_bag_gb * 1024**3)
+            section["max_bag_size_bytes"] = provider.get_max_bag_size_bytes()
         with self._log_on_error("provider service_uptime"):
             section["service_uptime"] = get_service_uptime(provider.service_name)
 

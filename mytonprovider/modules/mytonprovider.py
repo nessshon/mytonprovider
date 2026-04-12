@@ -7,6 +7,7 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
+import psutil
 from mypylib import (
     DEBUG,
     INFO,
@@ -15,11 +16,9 @@ from mypylib import (
     color_print,
     get_cpu_count,
     get_load_avg,
-    get_ram_info,
     get_request,
     get_service_status,
     get_service_uptime,
-    get_swap_info,
     time2human,
 )
 
@@ -252,12 +251,15 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         print(text)
 
     def _print_memory_load(self) -> None:
-        ram = get_ram_info()
-        swap = get_swap_info()
-        ram_usage_text = get_threshold_color(ram.used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" Gb")
-        ram_percent_text = get_threshold_color(ram.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
-        swap_usage_text = get_threshold_color(swap.used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" Gb")
-        swap_percent_text = get_threshold_color(swap.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
+        # Decimal GB (bytes / 10^9) to match old server_info output and telemetry contract.
+        vm = psutil.virtual_memory()
+        sm = psutil.swap_memory()
+        ram_used = round(vm.used / 10**9, 2)
+        swap_used = round(sm.used / 10**9, 2)
+        ram_usage_text = get_threshold_color(ram_used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
+        ram_percent_text = get_threshold_color(vm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
+        swap_usage_text = get_threshold_color(swap_used, MEMORY_USAGE_BORDERLINE_GB, logic="less", ending=" GB")
+        swap_percent_text = get_threshold_color(sm.percent, MEMORY_USAGE_PERCENT_BORDERLINE, logic="less", ending="%")
         ram_load_text = (
             f"{bcolors.cyan}ram:[{bcolors.default}{ram_usage_text}, {ram_percent_text}{bcolors.cyan}]{bcolors.endc}"
         )

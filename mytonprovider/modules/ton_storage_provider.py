@@ -740,10 +740,13 @@ class TonStorageProviderModule(
         megabytes = int(provider_config.Storages[0].SpaceToProvideMegabytes)
         return round(megabytes / 1024, 2)
 
+    def get_max_bag_size_bytes(self) -> int:
+        """Return raw ``MaxBagSizeBytes`` from provider config."""
+        return int(self._read_provider_config().MaxBagSizeBytes)
+
     def get_max_bag_size_gb(self) -> float:
-        """Return ``MaxBagSizeBytes`` converted to GB."""
-        provider_config = self._read_provider_config()
-        return round(int(provider_config.MaxBagSizeBytes) / 1024**3, 2)
+        """Return ``MaxBagSizeBytes`` converted to GB (for display)."""
+        return round(self.get_max_bag_size_bytes() / 1024**3, 2)
 
     @staticmethod
     def _calculate_space_to_provide_megabytes(gigabytes: int) -> int:
