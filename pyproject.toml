@@ -1,0 +1,97 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mytonprovider"
+requires-python = ">=3.10"
+dynamic = ["version"]
+dependencies = [
+    "asgiref==3.8.1",
+    "inquirer==3.4.0",
+    "mypylib @ git+https://github.com/nessshon/mypylib@v1.1.0",
+    "mypyconsole @ git+https://github.com/nessshon/mypyconsole@v1.0.0",
+    "speedtest-cli",
+    "tonutils==2.1.0"
+]
+
+[project.scripts]
+mytonprovider = "mytonprovider.__main__:main"
+
+[tool.setuptools.dynamic]
+version = {attr = "mytonprovider.constants.MYTONPROVIDER_VERSION"}
+
+[tool.setuptools.packages.find]
+include = ["mytonprovider", "mytonprovider.*"]
+
+[tool.setuptools.package-data]
+mytonprovider = ["scripts/*.sh", "translations.json"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle errors
+    "E",
+    # pycodestyle warnings
+    "W",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # flake8-annotations
+    "ANN",
+    # flake8-bugbear
+    "B",
+    # flake8-comprehensions
+    "C4",
+    # pyupgrade
+    "UP",
+    # flake8-simplify
+    "SIM",
+    # type-checking imports
+    "TCH",
+    # perflint
+    "PERF",
+    # flake8-debugger
+    "T10",
+    # flake8-pie
+    "PIE",
+    # pylint errors
+    "PLE",
+    # flake8-return
+    "RET",
+    # ruff-specific
+    "RUF",
+    # eradicate (commented-out code)
+    "ERA",
+]
+ignore = [
+    # typing.Any -- needed for dynamic Dict
+    "ANN401",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mytonprovider"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+pretty = true
+show_error_codes = true
+show_error_context = true
+namespace_packages = true
+warn_unreachable = true
+ignore_missing_imports = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-cast",
+    "truthy-bool",
+]

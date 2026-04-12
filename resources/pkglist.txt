@@ -1,1 +1,0 @@
-git curl wget virtualenv python3 python3-pip fio
