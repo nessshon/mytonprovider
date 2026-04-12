@@ -118,6 +118,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
             "pip",
             "install",
             "--upgrade",
+            "--quiet",
             f"git+https://github.com/{target.author}/{target.repo}@{target.ref}",
         ]
 
