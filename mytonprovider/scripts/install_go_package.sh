@@ -5,7 +5,7 @@
 
 set -euo pipefail
 
-readonly C_STEP='\033[95m'
+readonly C_STEP='\033[92m'
 readonly C_RESET='\033[0m'
 
 author=""
