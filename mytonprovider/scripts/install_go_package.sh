@@ -6,7 +6,22 @@
 set -euo pipefail
 
 readonly C_STEP='\033[92m'
+readonly C_ERROR='\033[91m'
 readonly C_RESET='\033[0m'
+
+# Run silently; dump full output only on failure.
+run_quiet() {
+	local log
+	log=$(mktemp)
+	if "$@" > "${log}" 2>&1; then
+		rm -f "${log}"
+	else
+		echo -e "${C_ERROR}Command failed: $*${C_RESET}" >&2
+		cat "${log}" >&2
+		rm -f "${log}"
+		exit 1
+	fi
+}
 
 author=""
 repo=""
@@ -95,30 +110,30 @@ check_go_version() {
 }
 
 install_go() {
-	local arc go_version go_url
+	local arc go_version go_url tmp_archive
 	arc=$(dpkg --print-architecture)
 	go_version=$(curl -s "https://go.dev/VERSION?m=text" | head -n 1)
 	go_url="https://go.dev/dl/${go_version}.linux-${arc}.tar.gz"
+	tmp_archive=$(mktemp)
 	rm -rf /usr/local/go
-	wget -c "${go_url}" -O - | tar -C /usr/local -xz
+	run_quiet wget -q "${go_url}" -O "${tmp_archive}"
+	run_quiet tar -C /usr/local -xzf "${tmp_archive}"
+	rm -f "${tmp_archive}"
 }
 
 clone_repository() {
 	local ref="${tag:-${branch}}"
-	echo "https://github.com/${author}/${repo}.git -> ${ref}"
 	rm -rf "${SRC_PATH}_tmp"
-	git clone --branch "${ref}" --recursive \
+	run_quiet git clone --branch "${ref}" --recursive \
 		"https://github.com/${author}/${repo}.git" "${SRC_PATH}_tmp"
 	rm -rf "${SRC_PATH}"
 	mv "${SRC_PATH}_tmp" "${SRC_PATH}"
-	# Allow non-root users (daemon) to read git metadata for update checks.
-	git config --system --add safe.directory "${SRC_PATH}"
+	git config --system --add safe.directory "${SRC_PATH}" 2>/dev/null || true
 }
 
 compile() {
-	echo "${SRC_PATH} -> ${BIN_PATH}"
 	cd "${SRC_PATH}"
-	CGO_ENABLED=1 "${GO_PATH}" build -o "${BIN_PATH}" "${SRC_PATH}/${entry_point}"
+	run_quiet env CGO_ENABLED=1 "${GO_PATH}" build -o "${BIN_PATH}" "${SRC_PATH}/${entry_point}"
 }
 
 service_restart() {
