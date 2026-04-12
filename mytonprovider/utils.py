@@ -259,24 +259,23 @@ def _visible_len(text: str) -> int:
 
 
 def render_status_block(block: StatusBlock) -> None:
-    """Render a ``StatusBlock`` as a box-style status panel."""
-    print(bcolors.cyan_text(f"● {block.name} {block.version}"))
-
+    """Render a ``StatusBlock`` as a unified box-style status panel."""
+    all_rows: list[tuple[str, str]] = []
     if block.card:
-        max_card_label = max(len(label) for label, _ in block.card)
         for label, value in block.card:
-            print(f"  {label + ':':<{max_card_label + 2}} {value}")
+            all_rows.append((label + ":", value))
+        all_rows.append(("", ""))
 
-    print()
+    if block.rows:
+        all_rows.extend(block.rows)
 
-    if not block.rows:
+    if not all_rows:
         return
 
-    content_rows = block.rows
-    max_label = max((_visible_len(label) for label, _ in content_rows if label), default=0)
+    max_label = max((_visible_len(l) for l, _ in all_rows if l), default=0)
 
     lines: list[str] = []
-    for label, value in content_rows:
+    for label, value in all_rows:
         if not label and not value:
             lines.append("")
         else:
@@ -285,24 +284,32 @@ def render_status_block(block: StatusBlock) -> None:
 
     max_content = max((_visible_len(line) for line in lines if line), default=0)
 
-    frame_label = f"status {block.service_text}"
-    frame_label_vis = _visible_len(frame_label)
-    # inner = visible chars between │ and │ (including padding)
-    # top border: ╭─·label·─...─╮  →  needs frame_label_vis + 4 chars for "╭─ " and " ─╮"
-    # content:    │content...pad│  →  needs max_content + 2 for "│" margins
-    inner = max(max_content + 2, frame_label_vis + 4)
+    top_label = f"{block.name} {block.version}"
+    top_label_vis = _visible_len(top_label)
 
-    top_fill = inner - frame_label_vis - 4
-    print(f"  ╭─ {frame_label} {'─' * top_fill}─╮")
+    bottom_label = block.service_text
+    bottom_label_vis = _visible_len(bottom_label)
 
+    inner = max(
+        max_content + 2,
+        top_label_vis + 4,
+        bottom_label_vis + 4,
+    )
+
+    top_fill = inner - top_label_vis - 4
+    print(f"  ╭─ {top_label} {'─' * top_fill}─╮")
+
+    print(f"  │{' ' * inner}│")
     for line in lines:
         if not line:
             print(f"  │{' ' * inner}│")
         else:
             pad_right = inner - _visible_len(line)
             print(f"  │{line}{' ' * pad_right}│")
+    print(f"  │{' ' * inner}│")
 
-    print(f"  ╰{'─' * inner}╯")
+    bottom_fill = inner - bottom_label_vis - 3
+    print(f"  ╰{'─' * bottom_fill} {bottom_label} ─╯")
 
     if block.update_text:
         update_icon = bcolors.yellow_text("⚡")

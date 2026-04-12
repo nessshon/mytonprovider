@@ -67,12 +67,6 @@ if TYPE_CHECKING:
 SERVICE_START_SLEEP_SEC: Final[int] = 10
 INSTALL_BUILD_TIMEOUT_SEC: Final[int] = 300
 
-DEFAULT_SEND_TIMEOUT_SEC: Final[float] = 60.0
-REGISTRATION_WAIT_TIMEOUT_SEC: Final[float] = 60.0
-TRANSFER_WAIT_TIMEOUT_SEC: Final[float] = 60.0
-WAIT_FOR_MESSAGE_POLL_INTERVAL_SEC: Final[float] = 2.0
-GET_TRANSACTIONS_LIMIT: Final[int] = 10
-
 PROVIDER_SUBDIR: Final[str] = "provider"
 DB_SUBDIR: Final[str] = "db"
 PROVIDER_CONFIG_NAME: Final[str] = "config.json"
@@ -383,7 +377,7 @@ class TonStorageProviderModule(
         amount: int,
         body: str | None = None,
         *,
-        timeout: float = DEFAULT_SEND_TIMEOUT_SEC,
+        timeout: float = 30,
     ) -> str:
         """Send *amount* from *wallet* to *destination* and wait for on-chain confirmation."""
         end_lt = wallet.last_transaction_lt or 0
@@ -404,15 +398,15 @@ class TonStorageProviderModule(
         target_hash: str,
         end_lt: int,
         *,
-        timeout: float = DEFAULT_SEND_TIMEOUT_SEC,
-        poll_interval: float = WAIT_FOR_MESSAGE_POLL_INTERVAL_SEC,
+        timeout: float = 30,
+        poll_interval: float = 2,
     ) -> None:
         """Poll transactions until a message with *target_hash* lands at *address*."""
         target = target_hash.lower()
         deadline = time.monotonic() + timeout
         while time.monotonic() < deadline:
             txs = await ton_client.get_transactions(
-                address, limit=GET_TRANSACTIONS_LIMIT,
+                address, limit=10,
             )
             for tx in txs:
                 if tx.lt <= end_lt:
@@ -448,7 +442,6 @@ class TonStorageProviderModule(
                     destination=Address(constants.REGISTRATION_ADDRESS),
                     amount=to_nano(constants.REGISTRATION_AMOUNT),
                     body=body,
-                    timeout=REGISTRATION_WAIT_TIMEOUT_SEC,
                 )
         except Exception as exc:
             color_print(f"{{red}}Register failed:{{endc}} {exc}")
@@ -536,7 +529,6 @@ class TonStorageProviderModule(
                     destination=destination,
                     amount=amount_nanoton,
                     body=body,
-                    timeout=TRANSFER_WAIT_TIMEOUT_SEC,
                 )
         except Exception as exc:
             color_print(f"{{red}}transfer_ton failed:{{endc}} {exc}")
