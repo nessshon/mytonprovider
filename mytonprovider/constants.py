@@ -47,7 +47,6 @@ MYTONPROVIDER_VERSION: Final[str] = "v1.0.0"
 TON_STORAGE_AUTHOR: Final[str] = "xssnick"
 TON_STORAGE_REPO: Final[str] = "tonutils-storage"
 TON_STORAGE_VERSION: Final[str] = "v1.4.1"
-TON_STORAGE_ENTRY: Final[str] = "cli/main.go"
 
 # tonutils-storage-provider (go) package
 TON_STORAGE_PROVIDER_AUTHOR: Final[str] = "xssnick"

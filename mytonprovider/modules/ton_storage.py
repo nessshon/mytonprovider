@@ -98,12 +98,12 @@ class TonStorageModule(
     name = "ton-storage"
     service_name = "ton-storage"
     mandatory = False
+    daemon_interval = DAEMON_INTERVAL_SEC
 
     github_author = constants.TON_STORAGE_AUTHOR
     github_repo = constants.TON_STORAGE_REPO
     default_version = constants.TON_STORAGE_VERSION
-    entry_point: ClassVar[str] = constants.TON_STORAGE_ENTRY
-    daemon_interval = DAEMON_INTERVAL_SEC
+    entry_point: ClassVar[str] = "cmd/main.go"
 
     def __init__(self, app: MyPyClass) -> None:
         super().__init__(app)
