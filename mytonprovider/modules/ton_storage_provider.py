@@ -82,7 +82,7 @@ BIN_PATH: Final[Path] = Path("/usr/local/bin") / constants.TON_STORAGE_PROVIDER_
 STORAGE_COST_REFERENCE_GB: Final[int] = 200
 PROVIDER_MIN_SPAN_SEC: Final[int] = 7 * 86400
 MIN_MAX_SPAN_SEC: Final[int] = 30 * 86400
-MAX_SPAN_HARD_LIMIT: Final[int] = 4_294_967_290  # uint32 max - 5
+MAX_SPAN_HARD_LIMIT: Final[int] = 4_294_967_290
 MIN_PROOF_COST_TON: Final[float] = 0.05
 MIN_BAG_SIZE_BYTES: Final[int] = 400
 
@@ -120,6 +120,10 @@ class TonStorageProviderModule(
             self._ton_client = LiteBalancer.from_config(
                 network=NetworkGlobalID.MAINNET,
                 config=str(constants.GLOBAL_CONFIG_PATH),
+                connect_timeout=1.0,
+                request_timeout=10,
+                client_connect_timeout=1.0,
+                client_request_timeout=2,
                 retry_policy=DEFAULT_ADNL_RETRY_POLICY,
             )
         return self._ton_client

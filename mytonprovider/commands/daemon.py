@@ -12,8 +12,6 @@ if TYPE_CHECKING:
 
 def cmd_daemon(app: MyPyClass, registry: ModuleRegistry) -> None:
     """Run as background daemon: start module cycles and block."""
-    for startable in registry.startables():
-        startable.pre_up()
     for daemonic in registry.daemons():
         app.start_cycle(
             daemonic.daemon,

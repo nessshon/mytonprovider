@@ -307,4 +307,5 @@ def render_status_block(block: StatusBlock) -> None:
     if block.update_text:
         update_icon = bcolors.yellow_text("⚡")
         update_msg = bcolors.green_text(block.update_text)
-        print(f"\n  {update_icon} {update_msg}")
+        print(f"  {update_icon} {update_msg}")
+        print()
