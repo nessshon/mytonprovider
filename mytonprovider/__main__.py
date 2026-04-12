@@ -11,6 +11,7 @@ from mytonprovider.commands import (
     cmd_console,
     cmd_daemon,
     cmd_init,
+    cmd_uninstall,
     cmd_update,
 )
 from mytonprovider.commands.init import is_initialized
@@ -131,6 +132,16 @@ def build_parser() -> argparse.ArgumentParser:
         help="Only report availability, do not install.",
     )
 
+    uninstall_p = subparsers.add_parser(
+        "uninstall",
+        help="Uninstall mytonprovider: stop services, remove units/binaries/config.",
+    )
+    uninstall_p.add_argument(
+        "--yes", "-y",
+        action="store_true",
+        help="Skip the wallet-keys confirmation prompt.",
+    )
+
     return parser
 
 
@@ -151,6 +162,10 @@ def main() -> None:
         require_initialized()
         app, registry = setup_app()
         cmd_daemon(app, registry)
+        return
+
+    if args.command == "uninstall":
+        cmd_uninstall(yes=args.yes)
         return
 
     if args.command == "init":
