@@ -82,6 +82,7 @@ def _safe_pre_up(app: MyPyClass, startable: Startable) -> None:
 
 def _console_status(registry: ModuleRegistry) -> None:
     """Print status blocks for every Statusable module in registration order."""
+    print()
     statusables = registry.statusables()
     for index, module in enumerate(statusables):
         module.show_status()
