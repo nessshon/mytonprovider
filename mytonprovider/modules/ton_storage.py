@@ -48,7 +48,6 @@ from mytonprovider.utils import (
     get_config_path,
     get_service_status_color,
     read_git_clone_version,
-    shorten_bag_id,
 )
 
 if TYPE_CHECKING:
@@ -411,7 +410,7 @@ class TonStorageModule(
             last_verified_ts = verify_state.get(bag.bag_id.upper(), 0)
             last_verified_text = timeago(last_verified_ts) if last_verified_ts else "never"
             table.append([
-                shorten_bag_id(bag.bag_id),
+                f"{bag.bag_id[:6]}...{bag.bag_id[-6:]}",
                 f"{self._get_bag_progress(bag)}%",
                 f"{size} GB",
                 bag.files_count,

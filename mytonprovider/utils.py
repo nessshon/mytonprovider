@@ -195,11 +195,6 @@ def _do_check_adnl_connection(
     )
 
 
-def shorten_bag_id(bag_id: str, edge: int = 6) -> str:
-    """Shorten a 64-char bag id for display: 'abc123...xyz789'."""
-    return f"{bag_id[:edge]}...{bag_id[-edge:]}"
-
-
 def get_threshold_color(
     value: float | None,
     threshold: float,
