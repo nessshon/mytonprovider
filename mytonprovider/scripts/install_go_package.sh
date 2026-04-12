@@ -155,17 +155,12 @@ service_restart() {
 }
 
 main() {
-	step 1 4 "Cloning ${repo} repository"
+	echo -n -e "${C_STEP}Building ${repo}${C_RESET}... "
 	clone_repository
-
-	step 2 4 "Installing required packages"
 	check_go_version "${SRC_PATH}/go.mod" "${GO_PATH}"
-
-	step 3 4 "Source compilation"
 	compile
 	service_restart
-
-	step 4 4 "${repo} installation complete"
+	echo -e "${C_STEP}done${C_RESET}"
 }
 
 main "$@"

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import io
 import os
 import pwd
 import shutil
 import subprocess
+from contextlib import redirect_stdout
 from pathlib import Path
 from typing import TYPE_CHECKING, Final
 
@@ -192,12 +194,13 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
 
         self._write_sudoers(context.user)
 
-        add2systemd(
-            name=self.service_name,
-            user=context.user,
-            start=f"/usr/bin/env PYTHONUNBUFFERED=1 {venv_exe} --daemon",
-            force=True,
-        )
+        with redirect_stdout(io.StringIO()):
+            add2systemd(
+                name=self.service_name,
+                user=context.user,
+                start=f"/usr/bin/env PYTHONUNBUFFERED=1 {venv_exe} --daemon",
+                force=True,
+            )
 
     @staticmethod
     def _write_sudoers(user: str) -> None:

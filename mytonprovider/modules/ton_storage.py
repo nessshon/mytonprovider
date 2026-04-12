@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import io
 import os
 import pwd
 import shutil
 import subprocess
+from contextlib import redirect_stdout
 from pathlib import Path
 from random import randint
 from typing import TYPE_CHECKING, Any, ClassVar, Final, cast
@@ -227,13 +229,14 @@ class TonStorageModule(
                 f"-network-config {constants.GLOBAL_CONFIG_PATH} "
                 f"--no-verify"
             )
-            add2systemd(
-                name=self.service_name,
-                user=context.user,
-                start=start_cmd,
-                workdir=str(storage_path),
-                force=True,
-            )
+            with redirect_stdout(io.StringIO()):
+                add2systemd(
+                    name=self.service_name,
+                    user=context.user,
+                    start=start_cmd,
+                    workdir=str(storage_path),
+                    force=True,
+                )
 
             print(f"Starting {self.service_name} to generate config")
             self.app.start_service(self.service_name, sleep=SERVICE_START_SLEEP_SEC)

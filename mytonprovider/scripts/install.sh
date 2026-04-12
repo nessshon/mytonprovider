@@ -47,9 +47,16 @@ die() {
 	exit 1
 }
 
-step() {
-	local number="$1" total="$2" message="$3"
-	echo -e "${C_STEP}[${number}/${total}]${C_RESET} ${message}"
+step_start() {
+	echo -n -e "${C_STEP}${1}${C_RESET}... "
+}
+
+step_done() {
+	if [[ -n "${1-}" ]]; then
+		echo -e "${C_STEP}done${C_RESET} (${1})"
+	else
+		echo -e "${C_STEP}done${C_RESET}"
+	fi
 }
 
 # Run a command silently; on failure dump captured output and exit.
@@ -257,28 +264,28 @@ main() {
 	venv_path="${user_home}/.local/venv/${APP_NAME}"
 	venv_bin="${venv_path}/bin/${APP_NAME}"
 
-	step 1 5 "Installing base system packages"
+	step_start "Installing system packages"
 	install_system_packages
+	step_done
 
-	step 2 5 "Ensuring Python >= ${REQUIRED_PYTHON_MAJOR}.${REQUIRED_PYTHON_MINOR}"
+	step_start "Ensuring Python >= ${REQUIRED_PYTHON_MAJOR}.${REQUIRED_PYTHON_MINOR}"
 	ensure_python
-	echo "Using ${python_bin} ($("${python_bin}" --version 2>&1))"
+	step_done "${python_bin}"
 
-	step 3 5 "Creating Python virtualenv at ${venv_path}"
+	step_start "Creating virtualenv"
 	create_venv "${user}" "${venv_path}"
+	step_done
 
-	step 4 5 "Installing ${APP_NAME} from ${author}/${repo}@${branch}"
+	step_start "Installing ${APP_NAME} package"
 	install_package_from_git "${user}" "${venv_path}"
 	[[ -x "${venv_bin}" ]] || die "No ${venv_bin} after install"
+	step_done
 
-	if (( ${#init_args[@]} > 0 )); then
-		step 5 5 "Running '${APP_NAME} init' non-interactively"
-	else
-		step 5 5 "Launching '${APP_NAME} init' wizard"
-	fi
+	echo ""
 	launch_init_wizard "${user}" "${venv_bin}" \
 		${init_args[@]+"${init_args[@]}"}
 
+	echo ""
 	echo -e "${C_STEP}MyTonProvider installation completed${C_RESET}"
 }
 
