@@ -110,6 +110,8 @@ clone_repository() {
 	git clone --branch ${ref} --recursive https://github.com/${author}/${repo}.git ${src_path}_tmp
 	rm -rf ${src_path}
 	mv ${src_path}_tmp ${src_path}
+	# Allow non-root users (daemon) to read git metadata for update checks.
+	git config --global --add safe.directory ${src_path}
 }
 
 install_required() {
