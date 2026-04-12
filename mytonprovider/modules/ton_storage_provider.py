@@ -16,7 +16,6 @@ from mypylib import (
     ByteUnit,
     Dict,
     add2systemd,
-    atomic_write_config,
     bcolors,
     color_print,
     get_disk_space,
@@ -283,11 +282,7 @@ class TonStorageProviderModule(
                 context.space_to_provide_gigabytes,
             )
             provider_config.CRON.Enabled = True
-            atomic_write_config(str(provider_config_path), provider_config)
-            subprocess.run(
-                ["chown", f"{context.user}:{context.user}", str(provider_config_path)],
-                check=True,
-            )
+            write_config_to_file(str(provider_config_path), provider_config)
 
             config_path = get_config_path()
             mconfig = read_config_from_file(str(config_path))
@@ -360,7 +355,7 @@ class TonStorageProviderModule(
 
     def _write_provider_config(self, provider_config: Dict) -> None:
         provider = self.app.db.ton_storage.provider
-        atomic_write_config(str(provider.config_path), provider_config)
+        write_config_to_file(str(provider.config_path), provider_config)
 
     def _apply_provider_config(self, mutator: Callable[[Dict], None]) -> None:
         """Mutate ``provider_config.json`` and restart the service.
@@ -376,7 +371,7 @@ class TonStorageProviderModule(
         config_path = str(self.app.db.ton_storage.provider.config_path)
         self.app.stop_service(self.service_name)
         try:
-            atomic_write_config(config_path, provider_config)
+            write_config_to_file(config_path, provider_config)
         finally:
             self.app.start_service(self.service_name, sleep=SERVICE_START_SLEEP_SEC)
 
