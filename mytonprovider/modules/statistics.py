@@ -310,7 +310,7 @@ class StatisticsModule(Daemonic, Commandable):
         return sorted(entry for entry in os.listdir(BLOCK_DEVICES_DIR) if "loop" not in entry)
 
     def _print_network_status(self, args: list[str]) -> None:
-        """Console command: print current network speed and daily traffic tables."""
+        """Print current network speed and daily traffic tables."""
         net_recv_avg = self.get_net_recv_avg()
         net_sent_avg = self.get_net_sent_avg()
         net_load_avg = self.get_net_load_avg()

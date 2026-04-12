@@ -37,19 +37,7 @@ def apply_updates(
     force: bool = False,
     check_only: bool = False,
 ) -> list[UpdateResult]:
-    """Check and (optionally) install updates for each module.
-
-    Shared by :func:`cmd_update` and ``MytonproviderModule.daemon``.
-    Never raises: per-module failures are captured in the result list
-    so the batch continues. Subprocess output is streamed to the
-    current stdout/stderr (terminal for CLI, journald for daemon).
-
-    :param override: Explicit target channel (applies to all *modules*;
-        caller must restrict *modules* to a single entry).
-    :param force: Install even if no update is reported (or even if
-        installed version already matches).
-    :param check_only: Only query GitHub and report availability.
-    """
+    """Check and optionally install updates for each module."""
     return [_apply_one(app, module, override, force, check_only) for module in modules]
 
 
@@ -83,7 +71,7 @@ def _apply_one(
         return UpdateResult(module.name, "up_to_date", "up to date")
 
     if target is None:
-        # force=True but no target known — reinstall current channel.
+        # force=True but no target known -- reinstall current channel
         try:
             target = module.get_installed_version().channel
         except Exception as exc:
@@ -109,7 +97,7 @@ def _resolve_targets(
     registry: ModuleRegistry,
     target: str | None,
 ) -> list[Updatable]:
-    """Return list of Updatable modules for the given CLI target."""
+    """Return Updatable modules matching the given target name."""
     if target is None:
         return registry.updatables()
     try:
@@ -127,7 +115,7 @@ def _build_override(
     author: str | None,
     repo: str | None,
 ) -> Channel:
-    """Classify *ref* against the resolved repo and build an override Channel."""
+    """Build an override Channel from the given ref and repo info."""
     final_author = author or module.github_author
     final_repo = repo or module.github_repo
     ref_kind = classify_ref(final_author, final_repo, ref)
@@ -135,7 +123,7 @@ def _build_override(
 
 
 def _print_result(result: UpdateResult) -> None:
-    """Pretty-print one :class:`UpdateResult` to the terminal."""
+    """Pretty-print one update result to the terminal."""
     name = bcolors.yellow_text(result.module)
     if result.action == "updated":
         status = bcolors.green_text("updated")
@@ -158,15 +146,7 @@ def cmd_update(
     force: bool,
     check: bool,
 ) -> None:
-    """Update modules.
-
-    :param target: Specific module name, or ``None`` for all updatables.
-    :param ref: Git ref override (tag/branch). Requires *target*.
-    :param author: Repo author override. Requires *ref*.
-    :param repo: Repo name override. Requires *ref*.
-    :param force: Reinstall even if already up to date.
-    :param check: Only print availability, do not perform updates.
-    """
+    """Update modules (or check for available updates)."""
     if check and force:
         raise RuntimeError("--check and --force are mutually exclusive")
     if (author is not None or repo is not None) and ref is None:

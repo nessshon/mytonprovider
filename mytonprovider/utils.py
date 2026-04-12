@@ -30,20 +30,7 @@ _SEMVER_RE = re.compile(r"^v?\d+\.\d+\.\d+(?:[-+].*)?$")
 
 
 def classify_ref(author: str, repo: str, ref: str) -> RefKind:
-    """Classify a git ref against a remote GitHub repo as tag or branch.
-
-    Uses ``git ls-remote`` with an exact refspec — checks tags first
-    (they are immutable, preferred when the user asks for a version),
-    then branches.
-
-    :param author: Repository owner.
-    :param repo: Repository name.
-    :param ref: Ref name to classify (without ``refs/tags/`` or
-        ``refs/heads/`` prefix).
-    :return: ``"tag"`` or ``"branch"``.
-    :raises RuntimeError: If the ref is not found in either namespace,
-        or if ``git ls-remote`` fails (network/auth/timeout).
-    """
+    """Classify a git ref as tag or branch via ``git ls-remote``."""
     url = f"https://github.com/{author}/{repo}.git"
 
     for kind, prefix in (("tag", "refs/tags/"), ("branch", "refs/heads/")):
@@ -63,36 +50,12 @@ def classify_ref(author: str, repo: str, ref: str) -> RefKind:
 
 
 def parse_revision_kind(revision: str) -> RefKind:
-    """Classify a git revision string as tag or branch based on its form.
-
-    Uses a semver regex — matches ``v1.2.3`` / ``1.2.3`` with optional
-    pre-release or build suffix (``v2.0.0-rc1``, ``v1.0.0+build42``).
-
-    This is an *offline* heuristic used for reading already-installed
-    state (PEP 610 ``direct_url.json``) where pip does not record ref
-    kind. For arbitrary refs resolved against a live repo, use
-    :func:`classify_ref` instead.
-
-    :param revision: Revision string as recorded by pip (tag or branch name).
-    :return: ``"tag"`` if the string looks like a semver version,
-        otherwise ``"branch"``.
-    """
+    """Classify a revision string as tag or branch using a semver heuristic."""
     return "tag" if _SEMVER_RE.match(revision) else "branch"
 
 
 def read_pep610_version(package_name: str) -> InstalledVersion:
-    """Read installed version metadata via PEP 610 ``direct_url.json``.
-
-    Works only for packages installed from a VCS URL (``pip install
-    git+https://...@<ref>``). Editable installs (``pip install -e``)
-    and PyPI installs do not populate ``vcs_info``.
-
-    :param package_name: Distribution name.
-    :return: :class:`InstalledVersion` with channel + commit.
-    :raises RuntimeError: If the package is not installed, was installed
-        without a git URL (no ``vcs_info``), or was installed without an
-        explicit ref (no ``requested_revision``).
-    """
+    """Read installed version metadata via PEP 610 ``direct_url.json``."""
     try:
         dist = importlib.metadata.distribution(package_name)
     except importlib.metadata.PackageNotFoundError as exc:
@@ -143,10 +106,7 @@ def read_pep610_version(package_name: str) -> InstalledVersion:
 
 
 def _run_git_local(args: list[str], cwd: Path) -> str:
-    """Run a git command in *cwd* and return stripped stdout.
-
-    :raises RuntimeError: On non-zero exit, missing git binary, or timeout.
-    """
+    """Run a git command in *cwd* and return stripped stdout."""
     try:
         result = subprocess.run(
             ["git", *args],
@@ -164,23 +124,7 @@ def _run_git_local(args: list[str], cwd: Path) -> str:
 
 
 def read_git_clone_version(git_path: Path) -> InstalledVersion:
-    """Read installed version metadata from a local git clone.
-
-    Used for Go packages built from ``/usr/src/{repo}`` where the clone
-    itself is the source of truth.
-
-    Resolution order:
-      1. ``git remote get-url origin`` → author/repo.
-      2. ``git rev-parse HEAD`` → commit.
-      3. ``git symbolic-ref --short HEAD`` → branch (if attached).
-         If HEAD is detached, ``git describe --tags --exact-match`` →
-         tag name.
-
-    :param git_path: Path to the git working tree.
-    :return: :class:`InstalledVersion` with channel + commit.
-    :raises RuntimeError: If the path is not a git repo, HEAD is
-        detached but not on an exact tag, or git commands fail.
-    """
+    """Read installed version metadata from a local git clone."""
     if not git_path.exists():
         raise RuntimeError(f"git clone not found: {git_path}")
 
@@ -214,19 +158,7 @@ def read_git_clone_version(git_path: Path) -> InstalledVersion:
 
 
 def check_adnl_connection(host: str, port: int, pubkey: str) -> tuple[bool, str | None]:
-    """Verify that an ADNL UDP node is reachable from the outside.
-
-    Asks remote checker services (from :data:`constants.ADNL_CHECKER_HOSTS`)
-    to attempt a connection back to ``host``/``port`` using ``pubkey``.
-    Samples up to :data:`ADNL_CHECK_SAMPLE_SIZE` random checkers; returns
-    success on the first positive result.
-
-    :param host: Public IP of the node being checked.
-    :param port: UDP port.
-    :param pubkey: Hex-encoded ADNL public key.
-    :return: Tuple ``(ok, error_message)``. On success ``(True, None)``,
-        on failure ``(False, <last_error>)``.
-    """
+    """Verify that an ADNL UDP node is reachable from the outside."""
     sample_size = min(ADNL_CHECK_SAMPLE_SIZE, len(constants.ADNL_CHECKER_HOSTS))
     checker_hosts = random.sample(constants.ADNL_CHECKER_HOSTS, k=sample_size)
 
@@ -291,26 +223,7 @@ def get_service_status_color(is_active: bool) -> str:
 
 
 def resolve_app_home() -> Path:
-    """Return the home directory to base app paths on.
-
-    Single source of truth for "whose home does the app live under" —
-    used by :func:`get_config_path` and ``__main__.setup_app`` so the
-    MyPyClass db, the install-time config, and the ``is_initialized``
-    check all agree on one location regardless of invocation style.
-
-    Resolution order when ``euid == 0`` (root):
-
-    1. ``SUDO_USER`` / ``DOAS_USER`` env vars — set by ``sudo``/``doas``
-       and explicitly by ``install.sh``.
-    2. Owner of the entry-point symlink at ``/usr/local/bin/{APP_NAME}``
-       (resolves to ``venv/bin/{APP_NAME}`` which is chown'd to the
-       install user). Covers ``su root -c`` and raw-TTY root logins
-       where no ``SUDO_USER`` is set.
-    3. Fall back to ``Path.home()`` — pre-init state only, nothing
-       else to go on.
-
-    Non-root invocations always use ``Path.home()`` directly.
-    """
+    """Return the home directory, resolving SUDO_USER when running as root."""
     if os.geteuid() != 0:
         return Path.home()
 
@@ -335,24 +248,12 @@ def resolve_app_home() -> Path:
 
 
 def get_config_path() -> Path:
-    """Return absolute path to the local mytonprovider config DB.
-
-    Honors ``SUDO_USER``/``DOAS_USER`` when running as root so modules
-    invoked from an elevated init/update run read and write the same
-    file the user's non-elevated invocations will read.
-    """
+    """Return absolute path to the local mytonprovider config DB."""
     return resolve_app_home() / constants.CONFIG_PATH
 
 
 def is_newer_version(current: str, other: str) -> bool:
-    """Return True if ``other`` is a newer semver version than ``current``.
-
-    Accepts both git-tag form (``"v1.2.3"``) and plain semver (``"1.2.3"``).
-    Pre-release and build suffixes (``-rc1``, ``+build42``) are stripped
-    before comparison — so ``v2.0.0-rc1`` compares equal to ``v2.0.0``.
-    This means a pre-release → stable transition is not detected as an
-    update (known limitation, fine for our use case).
-    """
+    """Return True if ``other`` is a newer semver version than ``current``."""
 
     def core_parts(v: str) -> tuple[int, ...]:
         core = v.lstrip("v").split("-", 1)[0].split("+", 1)[0]

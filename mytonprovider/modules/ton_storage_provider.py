@@ -63,35 +63,30 @@ if TYPE_CHECKING:
     from mytonprovider.types import Channel, InstalledVersion
 
 
-# Service behavior
 SERVICE_START_SLEEP_SEC: Final[int] = 10
 INSTALL_BUILD_TIMEOUT_SEC: Final[int] = 300
 
-# On-chain send/wait
 DEFAULT_SEND_TIMEOUT_SEC: Final[float] = 60.0
 REGISTRATION_WAIT_TIMEOUT_SEC: Final[float] = 60.0
 TRANSFER_WAIT_TIMEOUT_SEC: Final[float] = 60.0
 WAIT_FOR_MESSAGE_POLL_INTERVAL_SEC: Final[float] = 2.0
 GET_TRANSACTIONS_LIMIT: Final[int] = 10
 
-# Provider layout under storage_path
 PROVIDER_SUBDIR: Final[str] = "provider"
 DB_SUBDIR: Final[str] = "db"
 PROVIDER_CONFIG_NAME: Final[str] = "config.json"
 
-# Source clone & binary location
 GIT_CLONE_DIR: Final[Path] = Path("/usr/src") / constants.TON_STORAGE_PROVIDER_REPO
 BIN_PATH: Final[Path] = Path("/usr/local/bin") / constants.TON_STORAGE_PROVIDER_REPO
 
-# Provider config pricing math (from xssnick/tonutils-storage-provider tuning)
-STORAGE_COST_REFERENCE_GB: Final[int] = 200    # pricing reference unit
-PROVIDER_MIN_SPAN_SEC: Final[int] = 7 * 86400  # MinSpan = 7 days
-MIN_MAX_SPAN_SEC: Final[int] = 30 * 86400      # MaxSpan clamped to ≥ 30 days
+# Pricing formulas from xssnick/tonutils-storage-provider
+STORAGE_COST_REFERENCE_GB: Final[int] = 200
+PROVIDER_MIN_SPAN_SEC: Final[int] = 7 * 86400
+MIN_MAX_SPAN_SEC: Final[int] = 30 * 86400
 MAX_SPAN_HARD_LIMIT: Final[int] = 4_294_967_290  # uint32 max - 5
 MIN_PROOF_COST_TON: Final[float] = 0.05
 MIN_BAG_SIZE_BYTES: Final[int] = 400
 
-# Per-bag size bounds (runtime + install-time validation)
 MAX_BAG_SIZE_GB_MIN: Final[int] = 1
 MAX_BAG_SIZE_GB_MAX: Final[int] = 1024
 
@@ -358,13 +353,7 @@ class TonStorageProviderModule(
         write_config_to_file(str(provider.config_path), provider_config)
 
     def _apply_provider_config(self, mutator: Callable[[Dict], None]) -> None:
-        """Mutate ``provider_config.json`` and restart the service.
-
-        Flow: read current config, apply *mutator* in place, stop service,
-        atomic write, start service. Service restart is guaranteed via
-        ``try/finally`` — on write failure the old config survives and
-        the daemon resumes with its pre-change state.
-        """
+        """Apply *mutator* to provider config and restart the service."""
         provider_config = self._read_provider_config()
         mutator(provider_config)
 
@@ -384,7 +373,7 @@ class TonStorageProviderModule(
         return PrivateKey(self._read_provider_config().ADNLKey).public_key.as_hex.upper()
 
     async def _get_refreshed_wallet(self) -> WalletV3R2:
-        """Construct provider wallet from ProviderKey and refresh on-chain state."""
+        """Construct provider wallet from ProviderKey and refresh its on-chain state."""
         private_key = PrivateKey(self._read_provider_config().ProviderKey)
         wallet = WalletV3R2.from_private_key(self.ton_client, private_key)
         await wallet.refresh()
@@ -399,11 +388,7 @@ class TonStorageProviderModule(
         *,
         timeout: float = DEFAULT_SEND_TIMEOUT_SEC,
     ) -> str:
-        """Send *amount* from *wallet* to *destination* and wait for on-chain landing.
-
-        :return: normalized_hash of the sent external message.
-        :raises TimeoutError: if the message is not found within *timeout*.
-        """
+        """Send *amount* from *wallet* to *destination* and wait for on-chain confirmation."""
         end_lt = wallet.last_transaction_lt or 0
         msg = await wallet.transfer(
             destination=destination,
@@ -770,12 +755,7 @@ class TonStorageProviderModule(
 
     @staticmethod
     def _calculate_max_span(storage_cost: float) -> int:
-        """Derive ``MaxSpan`` (seconds) from the user's storage cost.
-
-        ``MaxSpan`` is the maximum interval between proofs; the formula
-        targets ``MIN_PROOF_COST_TON`` per proof for a ``MIN_BAG_SIZE_BYTES``
-        bag, converted from per-month to per-second units.
-        """
+        """Derive ``MaxSpan`` (seconds) so each proof costs at least ``MIN_PROOF_COST_TON``."""
         rate_per_mb_sec = float(storage_cost) / STORAGE_COST_REFERENCE_GB / 1024 / 30 / 24 / 3600
         max_span = int(MIN_PROOF_COST_TON / (rate_per_mb_sec * MIN_BAG_SIZE_BYTES))
         if max_span < MIN_MAX_SPAN_SEC:

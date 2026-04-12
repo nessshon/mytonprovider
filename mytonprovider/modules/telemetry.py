@@ -114,7 +114,7 @@ class TelemetryModule(Daemonic, Commandable):
         return base64.b64encode(digest).decode("utf-8")
 
     def _send_data(self, url: str, data: dict[str, Any]) -> None:
-        """POST gzip-compressed JSON payload to the telemetry API."""
+        """POST gzip-compressed JSON to the telemetry API."""
         payload = gzip.compress(json.dumps(data).encode("utf-8"))
         headers = {
             "Content-Encoding": "gzip",
@@ -124,14 +124,14 @@ class TelemetryModule(Daemonic, Commandable):
 
     @contextmanager
     def _log_on_error(self, label: str) -> Iterator[None]:
-        """Swallow and log exceptions so one bad field doesn't drop the whole payload."""
+        """Swallow and log exceptions so one bad field doesn't drop the payload."""
         try:
             yield
         except Exception as exc:
             self.app.add_log(f"telemetry: {label} failed: {exc}", DEBUG)
 
     def _collect_telemetry_data(self) -> dict[str, Any]:
-        """Build the telemetry payload matching the old server contract 1:1."""
+        """Build the telemetry payload."""
         statistics = self.registry.get_by_class(StatisticsModule)
         return {
             "storage": self._collect_storage_section(),
@@ -149,7 +149,7 @@ class TelemetryModule(Daemonic, Commandable):
         }
 
     def _collect_storage_section(self) -> dict[str, Any]:
-        """Build the ``storage`` section (includes nested ``provider``)."""
+        """Build the ``storage`` section."""
         ton_storage = self.registry.get_by_class(TonStorageModule)
         storage_path = (
             self.app.db.ton_storage.storage_path if self.app.db.ton_storage else None
@@ -183,7 +183,7 @@ class TelemetryModule(Daemonic, Commandable):
         return section
 
     def _collect_provider_section(self) -> dict[str, Any]:
-        """Build the ``storage.provider`` sub-section."""
+        """Build the ``storage.provider`` section."""
         ton_storage = self.registry.get_by_class(TonStorageModule)
         provider = self.registry.get_by_class(TonStorageProviderModule)
 
@@ -211,7 +211,7 @@ class TelemetryModule(Daemonic, Commandable):
         return section
 
     def _collect_statistics(self, statistics: StatisticsModule) -> dict[str, Any]:
-        """Build the top-level statistics fields (net/disk/iops/pps)."""
+        """Build the top-level statistics fields."""
         section: dict[str, Any] = {
             "net_recv": None,
             "net_sent": None,
@@ -244,7 +244,7 @@ class TelemetryModule(Daemonic, Commandable):
         return section
 
     def _collect_ram(self) -> dict[str, Any]:
-        """RAM info in decimal GB, matching old payload keys."""
+        """RAM info in decimal GB."""
         vm = psutil.virtual_memory()
         return {
             "total": round(vm.total / BYTES_PER_GB_DECIMAL, 2),
@@ -253,7 +253,7 @@ class TelemetryModule(Daemonic, Commandable):
         }
 
     def _collect_swap(self) -> dict[str, Any]:
-        """Swap info in decimal GB, matching old payload keys."""
+        """Swap info in decimal GB."""
         sm = psutil.swap_memory()
         return {
             "total": round(sm.total / BYTES_PER_GB_DECIMAL, 2),
@@ -270,7 +270,7 @@ class TelemetryModule(Daemonic, Commandable):
             return None
 
     def _collect_cpu_info(self) -> dict[str, Any]:
-        """Build the ``cpu_info`` section (old keys: product_name, is_virtual)."""
+        """Build the ``cpu_info`` section."""
         info: dict[str, Any] = {
             "cpu_count": None,
             "cpu_load": None,
@@ -291,12 +291,7 @@ class TelemetryModule(Daemonic, Commandable):
         return info
 
     def _collect_versions(self) -> dict[str, str]:
-        """Collect ``format_version()`` output for every Updatable module.
-
-        Replaces the old ``git_hashes`` payload (previously short git
-        commits per module). Key name kept for server compatibility;
-        values are now version strings like ``v1.0.0 (a1b2c3d)``.
-        """
+        """Collect version strings for every Updatable module."""
         versions: dict[str, str] = {}
         for module in self.registry.all(enabled_only=False):
             if not isinstance(module, Updatable):
@@ -310,12 +305,7 @@ class TelemetryModule(Daemonic, Commandable):
         return versions
 
     def _collect_pings(self) -> dict[str, float] | None:
-        """Return per-host ping latencies, or ``None`` on any failure.
-
-        All-or-nothing semantics match the old ``get_pings_values`` path
-        which raised on the first failing host and was wrapped in
-        ``try_function`` yielding ``None`` for the whole payload.
-        """
+        """Return per-host ping latencies, or ``None`` on any failure."""
         try:
             result = get_pings(constants.ADNL_CHECKER_HOSTS)
         except Exception as exc:
@@ -326,7 +316,7 @@ class TelemetryModule(Daemonic, Commandable):
         return {host: value for host, value in result.items() if value is not None}
 
     def _collect_benchmark_data(self) -> dict[str, Any] | None:
-        """Build benchmark payload, or ``None`` if no benchmark has run yet."""
+        """Build benchmark payload, or ``None`` if no benchmark data exists."""
         benchmark = self.app.db.benchmark
         if benchmark is None:
             return None

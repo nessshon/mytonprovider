@@ -10,16 +10,7 @@ if TYPE_CHECKING:
 
 
 class BaseModule(ABC):
-    """Base class for all mytonprovider modules.
-
-    Every concrete module must declare ``name``. Optional metadata
-    attributes: ``mandatory``, ``service_name``. Capability methods
-    are added by inheriting from interface mixins in
-    :mod:`mytonprovider.modules.base.interfaces`.
-
-    After instantiation, ``build_registry`` calls :meth:`bind_registry`
-    on each module so cross-module lookups via :attr:`registry` work.
-    """
+    """Base class for all mytonprovider modules."""
 
     name: ClassVar[str]
     mandatory: ClassVar[bool] = False
@@ -35,20 +26,12 @@ class BaseModule(ABC):
 
     @property
     def registry(self) -> ModuleRegistry:
-        """Return the module registry for cross-module lookups.
-
-        :raises RuntimeError: If called before the registry is bound
-            (typically when invoked from ``__init__``).
-        """
+        """Return the module registry for cross-module lookups."""
         if self._registry is None:
             raise RuntimeError(f"{self.name}: registry is not bound yet (cannot be used during __init__)")
         return self._registry
 
     @property
     def is_enabled(self) -> bool:
-        """Return True if the module is active.
-
-        Mandatory modules are always enabled. Optional modules should
-        override this property to add runtime checks.
-        """
+        """Return True if the module is active."""
         return self.mandatory

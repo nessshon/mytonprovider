@@ -1,10 +1,4 @@
-"""Central data types for mytonprovider.
-
-Kept free of internal imports so every other module can depend on this
-one without introducing cycles. Behavior/orchestration types that live
-next to their only consumer (e.g. ``UpdateResult`` in
-``commands/update.py``) are intentionally excluded.
-"""
+"""Central data types for mytonprovider."""
 
 from __future__ import annotations
 
@@ -21,16 +15,7 @@ RefKind = Literal["tag", "branch"]
 
 @dataclass(frozen=True)
 class Channel:
-    """A versioning target: where we install/update from.
-
-    :param author: GitHub repository owner.
-    :param repo: GitHub repository name.
-    :param ref: Git ref — either a tag name (``"v1.2.3"``) or a branch
-        name (``"master"``).
-    :param ref_kind: Whether :attr:`ref` is a tag or a branch.
-        Classified once at construction time to avoid repeated network
-        calls downstream.
-    """
+    """A versioning target: author/repo@ref."""
 
     author: str
     repo: str
@@ -40,11 +25,7 @@ class Channel:
 
 @dataclass(frozen=True)
 class InstalledVersion:
-    """Currently installed channel plus its resolved commit.
-
-    :param channel: The channel this install tracks.
-    :param commit: Full 40-char commit SHA resolved at install time.
-    """
+    """Currently installed channel plus its resolved commit."""
 
     channel: Channel
     commit: str
@@ -57,17 +38,7 @@ class InstalledVersion:
 
 @dataclass(frozen=True)
 class UpdateStatus:
-    """Result of an update check.
-
-    :param available: Whether an update can be applied now (newer
-        version found *and* cooldown elapsed).
-    :param target: The channel the update would switch to, or ``None``
-        if the installed state is already up to date. May be set with
-        ``available=False`` when a newer version was found but is still
-        within the cooldown window.
-    :param target_commit: Full commit SHA of :attr:`target`, or ``None``
-        when there is no target.
-    """
+    """Result of an update check."""
 
     available: bool
     target: Channel | None
@@ -84,12 +55,7 @@ class Command(NamedTuple):
 
 @dataclass(frozen=True)
 class InstallContext:
-    """Context passed to ``Installable.install()`` during init wizard.
-
-    ``user`` and ``selected_modules`` are always required. Module-specific
-    fields are optional — each module that needs them is responsible for
-    validating presence (or ``cmd_init`` must guarantee it before calling).
-    """
+    """Context passed to ``Installable.install()`` during init wizard."""
 
     user: str
     selected_modules: tuple[str, ...]

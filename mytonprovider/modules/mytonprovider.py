@@ -56,12 +56,7 @@ AUTO_UPDATE_INTERVAL_SEC: Final[int] = 86400
 
 
 class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatable):
-    """Main mytonprovider daemon module.
-
-    Manages the ``mytonproviderd`` systemd service, prints system
-    status, handles self-updates via pip, and installs itself during
-    init wizard.
-    """
+    """Main mytonprovider daemon: systemd service, status display, self-updates, and install wizard."""
 
     name = "mytonprovider"
     service_name = "mytonproviderd"
@@ -73,16 +68,11 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
     default_version = constants.MYTONPROVIDER_VERSION
 
     def pre_up(self) -> None:
-        """Kick off background update check in a separate thread."""
+        """Start background update check in a separate thread."""
         self.app.start_thread(self._check_update_background)
 
     def daemon(self) -> None:
-        """Apply updates for all Updatable modules if auto-update is enabled.
-
-        Gated by ``db.auto_update_enabled``. Self-update triggers
-        ``app.exit()`` so systemd ``Restart=always`` brings the process
-        back with the new code.
-        """
+        """Apply updates for all Updatable modules if auto-update is enabled."""
         if not self.app.db.get("auto_update_enabled"):
             return
         # Local import breaks the commands ↔ modules cycle at load time.
@@ -124,7 +114,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         ]
 
     def install(self, context: InstallContext) -> None:
-        """Install mytonprovider: config, global config, symlink, sudoers, systemd unit."""
+        """Set up config, symlinks, sudoers, and systemd unit."""
         self.app.add_log(f"Installing {self.name} module")
 
         if os.geteuid() != 0:
@@ -199,11 +189,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
 
     @staticmethod
     def _write_sudoers(user: str) -> None:
-        """Create a sudoers fragment granting the install user passwordless
-        access to ``install_go_package.sh``. This allows the user-mode
-        daemon to auto-update Go-based modules (ton-storage,
-        ton-storage-provider) without running as root itself.
-        """
+        """Grant passwordless sudo for ``install_go_package.sh`` to the install user."""
         bash_path = shutil.which("bash") or "/bin/bash"
         script_path = constants.SCRIPTS_DIR / "install_go_package.sh"
         sudoers_path = constants.SUDOERS_PATH
@@ -229,7 +215,7 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
             )
 
     def _check_update_background(self) -> None:
-        """Background thread: query GitHub for a newer version."""
+        """Query GitHub for a newer version in a background thread."""
         try:
             self._update_status = self.check_update()
         except (RuntimeError, ValueError) as exc:

@@ -33,10 +33,7 @@ class ModuleRegistry:
         return self._modules[name]
 
     def get_by_class(self, cls: type[T]) -> T:
-        """Return the first module matching *cls* (typed lookup).
-
-        :raises KeyError: If no module of the given class is registered.
-        """
+        """Return the first module matching *cls*."""
         for module in self._modules.values():
             if isinstance(module, cls):
                 return module

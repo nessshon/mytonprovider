@@ -21,7 +21,7 @@ if TYPE_CHECKING:
 
 
 def is_initialized() -> bool:
-    """Return ``True`` if mytonprovider has been through the init wizard."""
+    """Return ``True`` if the init wizard has been completed."""
     db_path = get_config_path()
     if not db_path.exists():
         return False
@@ -33,15 +33,7 @@ def is_initialized() -> bool:
 
 
 def _resolve_user(cli_user: str | None) -> str:
-    """Determine the target install user.
-
-    Preference order: ``--user`` CLI flag → ``$SUDO_USER`` →
-    ``$DOAS_USER`` → ``$USER`` (skipped if ``root``). The resolved
-    user must exist in the system passwd database.
-
-    :raises RuntimeError: If no candidate is found or the resolved user
-        does not exist.
-    """
+    """Resolve the target install user from CLI flag or environment."""
     candidate: str | None = cli_user
     if candidate is None:
         for env_var in ("SUDO_USER", "DOAS_USER", "USER"):
@@ -72,10 +64,7 @@ def _is_non_interactive(
     max_bag_size_gigabytes: int | None,
     auto_update_enabled: bool | None,
 ) -> bool:
-    """Return ``True`` if any wizard parameter was passed via CLI.
-
-    ``user`` is not considered — it is always resolved via cascade.
-    """
+    """Return ``True`` if any wizard parameter was passed via CLI."""
     return any(
         value is not None
         for value in (
@@ -98,16 +87,7 @@ def _validate_non_interactive(
     max_bag_size_gigabytes: int | None,
     auto_update_enabled: bool | None,
 ) -> None:
-    """Ensure all required parameters for non-interactive mode are present.
-
-    Required fields depend on which modules are selected:
-      - ``--modules`` and ``--auto-update`` are always required.
-      - ``--storage-path`` is required if ``ton-storage`` is selected.
-      - ``--storage-cost``, ``--provider-space`` and ``--max-bag-size`` are
-        required if ``ton-storage-provider`` is selected.
-
-    :raises RuntimeError: with a list of missing CLI flags.
-    """
+    """Ensure all required parameters for non-interactive mode are present."""
     missing: list[str] = []
 
     if selected_modules is None:
@@ -156,11 +136,7 @@ def _validate_max_bag_size(value: str) -> bool:
 
 
 def _run_wizard(app: MyPyClass, registry: ModuleRegistry) -> dict[str, Any]:
-    """Run the interactive install wizard and return collected answers.
-
-    Defaults are pulled from ``app.db.install_answers`` (previous run,
-    if any), falling back to hardcoded values otherwise.
-    """
+    """Run the interactive install wizard and return collected answers."""
     previous: Dict = app.db.get("install_answers") or Dict()
 
     optional_modules = [
@@ -248,11 +224,7 @@ def _run_installs(
     registry: ModuleRegistry,
     context: InstallContext,
 ) -> None:
-    """Install modules in registration order (from ``MODULE_CLASSES``).
-
-    Mandatory modules install unconditionally. Optional ones only if
-    explicitly listed in ``context.selected_modules``.
-    """
+    """Install modules in registration order."""
     for module in registry.all(enabled_only=False):
         if not isinstance(module, Installable):
             continue
@@ -296,24 +268,7 @@ def cmd_init(
     max_bag_size_gigabytes: int | None = None,
     auto_update_enabled: bool | None = None,
 ) -> None:
-    """Run the init wizard.
-
-    If all wizard parameters are ``None``, runs interactively (inquirer
-    prompts). If any parameter is provided, runs non-interactively and
-    requires all needed parameters to be present (raises if missing).
-
-    :param app: The MyPyClass application instance.
-    :param registry: Module registry.
-    :param user: System user that will own services and config. If
-        ``None``, resolved via ``$SUDO_USER``/``$DOAS_USER``/``$USER``.
-    :param selected_modules: Tuple of module names to install
-        (e.g. ``("ton-storage", "ton-storage-provider")``).
-    :param storage_path: Filesystem path for ton-storage data.
-    :param storage_cost: Storage price per 200 GB per month.
-    :param space_to_provide_gigabytes: Disk space to allocate for the provider.
-    :param max_bag_size_gigabytes: Maximum accepted BAG size in gigabytes.
-    :param auto_update_enabled: Whether the auto-update daemon should run.
-    """
+    """Run the init wizard (interactive or non-interactive)."""
     resolved_user = _resolve_user(user)
 
     final_selected: tuple[str, ...]

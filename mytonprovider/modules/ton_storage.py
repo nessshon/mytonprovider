@@ -57,30 +57,24 @@ if TYPE_CHECKING:
     from mytonprovider.types import Channel, InstalledVersion
 
 
-# Service behavior
 DAEMON_INTERVAL_SEC: Final[int] = 86400
 SERVICE_START_SLEEP_SEC: Final[int] = 10
 INSTALL_BUILD_TIMEOUT_SEC: Final[int] = 300
 
-# HTTP API (local tonutils-storage daemon)
 API_HOST: Final[str] = "localhost"
 API_TIMEOUT_LIST_SEC: Final[float] = 0.3
 API_TIMEOUT_VERIFY_SEC: Final[float] = 60.0
 API_TIMEOUT_LOGGER_SEC: Final[float] = 3.0
 
-# Bag identifier
 BAG_ID_LENGTH: Final[int] = 64
 
-# storage_log verbosity bounds accepted by /api/v1/logger
 STORAGE_LOG_VERBOSITY_MIN: Final[int] = 0
 STORAGE_LOG_VERBOSITY_MAX: Final[int] = 13
 
-# Layout under storage_path
 BAGS_SUBDIR: Final[str] = "provider"
 DB_SUBDIR: Final[str] = "db"
 STORAGE_CONFIG_NAME: Final[str] = "config.json"
 
-# Source clone & binary location (set by install_go_package.sh)
 GIT_CLONE_DIR: Final[Path] = Path("/usr/src") / constants.TON_STORAGE_REPO
 BIN_PATH: Final[Path] = Path("/usr/local/bin") / constants.TON_STORAGE_REPO
 
@@ -152,12 +146,7 @@ class TonStorageModule(
         self._print_version()
 
     def get_used_space_gb(self) -> float:
-        """Return total size of tracked BAGs in GB.
-
-        Cross-module entry point used by ``TonStorageProviderModule``.
-
-        :raises RuntimeError: if the storage API is unreachable.
-        """
+        """Return total size of tracked BAGs in GB."""
         return self._get_bags_size_gb(self._get_api_data())
 
     def daemon(self) -> None:

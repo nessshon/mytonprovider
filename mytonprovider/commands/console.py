@@ -17,13 +17,7 @@ if TYPE_CHECKING:
 
 
 def cmd_console(app: MyPyClass, registry: ModuleRegistry) -> None:
-    """Run the interactive REPL.
-
-    Sets up :class:`MyPyConsole`, runs ``pre_up`` for every Startable
-    module at startup, registers framework commands (``status``,
-    ``update``, ``get``, ``set``, ``modules_list``) plus every module
-    command returned by :meth:`Commandable.get_commands`.
-    """
+    """Run the interactive REPL with module commands."""
     console = MyPyConsole()
     console.name = "MyTonProvider"
     console.local = app
@@ -73,7 +67,7 @@ def _run_pre_up(app: MyPyClass, registry: ModuleRegistry) -> None:
 
 
 def _safe_pre_up(app: MyPyClass, startable: Startable) -> None:
-    """Call ``pre_up`` once, swallowing exceptions to a DEBUG log."""
+    """Call ``pre_up`` once, logging exceptions at DEBUG level."""
     try:
         startable.pre_up()
     except Exception as exc:
@@ -81,7 +75,7 @@ def _safe_pre_up(app: MyPyClass, startable: Startable) -> None:
 
 
 def _console_status(registry: ModuleRegistry) -> None:
-    """Print status blocks for every Statusable module, separated by blank lines."""
+    """Print status blocks for every Statusable module."""
     statusables = registry.statusables()
     for index, module in enumerate(statusables):
         module.show_status()
@@ -90,7 +84,7 @@ def _console_status(registry: ModuleRegistry) -> None:
 
 
 def _console_update(app: MyPyClass, registry: ModuleRegistry, args: list[str]) -> None:
-    """Parse REPL ``update`` args and delegate to :func:`cmd_update`."""
+    """Parse REPL ``update`` args and delegate to ``cmd_update``."""
     parser = argparse.ArgumentParser(prog="update", add_help=False)
     parser.add_argument("module", nargs="?", default=None)
     parser.add_argument("--ref", type=str, default=None)
@@ -123,7 +117,7 @@ def _console_update(app: MyPyClass, registry: ModuleRegistry, args: list[str]) -
 
 
 def _console_get(app: MyPyClass, args: list[str]) -> None:
-    """Print a value from ``app.db`` as pretty JSON."""
+    """Print a value from the database as pretty JSON."""
     if len(args) != 1:
         color_print("{red}Usage:{endc} get <name>")
         return
@@ -132,7 +126,7 @@ def _console_get(app: MyPyClass, args: list[str]) -> None:
 
 
 def _console_set(app: MyPyClass, args: list[str]) -> None:
-    """Set ``app.db[name]`` to a JSON-decoded value and persist."""
+    """Set a database value from JSON and persist."""
     if len(args) != 2:
         color_print("{red}Usage:{endc} set <name> <json-value>")
         return
@@ -148,7 +142,7 @@ def _console_set(app: MyPyClass, args: list[str]) -> None:
 
 
 def _console_modules_list(registry: ModuleRegistry) -> None:
-    """Print a table of every module with its capabilities and state."""
+    """Print a table of all modules with their capabilities."""
     table: list[list[str]] = [["Name", "Enabled", "Mandatory", "Capabilities"]]
     for module in registry.all(enabled_only=False):
         enabled = "" if module.mandatory else str(module.is_enabled)
@@ -163,8 +157,7 @@ def _console_modules_list(registry: ModuleRegistry) -> None:
 
 
 def _module_capabilities(module: object) -> list[str]:
-    """Return the list of capability-mixin names this module implements."""
-    # Imported locally so this helper has no top-level coupling to interfaces.
+    """Return capability-mixin names this module implements."""
     from mytonprovider.modules.core import (
         Commandable,
         Daemonic,

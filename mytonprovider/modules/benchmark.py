@@ -63,7 +63,7 @@ class BenchmarkModule(Daemonic, Commandable):
         ]
 
     def get_benchmark_data(self) -> Dict | None:
-        """Return the cached benchmark payload, or ``None`` if it was never run."""
+        """Return the cached benchmark payload, or ``None``."""
         return cast("Dict | None", self.app.db.benchmark)
 
     def _is_benchmark_done(self) -> bool:
@@ -167,7 +167,7 @@ class BenchmarkModule(Daemonic, Commandable):
         return bw, iops
 
     def _run_benchmark(self, args: list[str]) -> None:
-        """Console command: show cached benchmark or re-run if ``--force``."""
+        """Show cached benchmark or re-run if ``--force``."""
         if self._is_benchmark_done() and "--force" not in args:
             bench = self.app.db.benchmark
             print(f"last benchmark time: {timeago(bench.timestamp)}")

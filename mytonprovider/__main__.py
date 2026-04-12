@@ -19,12 +19,7 @@ from mytonprovider.utils import resolve_app_home
 
 
 def setup_app() -> tuple[MyPyClass, ModuleRegistry]:
-    """Create the MyPyClass instance and module registry.
-
-    Starts background threads (``save_db``, ``self_test``, ``write_log``)
-    via ``app.run()`` so every command — daemon, console, or one-shot —
-    operates on a fully initialized app.
-    """
+    """Create the MyPyClass instance and module registry."""
     app = MyPyClass(
         file=__file__,
         name=constants.APP_NAME,

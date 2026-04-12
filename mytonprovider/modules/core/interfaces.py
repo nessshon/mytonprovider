@@ -48,22 +48,7 @@ class Installable(BaseModule):
 
 
 class Updatable(BaseModule):
-    """Module that tracks its installed version and can update itself.
-
-    Every module declares its "home" repo via ClassVars
-    (:attr:`github_author`, :attr:`github_repo`, :attr:`default_version`).
-    The default channel is always a pinned tag — reproducible first
-    install, updates follow whichever channel is detected at runtime
-    (tag or branch, possibly from a fork).
-
-    Subclasses implement two hooks:
-      - :meth:`get_installed_version` — offline read of current state.
-      - :meth:`build_update_args` — subprocess args to switch to a
-        target channel.
-
-    The mixin provides uniform :meth:`check_update` (GitHub API + 7-day
-    cooldown) and :meth:`format_version` (display).
-    """
+    """Module that tracks its installed version and can update itself."""
 
     github_author: ClassVar[str]
     github_repo: ClassVar[str]
@@ -76,7 +61,7 @@ class Updatable(BaseModule):
 
     @classmethod
     def default_channel(cls) -> Channel:
-        """Return the default channel for first install (always tag mode)."""
+        """Return the default channel for first install."""
         return Channel(
             author=cls.github_author,
             repo=cls.github_repo,
@@ -86,27 +71,14 @@ class Updatable(BaseModule):
 
     @abstractmethod
     def get_installed_version(self) -> InstalledVersion:
-        """Return currently installed state.
-
-        Must be offline (no network). Raises :class:`RuntimeError` if
-        the package is not installed or state cannot be determined.
-        """
+        """Return currently installed state (offline, no network)."""
 
     @abstractmethod
     def build_update_args(self, target: Channel) -> list[str]:
         """Return subprocess args to install/update to *target* channel."""
 
     def check_update(self) -> UpdateStatus:
-        """Compare installed state against GitHub; apply cooldown.
-
-        Branches on installed channel's ``ref_kind``:
-          - ``tag``    → ``/releases/latest``, semver compare,
-            cooldown by ``published_at``.
-          - ``branch`` → ``/branches/{ref}``, SHA compare,
-            cooldown by commit author date.
-
-        :raises RuntimeError: On network or API failures (caller logs & skips).
-        """
+        """Compare installed state against GitHub, applying cooldown."""
         installed = self.get_installed_version()
         if installed.channel.ref_kind == "tag":
             return self._check_release_update(installed)
@@ -164,27 +136,13 @@ class Updatable(BaseModule):
 
     @staticmethod
     def _iso_days_ago(iso_timestamp: str) -> int:
-        """Return days elapsed since an ISO 8601 timestamp.
-
-        Accepts timestamps with trailing ``Z`` (as returned by the
-        GitHub API). Raises :class:`ValueError` on malformed input.
-        """
+        """Return days elapsed since an ISO 8601 timestamp."""
         normalized = iso_timestamp.replace("Z", "+00:00")
         published = datetime.fromisoformat(normalized)
         return (datetime.now(timezone.utc) - published).days
 
     def format_version(self) -> str:
-        """Single-line version string for status display.
-
-        Pure, offline — safe to call on every ``show_status`` tick.
-        Returns ``"dev"`` if installed state cannot be read (editable
-        install, package not installed).
-
-        Formats:
-          - tag mode:    ``v1.0.0 (a1b2c3d)``
-          - branch mode: ``master@a1b2c3d``
-          - non-default repo gets ``[author/repo]`` suffix.
-        """
+        """Return a single-line version string for status display."""
         try:
             installed = self.get_installed_version()
         except RuntimeError:
@@ -201,17 +159,7 @@ class Updatable(BaseModule):
         return text
 
     def _print_version(self) -> None:
-        """Print the version line ('Package version: ...') with update marker.
-
-        Internal display helper called from :meth:`show_status` of
-        concrete Statusable + Updatable modules. Uses the
-        ``package_version`` and ``update_available`` translation keys.
-        Reads cached :attr:`_update_status` (populated by a background
-        update check) — if ``None`` (not yet checked, or check failed),
-        only the version is shown.
-
-        Subclasses may override to customize the version line format.
-        """
+        """Print the version line with an optional update marker."""
         version_text = bcolors.yellow_text(self.format_version())
         text = self.app.translate("package_version").format(version_text)
         status = self._update_status
