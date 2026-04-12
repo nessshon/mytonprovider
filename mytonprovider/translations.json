@@ -174,6 +174,11 @@
 		"en": "Disks load average (MB/s): {0}",
 		"zh_TW": "磁碟平均負載 (MB/s): {0}"
 	},
+	"auto_update_cmd": {
+		"ru": "Переключить автообновление (on/off)",
+		"en": "Toggle auto-update (on/off)",
+		"zh_TW": "切換自動更新 (on/off)"
+	},
 	"benchmark_cmd": {
 		"ru": "Запустить тест производительности системы",
 		"en": "Run a system performance test",

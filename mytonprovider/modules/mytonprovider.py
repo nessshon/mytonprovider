@@ -25,6 +25,7 @@ from mypylib import (
 
 from mytonprovider import constants
 from mytonprovider.modules.core import (
+    Commandable,
     Daemonic,
     Installable,
     Startable,
@@ -32,6 +33,7 @@ from mytonprovider.modules.core import (
     Updatable,
 )
 from mytonprovider.modules.statistics import StatisticsModule
+from mytonprovider.types import Command
 from mytonprovider.utils import (
     get_service_status_color,
     get_threshold_color,
@@ -53,7 +55,7 @@ MEMORY_USAGE_PERCENT_BORDERLINE: Final[int] = 90
 AUTO_UPDATE_INTERVAL_SEC: Final[int] = 86400
 
 
-class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatable):
+class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatable, Commandable):
     """Main mytonprovider daemon: systemd service, status display, self-updates, and install wizard."""
 
     name = "mytonprovider"
@@ -64,6 +66,15 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
     github_author = constants.MYTONPROVIDER_AUTHOR
     github_repo = constants.MYTONPROVIDER_REPO
     default_version = constants.MYTONPROVIDER_VERSION
+
+    def get_commands(self) -> list[Command]:
+        return [
+            Command(
+                name="auto_update",
+                func=self._cmd_toggle_auto_update,
+                description=self.app.translate("auto_update_cmd"),
+            ),
+        ]
 
     def pre_up(self) -> None:
         """Start background update check in a separate thread."""
@@ -221,6 +232,14 @@ class MytonproviderModule(Startable, Statusable, Daemonic, Installable, Updatabl
         module_name = bcolors.yellow_text(self.name)
         text = self.app.translate("module_name").format(module_name)
         print(text)
+
+    def _cmd_toggle_auto_update(self, _args: list[str]) -> None:
+        """Toggle auto-update on/off."""
+        current = bool(self.app.db.get("auto_update_enabled"))
+        self.app.db.auto_update_enabled = not current
+        self.app.save()
+        state = bcolors.green_text("ON") if not current else bcolors.red_text("OFF")
+        color_print(f"auto update: {state}")
 
     def _print_cpu_load(self) -> None:
         cpu_count = get_cpu_count()
