@@ -584,12 +584,12 @@ class TonStorageProviderModule(
             color_print(f"{{red}}Error:{{endc}} cannot determine disk state: {exc}")
             return
 
-        max_allowable = disk.free + currently_allocated
+        max_allowable = min(disk.total, disk.free + currently_allocated)
         if requested_gb > max_allowable:
             color_print(
-                f"{{red}}Error: requested {requested_gb} GB exceeds available "
-                f"{max_allowable:.2f} GB (disk free {disk.free} + currently "
-                f"allocated {currently_allocated}){{endc}}"
+                f"{{red}}Error: requested {requested_gb} GB exceeds "
+                f"available {max_allowable:.2f} GB "
+                f"(disk total {disk.total}, free {disk.free}){{endc}}"
             )
             return
 
