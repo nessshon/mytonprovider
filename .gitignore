@@ -138,10 +138,6 @@ uv.lock
 .idea/
 .DS_Store
 
-# Project-specific exclusions
-old/
-tests/
-
 # Claude Code
 CLAUDE.md
 .claude/
