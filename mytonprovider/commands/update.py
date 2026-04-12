@@ -150,7 +150,7 @@ def cmd_update(
     repo: str | None,
     force: bool,
     check: bool,
-) -> None:
+) -> list[UpdateResult]:
     """Update modules (or check for available updates)."""
     if check and force:
         raise RuntimeError("--check and --force are mutually exclusive")
@@ -162,7 +162,7 @@ def cmd_update(
     modules = _resolve_targets(registry, target)
     if not modules:
         color_print("{yellow}no updatable modules found{endc}")
-        return
+        return []
 
     override: Channel | None = None
     if ref is not None:
@@ -181,3 +181,4 @@ def cmd_update(
     )
     for result in results:
         _print_result(result)
+    return results

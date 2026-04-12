@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from typing import TYPE_CHECKING
 
 from mypyconsole import MyPyConsole
 from mypylib import DEBUG, color_print, print_table
 
+from mytonprovider import constants
 from mytonprovider.commands.update import cmd_update
 
 if TYPE_CHECKING:
@@ -109,7 +111,7 @@ def _console_update(app: MyPyClass, registry: ModuleRegistry, args: list[str]) -
         return
 
     try:
-        cmd_update(
+        results = cmd_update(
             app,
             registry,
             target=parsed.module,
@@ -121,6 +123,15 @@ def _console_update(app: MyPyClass, registry: ModuleRegistry, args: list[str]) -
         )
     except RuntimeError as exc:
         color_print(f"{{red}}{exc}{{endc}}")
+        return
+
+    self_updated = any(
+        r.module == constants.APP_NAME and r.action == "updated"
+        for r in results
+    )
+    if self_updated:
+        color_print("{green}Restart to apply the update.{endc}")
+        sys.exit(0)
 
 
 def _resolve_path(obj: object, path: str) -> tuple[dict[str, object], str]:
