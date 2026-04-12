@@ -284,7 +284,7 @@ def render_status_block(block: StatusBlock) -> None:
 
     max_content = max((_visible_len(line) for line in lines if line), default=0)
 
-    top_label = f"{block.name} {block.version}"
+    top_label = f"{bcolors.cyan_text(block.name)} {bcolors.yellow_text(block.version)}"
     top_label_vis = _visible_len(top_label)
 
     bottom_label = block.service_text
