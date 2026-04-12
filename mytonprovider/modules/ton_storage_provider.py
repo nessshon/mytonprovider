@@ -628,7 +628,6 @@ class TonStorageProviderModule(
 
         color_print(f"set_max_bag_size = {gb} GB {{green}}OK{{endc}}")
 
-    @async_to_sync
     async def _get_card_and_rows(
         self,
     ) -> tuple[list[tuple[str, str]], list[tuple[str, str]]]:
