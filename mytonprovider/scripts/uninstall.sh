@@ -1,36 +1,25 @@
 #!/usr/bin/env bash
 #
 # MyTonProvider uninstall script.
-#
-# Stops and removes mytonproviderd and its Go sidecar services, deletes
-# systemd units, binaries, clones and global config. With -u USER it
-# also removes that user's venv and data directory (which holds the
-# provider wallet private key — confirmation is requested unless -y).
-#
-# NEVER touched:
-#   - the storage path chosen during init (may be anywhere on disk);
-#   - /var/storage (legacy path, may still hold user data).
-# Remove these manually if needed.
+# Stops services, removes units/binaries/config. With -u USER also
+# removes that user's venv and data dir (holds wallet private key).
 
 set -euo pipefail
 
 readonly APP_NAME="mytonprovider"
 readonly SERVICE_NAME="mytonproviderd"
 
-# Systemd units registered by init wizard / Go sidecar installs.
 readonly SERVICES=(
 	"${SERVICE_NAME}"
 	"ton-storage"
 	"ton-storage-provider"
 )
 
-# Compiled Go binaries produced by install_go_package.sh.
 readonly GO_BINARIES=(
 	/usr/local/bin/tonutils-storage
 	/usr/local/bin/tonutils-storage-provider
 )
 
-# Git clones used as build sources for Go packages.
 readonly GO_SOURCES=(
 	/usr/src/tonutils-storage
 	/usr/src/tonutils-storage-provider
@@ -68,24 +57,22 @@ show_help() {
 Usage: $(basename "$0") [options]
 
 Options:
-  -u USER   Also remove that user's venv and data dir (holds wallet keys)
+  -u USER   Also remove user's venv and data dir (holds wallet keys)
   -y        Skip the wallet-keys confirmation prompt
   -h        Show this help
 
-System resources are always removed:
+Always removed:
   - systemd units: ${SERVICES[*]}
-  - entry-point symlink: ${SYSTEM_BIN}
+  - symlinks: ${SYSTEM_BIN}, ${TONUTILS_BIN}
   - Go binaries: ${GO_BINARIES[*]}
   - Go source clones: ${GO_SOURCES[*]}
   - global config: ${GLOBAL_CONFIG_FILE}
+  - sudoers fragment: /etc/sudoers.d/${APP_NAME}
 
-NOT removed (by design — these are shared system state):
-  - the storage path chosen during init (wherever bags are stored);
-  - /var/storage (legacy path);
-  - Go toolchain at /usr/local/go (installed by install_go_package.sh);
-  - deadsnakes PPA added to /etc/apt/sources.list.d/ (if it was needed);
-  - apt packages installed by install.sh (git, curl, wget, fio, python3…).
-Remove these manually if needed.
+NOT removed (shared system state):
+  - storage path chosen during init
+  - Go toolchain (/usr/local/go)
+  - apt packages, deadsnakes PPA
 EOF
 	exit 0
 }
@@ -115,7 +102,7 @@ confirm_user_data_removal() {
 		return
 	fi
 	warn "WARNING: the user data dir contains the provider wallet private key."
-	echo "This script is about to remove it. Make sure you have backed it up."
+	echo "Make sure you have backed it up before continuing."
 	local answer
 	read -r -p "Continue? [y/N] " answer
 	case "${answer}" in
@@ -141,14 +128,14 @@ remove_systemd_units() {
 }
 
 remove_binaries_and_sources() {
-	rm -f "${SYSTEM_BIN}"
-	rm -f "${TONUTILS_BIN}"
+	rm -f "${SYSTEM_BIN}" "${TONUTILS_BIN}"
 	rm -f "${GO_BINARIES[@]}"
 	rm -rf "${GO_SOURCES[@]}"
 }
 
 remove_global_config() {
 	rm -f "${GLOBAL_CONFIG_FILE}"
+	# Only remove dir if empty (may be shared with other TON tools).
 	rmdir "${GLOBAL_CONFIG_DIR}" 2>/dev/null || true
 }
 
@@ -160,7 +147,7 @@ remove_user_files() {
 	local target="$1" home
 	home=$(getent passwd "${target}" | cut -d: -f6)
 	if [[ -z "${home}" || ! -d "${home}" ]]; then
-		warn "User '${target}' not found or has no home directory — skipping per-user cleanup"
+		warn "User '${target}' not found — skipping per-user cleanup"
 		return
 	fi
 	rm -rf "${home}/.local/venv/${APP_NAME}"
@@ -181,21 +168,20 @@ main() {
 	step 2 4 "Removing systemd units"
 	remove_systemd_units
 
-	step 3 4 "Removing binaries, source clones, global config, and sudoers"
+	step 3 4 "Removing binaries, sources, config, sudoers"
 	remove_binaries_and_sources
 	remove_global_config
 	remove_sudoers
 
 	if [[ -n "${input_user}" ]]; then
-		step 4 4 "Removing user venv and data dir for '${input_user}'"
+		step 4 4 "Removing venv and data dir for '${input_user}'"
 		remove_user_files "${input_user}"
 	else
-		step 4 4 "Skipping per-user cleanup (no -u USER given)"
+		step 4 4 "Skipping per-user cleanup (no -u USER)"
 	fi
 
 	echo -e "${C_STEP}Uninstall complete.${C_RESET}"
-	echo "Note: the storage path chosen at init time (and any data under it) was NOT removed."
-	echo "Remove it manually if needed."
+	echo "Note: storage path and its data were NOT removed."
 }
 
 main "$@"
