@@ -116,12 +116,27 @@ def _console_update(app: MyPyClass, registry: ModuleRegistry, args: list[str]) -
         color_print(f"{{red}}{exc}{{endc}}")
 
 
+def _resolve_path(obj: object, path: str) -> tuple[dict[str, object], str]:
+    """Walk *obj* along dot-separated *path*, return ``(parent, last_key)``."""
+    keys = path.split(".")
+    current: object = obj
+    for key in keys[:-1]:
+        current = current[key] if isinstance(current, dict) else getattr(current, key)
+        if current is None:
+            raise KeyError(path)
+    return current, keys[-1]  # type: ignore[return-value]
+
+
 def _console_get(app: MyPyClass, args: list[str]) -> None:
     """Print a value from the database as pretty JSON."""
     if len(args) != 1:
         color_print("{red}Usage:{endc} get <name>")
         return
-    value = app.db.get(args[0])
+    try:
+        parent, key = _resolve_path(app.db, args[0])
+        value = parent.get(key) if isinstance(parent, dict) else getattr(parent, key, None)
+    except (KeyError, AttributeError, TypeError):
+        value = None
     print(json.dumps(value, indent=2, default=str))
 
 
@@ -136,7 +151,12 @@ def _console_set(app: MyPyClass, args: list[str]) -> None:
     except json.JSONDecodeError as exc:
         color_print(f"{{red}}Invalid JSON: {exc}{{endc}}")
         return
-    app.db[name] = value
+    try:
+        parent, key = _resolve_path(app.db, name)
+    except (KeyError, AttributeError, TypeError):
+        color_print(f"{{red}}Path not found: {name}{{endc}}")
+        return
+    parent[key] = value
     app.save()
     color_print("set - {green}OK{endc}")
 
