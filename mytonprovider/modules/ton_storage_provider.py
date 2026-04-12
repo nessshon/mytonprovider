@@ -113,11 +113,17 @@ class TonStorageProviderModule(
         super().__init__(app)
         self._port_check_ok: bool | None = None
         self._port_check_error: str | None = None
-        self.ton_client = LiteBalancer.from_config(
-            network=NetworkGlobalID.MAINNET,
-            config=str(constants.GLOBAL_CONFIG_PATH),
-            retry_policy=DEFAULT_ADNL_RETRY_POLICY,
-        )
+        self._ton_client: LiteBalancer | None = None
+
+    @property
+    def ton_client(self) -> LiteBalancer:
+        if self._ton_client is None:
+            self._ton_client = LiteBalancer.from_config(
+                network=NetworkGlobalID.MAINNET,
+                config=str(constants.GLOBAL_CONFIG_PATH),
+                retry_policy=DEFAULT_ADNL_RETRY_POLICY,
+            )
+        return self._ton_client
 
     @property
     def is_enabled(self) -> bool:
