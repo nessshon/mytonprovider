@@ -1,0 +1,5 @@
+mypycli@git+https://github.com/nessshon/mypycli@v0.0.1
+pydantic>=2.0
+requests>=2.31.0
+speedtest-cli~=2.1.0
+tonutils==2.1.0
