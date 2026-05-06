@@ -1,0 +1,274 @@
+"mypycli":
+  "welcome": |
+
+    欢迎使用 {label}!
+    输入 {help} 查看可用命令。
+
+    首次启动：
+      1. 确保所有模块已激活、端口已开放 (status)
+      2. 导入钱包，可选 (wallet import)
+      3. 将私钥保存在安全的地方 (wallet export)
+      4. 充值钱包余额并在公开列表注册提供者 (register)
+
+    提供者监控：
+      1. 确认 telemetry 模块已启用 (telemetry enable)
+      2. 设置机器人授权密码 (telemetry password)
+      3. 打开 @mytonprovider_bot 找到您的提供者
+      4. 输入之前设置的密码以订阅
+
+    切换语言    db set language <ru|en|zh>
+    Debug 模式  db set debug    <true|false>
+
+    社区：@mytonprovider_chat — 问题与讨论
+  "goodbye": "正在退出 {label}。再见！"
+  "unknown_command": "未知命令：{name}"
+  "command_error": "错误：{error}"
+  "no_help_for": "没有帮助信息：{name}"
+  "no_history": "没有历史记录"
+  "field_not_found": "字段未找到：{path}"
+  "validation_error": "验证错误：{error}"
+  "db_get_usage": "用法：db get <field>"
+  "db_set_usage": "用法：db set <field> <value>"
+  "restart_hint": "请重启应用以使更改生效。"
+  "unknown_language": "未知语言 '{code}'。可用：{available}"
+  "unknown_boolean": "未知布尔值 '{code}'。可用：true, false"
+  "invalid_input": "无效：{error}"
+  "commands":
+    "db": "数据库命令"
+    "db_show": "显示完整数据库"
+    "db_get": "获取字段值"
+    "db_set": "设置字段值"
+    "status": "显示当前状态"
+    "modules": "显示已注册模块"
+    "versions": "显示组件版本"
+    "history": "显示命令历史"
+    "clear": "清屏"
+    "help": "显示所有命令"
+    "exit": "退出控制台"
+  "table":
+    "component": "组件"
+    "version": "版本"
+    "name": "名称"
+    "enabled": "已启用"
+    "mandatory": "必需"
+    "capabilities": "功能"
+    "yes": "是"
+    "no": "否"
+  "install":
+    "select_modules": "选择要安装的模块："
+  "update":
+    "up_to_date": "已是最新"
+    "failed": "失败"
+"common":
+  "usage_prefix": "用法:"
+  "status":
+    "active":     "运行中"
+    "inactive":   "已停止"
+    "uptime":     "运行时间"
+    "collecting": "收集中…"
+    "open":       "开放"
+    "closed":     "已关闭"
+"modules":
+  "mytonprovider":
+    "status":
+      "cpu_load":      "CPU 负载 [{cores}]"
+      "memory_load":   "内存负载"
+      "disk_space":    "应用磁盘"
+      "disk_io":       "磁盘 I/O"
+      "network_io":    "网络 I/O"
+      "network_total": "网络总计"
+  "ton_storage":
+    "cmd":
+      "bags":
+        "group":  "Bags 管理"
+        "list":   "列出所有 bags"
+        "info":   "显示 bag 详情"
+        "add":    "添加 bag 到存储"
+        "start":  "开始下载 bag"
+        "stop":   "停止下载 bag"
+        "remove": "从存储中删除 bag"
+        "verify": "校验 bag 完整性"
+      "storage":
+        "group": "TON Storage 管理"
+        "info":  "显示 ton-storage 信息"
+        "log":   "设置 ton-storage 日志级别"
+    "install":
+      "storage_path": "请输入 ton-storage 数据存储路径"
+    "bags":
+      "empty":          "暂无 bag"
+      "added":          "Bag 已添加：{bag_id}"
+      "added_idle":     "Bag 已添加（未下载）：{bag_id}"
+      "started":        "Bag 已启动：{bag_id}"
+      "stopped":        "Bag 已停止：{bag_id}"
+      "removed":        "Bag 已删除：{bag_id}"
+      "removed_with_files": "Bag 和文件已删除：{bag_id}"
+      "removed_keep_hint": "文件保留在磁盘：{path}"
+      "status":
+        "stopped":     "已停止"
+        "idle":        "闲置"
+        "downloading": "下载中"
+        "seeding":     "做种中"
+        "completed":   "已完成"
+      "verify_ok":      "Bag 完好无损：{bag_id}"
+      "verify_failed":  "Bag 已损坏，重新下载：{bag_id}"
+      "list_page":      "第 {page}/{pages} 页 · 共 {total} 个 bags"
+    "info":
+      "metric":       "参数"
+      "value":        "值"
+      "storage_path": "存储路径"
+      "adnl_pubkey":  "ADNL 公钥"
+      "listen_addr":  "监听地址"
+      "external_ip":  "外部 IP"
+      "api_endpoint": "API 地址"
+      "config_path":  "配置路径"
+    "log":
+      "invalid": "级别必须为 {min}-{max}"
+      "updated": "✓ 日志级别已设置：{verbosity}"
+    "status":
+      "bags":        "Bags 数量"
+      "disk_space":  "存储磁盘"
+      "udp_port":    "UDP 端口"
+    "table":
+      "id":           "Bag id"
+      "progress":     "进度"
+      "size":         "大小"
+      "files":        "文件数"
+      "peers":        "对等节点"
+      "download":     "下载"
+      "upload":       "上传"
+      "metric":       "参数"
+      "value":        "值"
+      "bag_id":       "Bag id"
+      "description":  "描述"
+      "bag_path":     "位置"
+      "status":       "状态"
+      "verified":     "最后校验"
+  "benchmark":
+    "cmd":
+      "group": "基准测试管理"
+      "run": "运行性能测试"
+      "show": "显示上次测试结果"
+    "no_storage": "ton-storage 路径未配置"
+    "no_result": "尚无测试结果。请运行 'benchmark run'。"
+    "already_running": "基准测试正在后台运行，请稍后重试"
+    "last_run": "上次运行：{when}"
+    "progress":
+      "start": "正在启动性能测试，预计耗时约 2 分钟"
+      "done": "测试完成！"
+      "failed": "测试失败"
+      "fio_read": "磁盘 {name}：读取速度测试…"
+      "fio_write": "磁盘 {name}：写入速度测试…"
+      "speedtest_ping": "网络：Ping 测试…"
+      "speedtest_download": "网络：下载速度测试…"
+      "speedtest_upload": "网络：上传速度测试…"
+    "table":
+      "test": "测试"
+      "read": "读取"
+      "write": "写入"
+      "read_iops": "读取 IOPS"
+      "write_iops": "写入 IOPS"
+      "metric": "参数"
+      "value": "值"
+      "download": "下载"
+      "upload": "上传"
+      "ping": "Ping"
+  "ton_storage_provider":
+    "cmd":
+      "provider":
+        "group":        "TON Storage Provider 管理"
+        "info":         "显示提供者详情"
+        "set_cost":     "设置存储价格（每 200 GB 每月的 TON）"
+        "set_space":    "设置已分配的提供者空间（GB）"
+        "set_bag_size": "设置最大 bag 大小（GB）"
+    "install":
+      "storage_cost":     "存储价格（每 200 GB 每月的 TON）"
+      "space_to_provide": "已分配空间，GB（可用：{free}，总计：{total}）"
+      "max_bag_size":     "最大 bag 大小，GB（{min}-{max}）"
+    "provider":
+      "cost_set":     "✓ 存储价格：{cost} TON / 200 GB / 月"
+      "space_set":    "✓ 提供者空间：{space} GB"
+      "bag_size_set": "✓ 最大 bag 大小：{size} GB"
+      "bad_cost":     "价格必须 > 0"
+      "bad_space":    "空间必须为 {min}-{max} GB"
+      "bad_bag_size": "bag 大小必须为 {min}-{max} GB"
+    "status":
+      "udp_port":     "UDP 端口"
+      "pubkey":       "公钥"
+      "storage_cost": "存储价格"
+      "profit":       "每月利润"
+      "provided":     "已分配空间"
+      "max_bag_size": "最大 bag 大小"
+    "info":
+      "metric":       "参数"
+      "value":        "值"
+      "pubkey":       "公钥"
+      "adnl_pubkey":  "ADNL 公钥"
+      "listen_addr":  "监听地址"
+      "external_ip":  "外部 IP"
+      "storage_path": "存储路径"
+      "config_path":  "配置路径"
+  "telemetry":
+    "cmd":
+      "group":    "遥测管理"
+      "enable":   "启用遥测发送"
+      "disable":  "禁用遥测发送"
+      "password": "设置遥测密码"
+    "msg":
+      "enabled":           "遥测发送已启用"
+      "disabled":          "遥测发送已禁用"
+      "password_prompt":   "输入遥测密码"
+      "password_confirm":  "请再次输入密码"
+      "password_mismatch": "密码不一致"
+      "password_set":      "遥测密码已设置"
+      "daemon_restarted":  "已重启守护进程以注册遥测循环"
+  "ton_wallet":
+    "cmd":
+      "group":    "TON Wallet 管理"
+      "import":   "导入钱包（助记词或私钥）"
+      "export":   "导出钱包私钥"
+      "transfer": "向地址或 .ton/.t.me 域名转账 TON"
+      "register": "在公开列表注册提供者"
+    "msg":
+      "import_prompt":   "助记词或私钥（hex/b64）"
+      "imported":        "钱包已导入：{address}"
+      "transferred":     "TON 已转账：{hash}"
+      "transfer_prompt": "向 {address} 转账 {amount} TON？"
+      "cancelled":       "已取消"
+      "bad_key":         "无效的助记词或私钥：{error}"
+      "bad_address":     "无效的地址：{error}"
+      "bad_amount":      "无效的金额：{error}"
+      "low_balance":     "余额不足（{balance} TON，缺少 {shortage} TON）"
+      "balance_warning": "转账后余额过低（{remaining} TON，建议 >= {recommended} TON）"
+    "register":
+      "success":     "提供者已注册：{hash}"
+      "already":     "提供者已注册"
+    "status":
+      "address": "地址"
+      "balance": "余额"
+    "state":
+      "active":   "活跃"
+      "uninit":   "未初始化"
+      "frozen":   "已冻结"
+      "nonexist": "不存在"
+    "info":
+      "metric":      "参数"
+      "value":       "值"
+      "address":     "地址"
+      "private_b64": "私钥（b64）"
+      "private_hex": "私钥（hex）"
+  "updater":
+    "cmd":
+      "group":   "更新管理"
+      "enable":  "启用自动更新"
+      "disable": "禁用自动更新"
+      "update":  "更新模块"
+    "msg":
+      "enabled":              "自动更新已启用"
+      "disabled":             "自动更新已禁用"
+      "not_updatable":        "模块 '{name}' 不可更新"
+      "no_git_repo":          "模块 '{name}' 没有 git 仓库"
+      "origin_set":           "{name}: 已将 origin 设置为 {url}"
+      "updated":              "{name}: 已构建并重启"
+      "restart_console_hint": "请重启控制台以加载新代码"
+      "url_form_extra":       "URL 不能与额外参数组合使用"
+      "bad_url":              "无效的 github url: {url}"

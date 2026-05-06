@@ -1,0 +1,274 @@
+"mypycli":
+  "welcome": |
+
+    Добро пожаловать в {label}!
+    Наберите {help} для списка команд.
+
+    Первый запуск:
+      1. Убедитесь, что все модули активны и порты открыты (status)
+      2. Импортируйте кошелёк, опционально (wallet import)
+      3. Сохраните приватный ключ в надёжном месте (wallet export)
+      4. Пополните баланс и зарегистрируйте провайдера в публичном списке (register)
+
+    Мониторинг провайдера:
+      1. Убедитесь, что модуль telemetry включён (telemetry enable)
+      2. Задайте пароль для авторизации в боте (telemetry password)
+      3. Откройте @mytonprovider_bot и найдите своего провайдера
+      4. Подпишитесь, введя заданный ранее пароль
+
+    Сменить язык    db set language <ru|en|zh>
+    Debug-режим     db set debug    <true|false>
+
+    Сообщество: @mytonprovider_chat — вопросы и обсуждение
+  "goodbye": "Выход из {label}. До встречи!"
+  "unknown_command": "Неизвестная команда: {name}"
+  "command_error": "Ошибка: {error}"
+  "no_help_for": "Справка не найдена: {name}"
+  "no_history": "История пуста"
+  "field_not_found": "Поле не найдено: {path}"
+  "validation_error": "Ошибка валидации: {error}"
+  "db_get_usage": "Использование: db get <field>"
+  "db_set_usage": "Использование: db set <field> <value>"
+  "restart_hint": "Перезапустите приложение, чтобы изменения вступили в силу."
+  "unknown_language": "Неизвестный язык '{code}'. Доступные: {available}"
+  "unknown_boolean": "Неизвестное булево значение '{code}'. Доступные: true, false"
+  "invalid_input": "Некорректно: {error}"
+  "commands":
+    "db": "Команды базы данных"
+    "db_show": "Показать всю базу"
+    "db_get": "Получить значение поля"
+    "db_set": "Установить значение поля"
+    "status": "Показать текущий статус"
+    "modules": "Показать зарегистрированные модули"
+    "versions": "Показать версии компонентов"
+    "history": "Показать историю команд"
+    "clear": "Очистить экран консоли"
+    "help": "Показать все команды"
+    "exit": "Выйти из консоли"
+  "table":
+    "component": "Компонент"
+    "version": "Версия"
+    "name": "Имя"
+    "enabled": "Включён"
+    "mandatory": "Обязательный"
+    "capabilities": "Возможности"
+    "yes": "да"
+    "no": "нет"
+  "install":
+    "select_modules": "Выберите модули для установки:"
+  "update":
+    "up_to_date": "уже актуально"
+    "failed": "ошибка"
+"common":
+  "usage_prefix": "Использование:"
+  "status":
+    "active":     "активен"
+    "inactive":   "неактивен"
+    "uptime":     "аптайм"
+    "collecting": "сбор данных…"
+    "open":       "открыт"
+    "closed":     "закрыт"
+"modules":
+  "mytonprovider":
+    "status":
+      "cpu_load":      "Загрузка CPU [{cores}]"
+      "memory_load":   "Загрузка памяти"
+      "disk_space":    "Диск приложения"
+      "disk_io":       "Загрузка дисков"
+      "network_io":    "Загрузка сети"
+      "network_total": "Сетевой трафик"
+  "ton_storage":
+    "cmd":
+      "bags":
+        "group":  "Управление bags"
+        "list":   "Показать все bags"
+        "info":   "Показать детали bag"
+        "add":    "Добавить bag в хранилище"
+        "start":  "Запустить скачивание bag"
+        "stop":   "Остановить скачивание bag"
+        "remove": "Удалить bag из хранилища"
+        "verify": "Проверить целостность bag"
+      "storage":
+        "group": "Управление TON Storage"
+        "info":  "Информация о ton-storage"
+        "log":   "Установить уровень логирования ton-storage"
+    "install":
+      "storage_path": "Укажите путь для данных ton-storage"
+    "bags":
+      "empty":          "Нет bags"
+      "added":          "Bag добавлен: {bag_id}"
+      "added_idle":     "Bag добавлен (без загрузки): {bag_id}"
+      "started":        "Bag запущен: {bag_id}"
+      "stopped":        "Bag остановлен: {bag_id}"
+      "removed":        "Bag удалён: {bag_id}"
+      "removed_with_files": "Bag и файлы удалены: {bag_id}"
+      "removed_keep_hint": "Файлы остались на диске: {path}"
+      "status":
+        "stopped":     "остановлен"
+        "idle":        "не скачивается"
+        "downloading": "скачивается"
+        "seeding":     "раздаётся"
+        "completed":   "завершён"
+      "verify_ok":      "Bag цел, повреждений не найдено: {bag_id}"
+      "verify_failed":  "Bag повреждён, перезапуск загрузки: {bag_id}"
+      "list_page":      "Страница {page}/{pages} · всего {total} bags"
+    "info":
+      "metric":       "Параметр"
+      "value":        "Значение"
+      "storage_path": "Путь хранилища"
+      "adnl_pubkey":  "ADNL публичный ключ"
+      "listen_addr":  "Адрес прослушивания"
+      "external_ip":  "Внешний IP"
+      "api_endpoint": "Адрес API"
+      "config_path":  "Путь к конфигу"
+    "log":
+      "invalid": "Уровень должен быть {min}-{max}"
+      "updated": "✓ Уровень логирования установлен: {verbosity}"
+    "status":
+      "bags":        "Количество bags"
+      "disk_space":  "Диск хранилища"
+      "udp_port":    "UDP порт"
+    "table":
+      "id":           "Bag id"
+      "progress":     "Прогресс"
+      "size":         "Размер"
+      "files":        "Файлы"
+      "peers":        "Пиры"
+      "download":     "Скачивание"
+      "upload":       "Отдача"
+      "metric":       "Параметр"
+      "value":        "Значение"
+      "bag_id":       "Bag id"
+      "description":  "Описание"
+      "bag_path":     "Расположение"
+      "status":       "Статус"
+      "verified":     "Проверен"
+  "benchmark":
+    "cmd":
+      "group": "Управление бенчмарком"
+      "run": "Запустить тест производительности"
+      "show": "Показать последний результат теста"
+    "no_storage": "Путь к ton-storage не настроен"
+    "no_result": "Результатов ещё нет. Запустите 'benchmark run'."
+    "already_running": "Бенчмарк уже выполняется в фоне, подождите и повторите"
+    "last_run": "Последний запуск: {when}"
+    "progress":
+      "start": "Запуск теста производительности, это займёт около 2 минут"
+      "done": "Тест завершён!"
+      "failed": "Тест завершился ошибкой"
+      "fio_read": "Диск {name}: измерение скорости чтения…"
+      "fio_write": "Диск {name}: измерение скорости записи…"
+      "speedtest_ping": "Сеть: измерение пинга…"
+      "speedtest_download": "Сеть: измерение скорости скачивания…"
+      "speedtest_upload": "Сеть: измерение скорости отправки…"
+    "table":
+      "test": "Тест"
+      "read": "Чтение"
+      "write": "Запись"
+      "read_iops": "IOPS чтения"
+      "write_iops": "IOPS записи"
+      "metric": "Параметр"
+      "value": "Значение"
+      "download": "Скачивание"
+      "upload": "Отправка"
+      "ping": "Пинг"
+  "ton_storage_provider":
+    "cmd":
+      "provider":
+        "group":        "Управление TON Storage Provider"
+        "info":         "Показать детали провайдера"
+        "set_cost":     "Установить цену хранения (TON за 200 GB в месяц)"
+        "set_space":    "Установить выделенное пространство провайдера (GB)"
+        "set_bag_size": "Установить максимальный размер bag (GB)"
+    "install":
+      "storage_cost":     "Цена хранения (TON за 200 GB в месяц)"
+      "space_to_provide": "Выделенное пространство, GB (свободно: {free}, всего: {total})"
+      "max_bag_size":     "Максимальный размер bag, GB ({min}-{max})"
+    "provider":
+      "cost_set":     "✓ Цена хранения: {cost} TON / 200 GB / месяц"
+      "space_set":    "✓ Пространство провайдера: {space} GB"
+      "bag_size_set": "✓ Максимальный размер bag: {size} GB"
+      "bad_cost":     "Цена должна быть > 0"
+      "bad_space":    "Пространство должно быть {min}-{max} GB"
+      "bad_bag_size": "Размер bag должен быть {min}-{max} GB"
+    "status":
+      "udp_port":     "UDP порт"
+      "pubkey":       "Публичный ключ"
+      "storage_cost": "Цена хранения"
+      "profit":       "Месячная прибыль"
+      "provided":     "Выделено места"
+      "max_bag_size": "Макс. размер bag"
+    "info":
+      "metric":       "Параметр"
+      "value":        "Значение"
+      "pubkey":       "Публичный ключ"
+      "adnl_pubkey":  "ADNL публичный ключ"
+      "listen_addr":  "Адрес прослушивания"
+      "external_ip":  "Внешний IP"
+      "storage_path": "Путь хранилища"
+      "config_path":  "Путь к конфигу"
+  "telemetry":
+    "cmd":
+      "group":    "Управление телеметрией"
+      "enable":   "Включить отправку телеметрии"
+      "disable":  "Выключить отправку телеметрии"
+      "password": "Задать пароль телеметрии"
+    "msg":
+      "enabled":           "Отправка телеметрии включена"
+      "disabled":          "Отправка телеметрии выключена"
+      "password_prompt":   "Введите пароль телеметрии"
+      "password_confirm":  "Повторите пароль"
+      "password_mismatch": "Пароли не совпадают"
+      "password_set":      "Пароль телеметрии установлен"
+      "daemon_restarted":  "Демон перезапущен для регистрации цикла телеметрии"
+  "ton_wallet":
+    "cmd":
+      "group":    "Управление TON Wallet"
+      "import":   "Импортировать кошелёк (mnemonic или приватный ключ)"
+      "export":   "Экспортировать приватный ключ кошелька"
+      "transfer": "Отправить TON на адрес или .ton/.t.me домен"
+      "register": "Зарегистрировать провайдера в публичном списке"
+    "msg":
+      "import_prompt":   "Мнемоническая фраза или приватный ключ (hex/b64)"
+      "imported":        "Кошелёк импортирован: {address}"
+      "transferred":     "TON отправлен: {hash}"
+      "transfer_prompt": "Отправить {amount} TON на {address}?"
+      "cancelled":       "Отменено"
+      "bad_key":         "Неверный mnemonic или приватный ключ: {error}"
+      "bad_address":     "Неверный адрес: {error}"
+      "bad_amount":      "Неверная сумма: {error}"
+      "low_balance":     "Недостаточно средств ({balance} TON, не хватает {shortage} TON)"
+      "balance_warning": "Низкий остаток после перевода ({remaining} TON, рекомендуется >= {recommended} TON)"
+    "register":
+      "success":     "Провайдер зарегистрирован: {hash}"
+      "already":     "Провайдер уже зарегистрирован"
+    "status":
+      "address": "Адрес"
+      "balance": "Баланс"
+    "state":
+      "active":   "активен"
+      "uninit":   "не инициализирован"
+      "frozen":   "заморожен"
+      "nonexist": "не существует"
+    "info":
+      "metric":      "Параметр"
+      "value":       "Значение"
+      "address":     "Адрес"
+      "private_b64": "Приватный ключ (b64)"
+      "private_hex": "Приватный ключ (hex)"
+  "updater":
+    "cmd":
+      "group":   "Управление обновлениями"
+      "enable":  "Включить автообновление"
+      "disable": "Отключить автообновление"
+      "update":  "Обновить модуль"
+    "msg":
+      "enabled":              "Автообновление включено"
+      "disabled":             "Автообновление отключено"
+      "not_updatable":        "Модуль '{name}' не поддерживает обновление"
+      "no_git_repo":          "У модуля '{name}' нет git-репозитория"
+      "origin_set":           "{name}: origin изменён на {url}"
+      "updated":              "{name}: пересобран и перезапущен"
+      "restart_console_hint": "Перезапустите консоль для загрузки нового кода"
+      "url_form_extra":       "URL нельзя совмещать с дополнительными аргументами"
+      "bad_url":              "Некорректный github url: {url}"

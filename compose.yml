@@ -1,0 +1,32 @@
+services:
+  mytonprovider:
+    image: ghcr.io/nessshon/mytonprovider:latest
+    build: .
+    container_name: mytonprovider
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 60s
+    environment:
+      # Optional modules to install on first boot, comma-separated (telemetry, updater).
+      MTP_MODULES: ${MTP_MODULES:-telemetry,updater}
+      # Storage rate in TON per 200 GB per month. Required.
+      MTP_TON_STORAGE_PROVIDER_STORAGE_COST: ${MTP_TON_STORAGE_PROVIDER_STORAGE_COST:?required — set in .env}
+      # Total disk space dedicated to providing, in GB. Required — must fit free disk.
+      MTP_TON_STORAGE_PROVIDER_SPACE_GB: ${MTP_TON_STORAGE_PROVIDER_SPACE_GB:?required — set in .env}
+      # Per-bag size limit, in GB.
+      MTP_TON_STORAGE_PROVIDER_MAX_BAG_SIZE_GB: ${MTP_TON_STORAGE_PROVIDER_MAX_BAG_SIZE_GB:-50}
+      # UI language: en, ru, or zh.
+      LANG: ${LANG:-en}
+    volumes:
+      # Per-instance state (DB, marker, venv symlink).
+      - mytonprovider-data:/var/lib/mytonprovider
+      # Per-instance systemd units + enable symlinks.
+      - mytonprovider-systemd:/etc/systemd/system
+      # Storage data (keys, configs, db, bags). Required — set MTP_TON_STORAGE_PATH in .env.
+      - ${MTP_TON_STORAGE_PATH:?required — set absolute host path in .env}:/var/storage
+
+volumes:
+  mytonprovider-data:
+    name: mytonprovider-data
+  mytonprovider-systemd:
+    name: mytonprovider-systemd

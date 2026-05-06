@@ -1,0 +1,274 @@
+"mypycli":
+  "welcome": |
+
+    Welcome to {label}!
+    Type {help} for available commands.
+
+    First run:
+      1. Make sure all modules are active and ports are open (status)
+      2. Import a wallet, optional (wallet import)
+      3. Save the private key in a safe place (wallet export)
+      4. Top up the balance and register the provider in the public list (register)
+
+    Provider monitoring:
+      1. Ensure the telemetry module is enabled (telemetry enable)
+      2. Set the password for bot authorization (telemetry password)
+      3. Open @mytonprovider_bot and find your provider
+      4. Subscribe by entering the previously set password
+
+    Change language  db set language <ru|en|zh>
+    Debug mode       db set debug    <true|false>
+
+    Community: @mytonprovider_chat — questions and discussion
+  "goodbye": "Exiting {label}. Bye!"
+  "unknown_command": "Unknown command: {name}"
+  "command_error": "Error: {error}"
+  "no_help_for": "No help for: {name}"
+  "no_history": "No history"
+  "field_not_found": "Field not found: {path}"
+  "validation_error": "Validation error: {error}"
+  "db_get_usage": "Usage: db get <field>"
+  "db_set_usage": "Usage: db set <field> <value>"
+  "restart_hint": "Restart the application for the change to take effect."
+  "unknown_language": "Unknown language '{code}'. Available: {available}"
+  "unknown_boolean": "Unknown boolean '{code}'. Available: true, false"
+  "invalid_input": "Invalid: {error}"
+  "commands":
+    "db": "Database commands"
+    "db_show": "Show full database"
+    "db_get": "Get field value"
+    "db_set": "Set field value"
+    "status": "Show current status"
+    "modules": "Show registered modules"
+    "versions": "Show component versions"
+    "history": "Show command history"
+    "clear": "Clear console screen"
+    "help": "Show all commands"
+    "exit": "Exit console"
+  "table":
+    "component": "Component"
+    "version": "Version"
+    "name": "Name"
+    "enabled": "Enabled"
+    "mandatory": "Mandatory"
+    "capabilities": "Capabilities"
+    "yes": "yes"
+    "no": "no"
+  "install":
+    "select_modules": "Select modules to install:"
+  "update":
+    "up_to_date": "up to date"
+    "failed": "failed"
+"common":
+  "usage_prefix": "Usage:"
+  "status":
+    "active":     "active"
+    "inactive":   "inactive"
+    "uptime":     "uptime"
+    "collecting": "collecting…"
+    "open":       "open"
+    "closed":     "closed"
+"modules":
+  "mytonprovider":
+    "status":
+      "cpu_load":      "CPU load [{cores}]"
+      "memory_load":   "Memory load"
+      "disk_space":    "App disk"
+      "disk_io":       "Disk I/O"
+      "network_io":    "Network I/O"
+      "network_total": "Network total"
+  "ton_storage":
+    "cmd":
+      "bags":
+        "group":  "Bags management"
+        "list":   "List all bags"
+        "info":   "Show bag details"
+        "add":    "Add a bag to storage"
+        "start":  "Start downloading a bag"
+        "stop":   "Stop downloading a bag"
+        "remove": "Remove a bag from storage"
+        "verify": "Verify bag integrity"
+      "storage":
+        "group": "TON Storage management"
+        "info":  "Show ton-storage info"
+        "log":   "Set ton-storage log verbosity"
+    "install":
+      "storage_path": "Enter storage path for ton-storage data"
+    "bags":
+      "empty":          "No bags yet"
+      "added":          "Bag added: {bag_id}"
+      "added_idle":     "Bag added (no download): {bag_id}"
+      "started":        "Bag started: {bag_id}"
+      "stopped":        "Bag stopped: {bag_id}"
+      "removed":        "Bag removed: {bag_id}"
+      "removed_with_files": "Bag and files removed: {bag_id}"
+      "removed_keep_hint": "Files kept on disk: {path}"
+      "status":
+        "stopped":     "stopped"
+        "idle":        "idle"
+        "downloading": "downloading"
+        "seeding":     "seeding"
+        "completed":   "completed"
+      "verify_ok":      "Bag intact, no corruption found: {bag_id}"
+      "verify_failed":  "Bag corrupted, re-downloading: {bag_id}"
+      "list_page":      "Page {page}/{pages} · {total} bags total"
+    "info":
+      "metric":       "Parameter"
+      "value":        "Value"
+      "storage_path": "Storage path"
+      "adnl_pubkey":  "ADNL public key"
+      "listen_addr":  "Listen address"
+      "external_ip":  "External IP"
+      "api_endpoint": "API endpoint"
+      "config_path":  "Config path"
+    "log":
+      "invalid": "Verbosity must be {min}-{max}"
+      "updated": "✓ Log verbosity set to {verbosity}"
+    "status":
+      "bags":        "Bags count"
+      "disk_space":  "Storage disk"
+      "udp_port":    "UDP port"
+    "table":
+      "id":           "Bag id"
+      "progress":     "Progress"
+      "size":         "Size"
+      "files":        "Files"
+      "peers":        "Peers"
+      "download":     "Download"
+      "upload":       "Upload"
+      "metric":       "Parameter"
+      "value":        "Value"
+      "bag_id":       "Bag id"
+      "description":  "Description"
+      "bag_path":     "Location"
+      "status":       "Status"
+      "verified":     "Last verified"
+  "benchmark":
+    "cmd":
+      "group": "Benchmark management"
+      "run": "Run performance benchmark"
+      "show": "Show last benchmark result"
+    "no_storage": "ton-storage path is not configured"
+    "no_result": "No benchmark results yet. Run 'benchmark run'."
+    "already_running": "Benchmark is already running in background, please wait and try again"
+    "last_run": "Last run: {when}"
+    "progress":
+      "start": "Starting performance test, this will take about 2 minutes"
+      "done": "Test complete!"
+      "failed": "Test failed"
+      "fio_read": "Disk {name}: read speed test…"
+      "fio_write": "Disk {name}: write speed test…"
+      "speedtest_ping": "Network: ping test…"
+      "speedtest_download": "Network: download speed test…"
+      "speedtest_upload": "Network: upload speed test…"
+    "table":
+      "test": "Test"
+      "read": "Read"
+      "write": "Write"
+      "read_iops": "Read IOPS"
+      "write_iops": "Write IOPS"
+      "metric": "Parameter"
+      "value": "Value"
+      "download": "Download"
+      "upload": "Upload"
+      "ping": "Ping"
+  "ton_storage_provider":
+    "cmd":
+      "provider":
+        "group":        "TON Storage Provider management"
+        "info":         "Show provider details"
+        "set_cost":     "Set storage price (TON per 200 GB per month)"
+        "set_space":    "Set allocated provider space (GB)"
+        "set_bag_size": "Set maximum bag size (GB)"
+    "install":
+      "storage_cost":     "Storage price (TON per 200 GB per month)"
+      "space_to_provide": "Allocated space, GB (free: {free}, total: {total})"
+      "max_bag_size":     "Maximum bag size, GB ({min}-{max})"
+    "provider":
+      "cost_set":     "✓ Storage cost: {cost} TON / 200 GB / month"
+      "space_set":    "✓ Provider space: {space} GB"
+      "bag_size_set": "✓ Max bag size: {size} GB"
+      "bad_cost":     "Cost must be > 0"
+      "bad_space":    "Space must be {min}-{max} GB"
+      "bad_bag_size": "Bag size must be {min}-{max} GB"
+    "status":
+      "udp_port":     "UDP port"
+      "pubkey":       "Public key"
+      "storage_cost": "Storage cost"
+      "profit":       "Monthly profit"
+      "provided":     "Allocated space"
+      "max_bag_size": "Max bag size"
+    "info":
+      "metric":       "Parameter"
+      "value":        "Value"
+      "pubkey":       "Public key"
+      "adnl_pubkey":  "ADNL public key"
+      "listen_addr":  "Listen address"
+      "external_ip":  "External IP"
+      "storage_path": "Storage path"
+      "config_path":  "Config path"
+  "telemetry":
+    "cmd":
+      "group":    "Telemetry management"
+      "enable":   "Enable telemetry sending"
+      "disable":  "Disable telemetry sending"
+      "password": "Set telemetry password"
+    "msg":
+      "enabled":           "Telemetry sending enabled"
+      "disabled":          "Telemetry sending disabled"
+      "password_prompt":   "Enter telemetry password"
+      "password_confirm":  "Repeat password"
+      "password_mismatch": "Passwords do not match"
+      "password_set":      "Telemetry password set"
+      "daemon_restarted":  "Daemon restarted to register telemetry cycle"
+  "ton_wallet":
+    "cmd":
+      "group":    "TON Wallet management"
+      "import":   "Import wallet (mnemonic or private key)"
+      "export":   "Export wallet private key"
+      "transfer": "Transfer TON to address or .ton/.t.me domain"
+      "register": "Register provider in public list"
+    "msg":
+      "import_prompt":   "Mnemonic words or private key (hex/b64)"
+      "imported":        "Wallet imported: {address}"
+      "transferred":     "TON transferred: {hash}"
+      "transfer_prompt": "Transfer {amount} TON to {address}?"
+      "cancelled":       "Cancelled"
+      "bad_key":         "Invalid mnemonic or private key: {error}"
+      "bad_address":     "Invalid address: {error}"
+      "bad_amount":      "Invalid amount: {error}"
+      "low_balance":     "Insufficient balance ({balance} TON, short by {shortage} TON)"
+      "balance_warning": "Low remaining balance after transfer ({remaining} TON, recommended >= {recommended} TON)"
+    "register":
+      "success":     "Provider registered: {hash}"
+      "already":     "Provider already registered"
+    "status":
+      "address": "Address"
+      "balance": "Balance"
+    "state":
+      "active":   "active"
+      "uninit":   "uninitialized"
+      "frozen":   "frozen"
+      "nonexist": "non-existent"
+    "info":
+      "metric":      "Parameter"
+      "value":       "Value"
+      "address":     "Address"
+      "private_b64": "Private key (b64)"
+      "private_hex": "Private key (hex)"
+  "updater":
+    "cmd":
+      "group":   "Updater management"
+      "enable":  "Enable auto-update"
+      "disable": "Disable auto-update"
+      "update":  "Update a module"
+    "msg":
+      "enabled":              "Auto-update enabled"
+      "disabled":             "Auto-update disabled"
+      "not_updatable":        "Module '{name}' is not updatable"
+      "no_git_repo":          "Module '{name}' has no git repository"
+      "origin_set":           "{name}: origin set to {url}"
+      "updated":              "{name}: built and restarted"
+      "restart_console_hint": "Restart the console to load the new code"
+      "url_form_extra":       "Cannot combine URL with extra arguments"
+      "bad_url":              "Invalid github url: {url}"
