@@ -1,0 +1,319 @@
+"mypycli":
+  "welcome":          "Welcome to {label}!\nType {help} for available commands."
+  "goodbye":          "Exiting {label}. Bye!"
+  "unknown_command":  "Unknown command: {name}"
+  "command_error":    "Error: {error}"
+  "no_help_for":      "No help for: {name}"
+  "no_history":       "No history"
+  "field_not_found":  "Field not found: {path}"
+  "validation_error": "Validation error: {error}"
+  "db_get_usage":     "Usage: db get <field>"
+  "db_set_usage":     "Usage: db set <field> <value>"
+  "restart_hint":     "Restart the application for the change to take effect."
+  "unknown_language": "Unknown language '{code}'. Available: {available}"
+  "unknown_boolean":  "Unknown boolean '{code}'. Available: true, false"
+  "invalid_input":    "Invalid: {error}"
+  "commands":
+    "db":       "Database commands"
+    "db_show":  "Show full database"
+    "db_get":   "Get field value"
+    "db_set":   "Set field value"
+    "status":   "Show current status"
+    "modules":  "Show registered modules"
+    "versions": "Show component versions"
+    "history":  "Show command history"
+    "clear":    "Clear console screen"
+    "help":     "Show all commands"
+    "exit":     "Exit console"
+  "table":
+    "component":    "Component"
+    "version":      "Version"
+    "name":         "Name"
+    "enabled":      "Enabled"
+    "mandatory":    "Mandatory"
+    "capabilities": "Capabilities"
+    "yes":          "yes"
+    "no":           "no"
+  "prompt":
+    "hint":
+      "select":      "↑/↓ navigate · enter confirm"
+      "multiselect": "↑/↓ navigate · space toggle · enter confirm"
+  "install":
+    "select_modules": "Select modules to install:"
+  "uninstall":
+    "confirm":         "Uninstall {label}? This cannot be undone."
+    "cancelled":       "Uninstall cancelled."
+    "non_interactive": "Refusing to uninstall in non-interactive mode"
+  "update":
+    "up_to_date": "up to date"
+    "failed":     "failed"
+"common":
+  "usage_prefix": "Usage:"
+  "status":
+    "active":     "active"
+    "inactive":   "inactive"
+    "uptime":     "uptime"
+    "collecting": "collecting…"
+    "open":       "open"
+    "closed":     "closed"
+"modules":
+  "mytonprovider":
+    "cmd":
+      "info": "Useful info"
+    "status":
+      "cpu_load":      "CPU load [{cores}]"
+      "memory_load":   "Memory load"
+      "disk_space":    "App disk"
+      "disk_io":       "Disk I/O"
+      "network_io":    "Network I/O"
+      "network_total": "Network total"
+    "info": |
+
+      First start
+        1. Verify modules are active and ports open — status
+        2. Import a wallet, optional — wallet import
+        3. Save the private key in a safe place — wallet export
+        4. Top up the balance and register the provider in the public list — register
+
+        Once the registration transaction settles, the provider appears in the public list at mytonprovider.org
+
+      Provider monitoring
+        1. Enable telemetry — telemetry enable
+        2. Set the bot authorization password — telemetry password
+        3. Open @mytonprovider_bot and find your provider
+        4. Subscribe by entering the password
+
+      Report bad bags
+        1. Open @bagidreport_bot
+        2. Send the bag id you want to report
+        3. Provide description and reason
+        4. Moderators review and block confirmed bad bags
+
+      Filesystem
+        /usr/src/                Source clones: mytonprovider, tonutils-storage, tonutils-storage-provider
+        /usr/local/bin/          Installed binaries: mytonprovider, tonutils, tonutils-storage, tonutils-storage-provider
+        /var/lib/mytonprovider/  App state: database, logs, Python venv
+        /var/storage/            Provider data: ton-storage and provider configs, bags
+
+      Services
+        mytonproviderd.service           Manager daemon
+        mytonprovider-updater.service    Auto-updater daemon
+        ton-storage.service              tonutils-storage daemon
+        ton-storage-provider.service     tonutils-storage-provider daemon
+
+      Logs
+        App log file: /var/lib/mytonprovider/mytonprovider.log
+        Service-level via systemd journal:
+          journalctl -u mytonproviderd -n 100 -f
+          journalctl -u mytonprovider-updater -n 100 -f
+          journalctl -u ton-storage -n 100 -f
+          journalctl -u ton-storage-provider -n 100 -f
+
+      Tips
+        Switch language:  db set language <ru|en|zh>
+        Debug mode:       db set debug <true|false>
+
+      Community: @mytonprovider_chat — questions and discussion
+  "ton_storage":
+    "cmd":
+      "bags":
+        "group":  "Bags management"
+        "list":   "List all bags"
+        "info":   "Show bag details"
+        "add":    "Add a bag to storage"
+        "remove": "Remove a bag from storage"
+        "start":  "Start downloading a bag"
+        "stop":   "Stop downloading a bag"
+        "verify": "Verify bag integrity"
+      "storage":
+        "group":           "TON Storage management"
+        "info":            "Show ton-storage info"
+        "log":             "Set ton-storage log verbosity"
+        "set_external_ip": "Set external IP"
+    "install":
+      "storage_path": "Enter storage path for ton-storage data"
+      "building":     "Building tonutils-storage"
+    "bags":
+      "empty":              "No bags yet"
+      "added":              "Bag added: {bag_id}"
+      "added_idle":         "Bag added (no download): {bag_id}"
+      "started":            "Bag started: {bag_id}"
+      "stopped":            "Bag stopped: {bag_id}"
+      "removed":            "Bag removed: {bag_id}"
+      "removed_with_files": "Bag and files removed: {bag_id}"
+      "removed_keep_hint":  "Files kept on disk: {path}"
+      "status":
+        "stopped":     "stopped"
+        "idle":        "idle"
+        "downloading": "downloading"
+        "seeding":     "seeding"
+        "completed":   "completed"
+      "verify_ok":          "Bag intact, no corruption found: {bag_id}"
+      "verify_failed":      "Bag corrupted, re-downloading: {bag_id}"
+      "list_page":          "Page {page}/{pages} · {total} bags total"
+    "info":
+      "metric":       "Parameter"
+      "value":        "Value"
+      "storage_path": "Storage path"
+      "adnl_pubkey":  "ADNL public key"
+      "listen_addr":  "Listen address"
+      "external_ip":  "External IP"
+      "api_endpoint": "API endpoint"
+      "config_path":  "Config path"
+    "log":
+      "invalid": "Verbosity must be {min}-{max}"
+      "updated": "✓ Log verbosity set to {verbosity}"
+    "msg":
+      "external_ip_mismatch": "config.ExternalIP ({ip}) ≠ public IP ({public_ip}). Use 'storage set-external-ip [ip]' to update."
+      "external_ip_set":      "✓ External IP: {ip}"
+      "bad_ip":               "Invalid IP: {ip}"
+    "status":
+      "bags":       "Bags count"
+      "disk_space": "Storage disk"
+      "udp_port":   "UDP port"
+    "table":
+      "id":          "Bag id"
+      "progress":    "Progress"
+      "size":        "Size"
+      "files":       "Files"
+      "peers":       "Peers"
+      "download":    "Download"
+      "upload":      "Upload"
+      "metric":      "Parameter"
+      "value":       "Value"
+      "bag_id":      "Bag id"
+      "description": "Description"
+      "bag_path":    "Location"
+      "status":      "Status"
+      "verified":    "Last verified"
+  "benchmark":
+    "cmd":
+      "group": "Benchmark management"
+      "run":   "Run performance benchmark"
+      "show":  "Show last benchmark result"
+    "no_storage":      "ton-storage path is not configured"
+    "no_result":       "No benchmark results yet. Run 'benchmark run'."
+    "already_running": "Benchmark is already running in background, please wait and try again"
+    "last_run":        "Last run: {when}"
+    "progress":
+      "start":     "Starting performance test, this will take about 2 minutes"
+      "done":      "Test complete!"
+      "failed":    "Test failed"
+      "speedtest": "Network: speed test…"
+      "disk":      "Disk: {name} speed test…"
+    "table":
+      "test":       "Test"
+      "read":       "Read"
+      "write":      "Write"
+      "read_iops":  "Read IOPS"
+      "write_iops": "Write IOPS"
+      "metric":     "Parameter"
+      "value":      "Value"
+      "download":   "Download"
+      "upload":     "Upload"
+      "ping":       "Ping"
+  "ton_storage_provider":
+    "cmd":
+      "provider":
+        "group":           "TON Storage Provider management"
+        "info":            "Show provider details"
+        "set_cost":        "Set storage price (TON per 200 GB per month)"
+        "set_space":       "Set allocated provider space (GB)"
+        "set_external_ip": "Set external IP"
+    "install":
+      "storage_cost":     "Set storage price (TON per 200 GB per month)"
+      "space_to_provide": "Specify space to allocate in GB (free: {free}, total: {total})"
+      "building":         "Building tonutils-storage-provider"
+    "provider":
+      "cost_set":  "✓ Storage cost: {cost} TON / 200 GB / month"
+      "space_set": "✓ Provider space: {space} GB"
+      "bad_cost":  "Cost must be > 0"
+      "bad_space": "Space must be {min}-{max} GB"
+    "msg":
+      "external_ip_mismatch": "config.ExternalIP ({ip}) ≠ public IP ({public_ip}). Use 'provider set-external-ip [ip]' to update."
+      "external_ip_set":      "✓ External IP: {ip}"
+      "bad_ip":               "Invalid IP: {ip}"
+    "status":
+      "udp_port":     "UDP port"
+      "pubkey":       "Public key"
+      "storage_cost": "Storage cost"
+      "profit":       "Monthly profit"
+      "provided":     "Allocated space"
+      "max_bag_size": "Max bag size"
+    "info":
+      "metric":       "Parameter"
+      "value":        "Value"
+      "pubkey":       "Public key"
+      "adnl_pubkey":  "ADNL public key"
+      "listen_addr":  "Listen address"
+      "external_ip":  "External IP"
+      "storage_path": "Storage path"
+      "config_path":  "Config path"
+  "telemetry":
+    "cmd":
+      "group":    "Telemetry management"
+      "enable":   "Enable telemetry sending"
+      "disable":  "Disable telemetry sending"
+      "password": "Set telemetry password"
+    "msg":
+      "enabled":           "Telemetry sending enabled"
+      "disabled":          "Telemetry sending disabled"
+      "password_prompt":   "Enter telemetry password"
+      "password_confirm":  "Repeat password"
+      "password_mismatch": "Passwords do not match"
+      "password_set":      "Telemetry password set"
+      "daemon_restarted":  "Daemon restarted to register telemetry cycle"
+  "ton_wallet":
+    "cmd":
+      "group":    "TON Wallet management"
+      "import":   "Import wallet (mnemonic or private key)"
+      "export":   "Export wallet private key"
+      "transfer": "Transfer TON to address or .ton/.t.me domain"
+      "register": "Register provider in public list"
+    "msg":
+      "import_prompt":   "Mnemonic words or private key (hex/b64)"
+      "imported":        "Wallet imported: {address}"
+      "transferred":     "TON transferred: {hash}"
+      "transfer_prompt": "Transfer {amount} TON to {address}?"
+      "cancelled":       "Cancelled"
+      "bad_key":         "Invalid mnemonic or private key: {error}"
+      "bad_address":     "Invalid address: {error}"
+      "bad_amount":      "Invalid amount: {error}"
+      "low_balance":     "Insufficient balance ({balance} TON, short by {shortage} TON)"
+      "balance_warning": "Low remaining balance after transfer ({remaining} TON, recommended >= {recommended} TON)"
+    "register":
+      "success": "Provider registered: {hash}"
+      "already": "Provider already registered"
+    "status":
+      "address": "Address"
+      "balance": "Balance"
+    "state":
+      "active":   "active"
+      "uninit":   "uninitialized"
+      "frozen":   "frozen"
+      "nonexist": "non-existent"
+    "info":
+      "metric":      "Parameter"
+      "value":       "Value"
+      "address":     "Address"
+      "private_b64": "Private key (b64)"
+      "private_hex": "Private key (hex)"
+  "updater":
+    "cmd":
+      "group":   "Updater management"
+      "enable":  "Enable auto-update"
+      "disable": "Disable auto-update"
+      "update":  "Update or switch module ref/fork"
+    "msg":
+      "enabled":              "Auto-update enabled"
+      "disabled":             "Auto-update disabled"
+      "not_updatable":        "Module '{name}' is not updatable"
+      "no_git_repo":          "Module '{name}' has no git repository"
+      "origin_set":           "{name}: origin set to {url}"
+      "updated":              "{name}: built and restarted"
+      "restart_console_hint": "Restart the console to apply the update"
+      "usage_update": |
+        Usage: updater update <module> [<ref>] [<author>] [<repo>]
+          <ref>     branch / tag / commit (default: rebuild current)
+          <author>  switch fork by author (default: keep current)
+          <repo>    repository name (default: keep current)

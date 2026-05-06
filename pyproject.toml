@@ -1,0 +1,100 @@
+[build-system]
+requires = ["setuptools>=80"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mytonprovider"
+description = "TON storage provider manager"
+version = "0.0.1"
+requires-python = ">=3.10"
+authors = [{ name = "nessshon" }]
+license = "GPL-3.0-or-later"
+dependencies = [
+    "mypycli@git+https://github.com/nessshon/mypycli@v0.0.1",
+    "pydantic>=2.0.0",
+    "requests>=2.31.0",
+    "speedtest-cli~=2.1.0",
+    "tonutils==2.1.0",
+    "ton-core==0.3.5",
+]
+
+[project.urls]
+Homepage = "https://github.com/nessshon/mytonprovider"
+
+[project.scripts]
+mytonprovider = "mytonprovider.__main__:main"
+
+[tool.setuptools.packages.find]
+include = ["mytonprovider", "mytonprovider.*"]
+
+[tool.setuptools.package-data]
+mytonprovider = ["locales/*.yml"]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    # pycodestyle errors
+    "E",
+    # pycodestyle warnings
+    "W",
+    # pyflakes
+    "F",
+    # isort
+    "I",
+    # pep8-naming
+    "N",
+    # flake8-annotations
+    "ANN",
+    # flake8-bugbear
+    "B",
+    # flake8-comprehensions
+    "C4",
+    # pyupgrade
+    "UP",
+    # flake8-simplify
+    "SIM",
+    # perflint
+    "PERF",
+    # flake8-debugger
+    "T10",
+    # flake8-pie
+    "PIE",
+    # pylint errors
+    "PLE",
+    # flake8-return
+    "RET",
+    # ruff-specific
+    "RUF",
+    # eradicate (commented-out code)
+    "ERA",
+]
+ignore = [
+    # typing.Any — allowed for Pydantic validator
+    "ANN401",
+    # try-except inside loop — intentional for per-iteration error tolerance (e.g. ADNL probes)
+    "PERF203",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["mytonprovider"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+pretty = true
+show_error_codes = true
+show_error_context = true
+namespace_packages = true
+warn_unreachable = true
+ignore_missing_imports = true
+enable_error_code = [
+    "ignore-without-code",
+    "redundant-cast",
+    "truthy-bool",
+]

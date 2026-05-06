@@ -1,0 +1,31 @@
+services:
+  mytonprovider:
+    image: ghcr.io/nessshon/mytonprovider:latest
+    build: .
+    container_name: mytonprovider
+    restart: unless-stopped
+    network_mode: host
+    stop_grace_period: 60s
+    env_file:
+      - .env
+    volumes:
+      # systemd unit files (enable symlinks)
+      - mytonprovider-systemd:/etc/systemd/system
+      # tonutils-* binaries built by mytonprovider install
+      - mytonprovider-bin:/usr/local/bin
+      # tonutils-* source clones (preserves updater git pulls)
+      - mytonprovider-src:/usr/src
+      # app state: db, marker, venv symlink
+      - mytonprovider-data:/var/lib/mytonprovider
+      # user storage: keys, bags; required — set MTP_TON_STORAGE_PATH in .env
+      - ${MTP_TON_STORAGE_PATH:?required — set absolute host path in .env}:/var/storage
+
+volumes:
+  mytonprovider-systemd:
+    name: mytonprovider-systemd
+  mytonprovider-bin:
+    name: mytonprovider-bin
+  mytonprovider-src:
+    name: mytonprovider-src
+  mytonprovider-data:
+    name: mytonprovider-data
