@@ -18,6 +18,14 @@ def cmd_updater_daemon(app: Application[AppDatabaseSchema]) -> None:
     app.stop()
 
 
+def cmd_web_daemon(app: Application[AppDatabaseSchema]) -> None:
+    app.start()
+    from mytonprovider.web import run_server
+
+    run_server(app)
+    app.stop()
+
+
 def main() -> None:
     app: Application[AppDatabaseSchema] = Application(
         db_schema=AppDatabaseSchema,
@@ -32,6 +40,9 @@ def main() -> None:
     command = sys.argv[1] if len(sys.argv) > 1 else None
     if command == "updater-daemon":
         cmd_updater_daemon(app)
+        return
+    if command == "web-daemon":
+        cmd_web_daemon(app)
         return
 
     app.run()

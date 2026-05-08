@@ -272,3 +272,38 @@
       "restart_console_hint": "请重启控制台以加载新代码"
       "url_form_extra":       "URL 不能与额外参数组合使用"
       "bad_url":              "无效的 github url: {url}"
+  "web":
+    "cmd":
+      "group":    "Web 面板管理"
+      "password": "设置 Web 面板密码"
+    "msg":
+      "password_prompt":   "输入 Web 密码"
+      "password_confirm":  "请再次输入密码"
+      "password_mismatch": "密码不一致"
+      "password_set":      "Web 密码已设置"
+      "password_empty":    "密码不能为空"
+    "login":
+      "subtitle":    "请输入密码以访问面板"
+      "password":    "密码"
+      "submit":      "登录"
+      "wrong":       "密码错误"
+      "locked_out":  "已锁定，请在 {minutes} 分钟后重试"
+      "now_locked":  "失败次数过多，锁定 15 分钟"
+      "no_password": "未设置 Web 密码"
+    "nav":
+      "dashboard": "仪表盘"
+      "bags":      "Bags"
+      "provider":  "提供者"
+      "wallet":    "钱包"
+      "benchmark": "基准测试"
+      "system":    "系统"
+      "settings":  "设置"
+    "stub":
+      "coming_soon": "敬请期待"
+    "dashboard":
+      "live_hint": "每 5 秒自动刷新"
+      "wallet":
+        "registration":   "注册"
+        "registered":     "已注册"
+        "not_registered": "未注册"
+        "balance_hint":   "实时余额请使用 REPL 'status' 命令查看"

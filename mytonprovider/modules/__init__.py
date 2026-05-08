@@ -6,6 +6,7 @@ from .ton_storage import TonStorageModule
 from .ton_storage_provider import TonStorageProviderModule
 from .ton_wallet import TonWalletModule
 from .updater import UpdaterModule
+from .web import WebModule
 
 MODULES = [
     MytonproviderModule,
@@ -16,4 +17,5 @@ MODULES = [
     SysMetricsModule,
     TelemetryModule,
     UpdaterModule,
+    WebModule,
 ]

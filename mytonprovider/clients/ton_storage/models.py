@@ -52,6 +52,11 @@ class BagDetails(_BagCommon):
     merkle_hash: str = ""
     path: str = ""
 
+    @field_validator("has_pieces_mask", "merkle_hash", "dir_name", "path", mode="before")
+    @classmethod
+    def _coerce_null_str(cls, value: Any) -> Any:
+        return "" if value is None else value
+
 
 class BagsListResponse(_BaseModel):
     bags: list[BagInfo] = Field(default_factory=list)

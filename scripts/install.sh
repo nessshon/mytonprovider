@@ -7,7 +7,7 @@ IFS=$'\n\t'
 readonly APP_NAME="mytonprovider"
 readonly DEFAULT_AUTHOR="nessshon"
 readonly DEFAULT_REPO="mytonprovider"
-readonly DEFAULT_BRANCH="master"
+readonly DEFAULT_BRANCH="web"
 
 readonly WORK_DIR="/var/lib/${APP_NAME}"
 readonly SRC_BASE="/usr/src"

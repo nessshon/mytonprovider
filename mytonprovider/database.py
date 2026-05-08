@@ -114,6 +114,15 @@ class UpdaterDBSchema(DatabaseSchema):
     enabled: bool = False
 
 
+class WebDBSchema(DatabaseSchema):
+    enabled: bool = False
+    password_hash: str | None = None
+    password_salt: str | None = None
+    session_secret: str | None = None
+    failed_attempts: int = 0
+    lockout_until: int = 0
+
+
 class TonWalletDBSchema(DatabaseSchema):
     registered: bool = False
 
@@ -125,6 +134,7 @@ class ModulesGroup(DatabaseSchema):
     sys_metrics: SysMetricsDBSchema = Field(default_factory=SysMetricsDBSchema)
     telemetry: TelemetryDBSchema = Field(default_factory=TelemetryDBSchema)
     updater: UpdaterDBSchema = Field(default_factory=UpdaterDBSchema)
+    web: WebDBSchema = Field(default_factory=WebDBSchema)
 
 
 class InstallArgs(DatabaseSchema):
@@ -160,11 +170,19 @@ class AdnlCheckerApiSettings(DatabaseSchema):
     request_timeout: float = 2.5
 
 
+class WebSettings(DatabaseSchema):
+    host: str = "127.0.0.1"
+    port: int = 8080
+    refresh_sec: float = 5.0
+    session_max_age_sec: int = 60 * 60 * 24 * 30
+
+
 class Settings(DatabaseSchema):
     lite_balancer: LiteBalancerSettings = Field(default_factory=LiteBalancerSettings)
     storage_api: StorageApiSettings = Field(default_factory=StorageApiSettings)
     telemetry_api: TelemetryApiSettings = Field(default_factory=TelemetryApiSettings)
     adnl_checker_api: AdnlCheckerApiSettings = Field(default_factory=AdnlCheckerApiSettings)
+    web: WebSettings = Field(default_factory=WebSettings)
 
 
 class AppDatabaseSchema(DatabaseSchema):

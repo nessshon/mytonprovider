@@ -30,7 +30,7 @@
 Скачайте установщик и запустите:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/nessshon/mytonprovider/master/scripts/install.sh -o install.sh && sudo bash install.sh
+curl -fsSL https://raw.githubusercontent.com/nessshon/mytonprovider/web/scripts/install.sh -o install.sh && sudo bash install.sh
 ```
 
 Установщик интерактивный — спросит про опциональные модули, путь хранилища и экономику провайдера.

@@ -272,3 +272,38 @@
       "restart_console_hint": "Перезапустите консоль для загрузки нового кода"
       "url_form_extra":       "URL нельзя совмещать с дополнительными аргументами"
       "bad_url":              "Некорректный github url: {url}"
+  "web":
+    "cmd":
+      "group":    "Управление веб-панелью"
+      "password": "Задать пароль веб-панели"
+    "msg":
+      "password_prompt":   "Введите пароль веб-панели"
+      "password_confirm":  "Повторите пароль"
+      "password_mismatch": "Пароли не совпадают"
+      "password_set":      "Пароль веб-панели установлен"
+      "password_empty":    "Пароль не может быть пустым"
+    "login":
+      "subtitle":    "Введите пароль для доступа к панели"
+      "password":    "Пароль"
+      "submit":      "Войти"
+      "wrong":       "Неверный пароль"
+      "locked_out":  "Заблокировано, попробуйте через {minutes} мин"
+      "now_locked":  "Слишком много попыток. Блок на 15 минут"
+      "no_password": "Пароль веб-панели не установлен"
+    "nav":
+      "dashboard": "Дашборд"
+      "bags":      "Bags"
+      "provider":  "Провайдер"
+      "wallet":    "Кошелёк"
+      "benchmark": "Бенчмарк"
+      "system":    "Система"
+      "settings":  "Настройки"
+    "stub":
+      "coming_soon": "Скоро"
+    "dashboard":
+      "live_hint": "Автообновление каждые 5 секунд"
+      "wallet":
+        "registration":   "Регистрация"
+        "registered":     "зарегистрирован"
+        "not_registered": "не зарегистрирован"
+        "balance_hint":   "Актуальный баланс — через REPL команду 'status'"

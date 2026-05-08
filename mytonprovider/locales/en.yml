@@ -272,3 +272,38 @@
       "restart_console_hint": "Restart the console to load the new code"
       "url_form_extra":       "Cannot combine URL with extra arguments"
       "bad_url":              "Invalid github url: {url}"
+  "web":
+    "cmd":
+      "group":    "Web dashboard management"
+      "password": "Set web dashboard password"
+    "msg":
+      "password_prompt":   "Enter web password"
+      "password_confirm":  "Repeat password"
+      "password_mismatch": "Passwords do not match"
+      "password_set":      "Web password set"
+      "password_empty":    "Password cannot be empty"
+    "login":
+      "subtitle":    "Enter password to access dashboard"
+      "password":    "Password"
+      "submit":      "Sign in"
+      "wrong":       "Wrong password"
+      "locked_out":  "Locked out, try again in {minutes} min"
+      "now_locked":  "Too many failed attempts. Locked out for 15 min"
+      "no_password": "Web password is not set"
+    "nav":
+      "dashboard": "Dashboard"
+      "bags":      "Bags"
+      "provider":  "Provider"
+      "wallet":    "Wallet"
+      "benchmark": "Benchmark"
+      "system":    "System"
+      "settings":  "Settings"
+    "stub":
+      "coming_soon": "Coming soon"
+    "dashboard":
+      "live_hint": "Auto-refreshes every 5 seconds"
+      "wallet":
+        "registration":   "Registration"
+        "registered":     "registered"
+        "not_registered": "not registered"
+        "balance_hint":   "Use the REPL 'status' command for live wallet balance"

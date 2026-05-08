@@ -30,7 +30,7 @@ A manager for TON storage provider nodes on Linux. Installs [tonutils-storage](h
 Download the installer and run it:
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/nessshon/mytonprovider/master/scripts/install.sh -o install.sh && sudo bash install.sh
+curl -fsSL https://raw.githubusercontent.com/nessshon/mytonprovider/web/scripts/install.sh -o install.sh && sudo bash install.sh
 ```
 
 The installer is interactive — it prompts for optional modules, the
