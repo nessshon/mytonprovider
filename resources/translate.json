@@ -50,19 +50,19 @@
 		"zh_TW": "模組名稱: {}"
 	},
 	"bags_num": {
-		"ru": "Количество хранимых контейнеров, размер: {} ({} GB)",
-		"en": "Number of stored containers, size: {} ({} GB)",
-		"zh_TW": "儲存容器數量、尺寸: {} -> {}"
+		"ru": "Количество хранимых контейнеров, размер",
+		"en": "Number of stored containers, size",
+		"zh_TW": "儲存容器數量、尺寸"
 	},
 	"disk_space": {
-		"ru": "Дисковое пространство занято/всего: {} /{} GB",
-		"en": "Disk space used/total: {} /{} GB",
-		"zh_TW": "已使用磁碟空間/總磁碟空間: {} /{} GB"
+		"ru": "Дисковое пространство занято/всего",
+		"en": "Disk space used/total",
+		"zh_TW": "已使用磁碟空間/總磁碟空間"
 	},
 	"port_status": {
-		"ru": "Внешний порт и статус: {}, {}",
-		"en": "External port and status: {}, {}",
-		"zh_TW": "外部連接埠和狀態: {}, {}"
+		"ru": "Внешний порт и статус",
+		"en": "External port and status",
+		"zh_TW": "外部連接埠和狀態"
 	},
 	"service_status_and_uptime": {
 		"ru": "Статус службы и время работы: {}, {}",
@@ -70,9 +70,9 @@
 		"zh_TW": "服務狀態及開放時間: {}, {}"
 	},
 	"git_hash": {
-		"ru": "Версия пакета: {} ({})",
-		"en": "Package version: {} ({})",
-		"zh_TW": "軟體包版本: {} ({})"
+		"ru": "Версия пакета",
+		"en": "Package version",
+		"zh_TW": "軟體包版本"
 	},
 	"low_provider_balance": {
 		"ru": "Баланс кошелька провайдера низкий. Пополните кошелек провайдера",
@@ -85,34 +85,34 @@
 		"zh_TW": "提供者的錢包已經註冊"
 	},
 	"provider_pubkey": {
-		"ru": "Публичный ключ провайдера: {}",
-		"en": "Provider's public key: {}",
-		"zh_TW": "提供者的公鑰: {}"
+		"ru": "Публичный ключ провайдера",
+		"en": "Provider's public key",
+		"zh_TW": "提供者的公鑰"
 	},
 	"provider_wallet": {
-		"ru": "Адрес кошелька провайдера: {}",
-		"en": "Provider wallet address: {}",
-		"zh_TW": "提供者錢包地址: {}"
+		"ru": "Адрес кошелька провайдера",
+		"en": "Provider wallet address",
+		"zh_TW": "提供者錢包地址"
 	},
 	"provider_balance": {
-		"ru": "Баланс кошелька провайдера: {} TON",
-		"en": "Provider wallet balance: {} TON",
-		"zh_TW": "提供者錢包餘額: {} TON"
+		"ru": "Баланс кошелька провайдера",
+		"en": "Provider wallet balance",
+		"zh_TW": "提供者錢包餘額"
 	},
 	"storage_cost": {
-		"ru": "Цена за хранение 200 GB в месяц: {} TON",
-		"en": "Storage price for 200 GB per month: {} TON",
-		"zh_TW": "每月 200 GB 的儲存價格: {} TON"
+		"ru": "Цена за хранение 200 GB в месяц",
+		"en": "Storage price for 200 GB per month",
+		"zh_TW": "每月 200 GB 的儲存價格"
 	},
 	"provider_profit": {
-		"ru": "Прибыль провайдера в месяц настоящий/максимальный: {} /{} TON",
-		"en": "Provider's profit per month real/maximum: {} /{} TON",
-		"zh_TW": "提供者每月實際/最大利潤: {} /{} TON"
+		"ru": "Прибыль провайдера в месяц настоящий/максимальный",
+		"en": "Provider's profit per month real/maximum",
+		"zh_TW": "提供者每月實際/最大利潤"
 	},
 	"provider_space": {
-		"ru": "Пространство провайдера занято/всего: {} /{} GB",
-		"en": "Provider space used/total: {} /{} GB",
-		"zh_TW": "已使用提供者空間/總計: {} /{} GB"
+		"ru": "Пространство провайдера занято/всего",
+		"en": "Provider space used/total",
+		"zh_TW": "已使用提供者空間/總計"
 	},
 	"last_banchmark_time": {
 		"ru": "Последнее время бенчмарка: {}",
@@ -135,24 +135,24 @@
 		"zh_TW": "資料庫處理速度: {} ops/s"
 	},
 	"cpu_load": {
-		"en": "CPU load average[{0}]: {1}, {2}, {3}",
-		"ru": "Средняя нагрузка процессора[{0}]: {1}, {2}, {3}",
-		"zh_TW": "平均 CPU 負載[{0}]: {1}, {2}, {3}"
+		"en": "CPU load average",
+		"ru": "Средняя нагрузка процессора",
+		"zh_TW": "平均 CPU 負載"
 	},
 	"memory_load": {
-		"en": "Memory load: {0}, {1}",
-		"ru": "Загрузка памяти: {0}, {1}",
-		"zh_TW": "記憶體負載: {0}, {1}"
+		"en": "Memory load",
+		"ru": "Загрузка памяти",
+		"zh_TW": "記憶體負載"
 	},
 	"net_load": {
-		"ru": "Средняя нагрузка сети (Mbit/s): {0}, {1}, {2}",
-		"en": "Network load average (Mbit/s): {0}, {1}, {2}",
-		"zh_TW": "網絡平均負載 (Mbit/s): {0}, {1}, {2}"
+		"ru": "Средняя нагрузка сети (Mbit/s)",
+		"en": "Network load average (Mbit/s)",
+		"zh_TW": "網絡平均負載 (Mbit/s)"
 	},
 	"disks_load": {
-		"ru": "Средняя нагрузка дисков (MB/s): {0}",
-		"en": "Disks load average (MB/s): {0}",
-		"zh_TW": "磁碟平均負載 (MB/s): {0}"
+		"ru": "Средняя нагрузка дисков (MB/s)",
+		"en": "Disks load average (MB/s)",
+		"zh_TW": "磁碟平均負載 (MB/s)"
 	},
 	"benchmark_cmd": {
 		"ru": "Запустить тест производительности системы",

@@ -6,9 +6,11 @@ import shutil
 import base64
 import requests
 from random import randint
+
+from rich.text import Text
+
 from mypylib import (
 	Dict,
-	bcolors,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -38,6 +40,7 @@ from utils import (
 	get_check_update_status,
 	run_subprocess,
 	validate_github_repo,
+	print_panel,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -174,67 +177,72 @@ class Module():
 
 	@publick
 	def status(self, args):
-		color_print("{cyan}===[ Local storage status ]==={endc}")
-		self.print_module_name()
-		self.print_bags_num()
-		self.print_disk_space()
-		self.print_port_status()
-		self.print_service_status()
-		self.print_git_hash()
+		body = [
+			self.print_bags_num(),
+			self.print_disk_space(),
+			self.print_port_status(),
+			self.print_git_hash(),
+		]
+		header = self.print_module_name()
+		footer = self.print_service_status()
+		print_panel(body, header, footer)
 	#end define
 
 	def print_module_name(self):
-		module_name = bcolors.yellow_text(self.name)
-		text = self.local.translate("module_name").format(module_name)
-		print(text)
+		return Text(self.name, style="cyan")
 	#end define
 
 	def print_bags_num(self):
 		api_data = self.get_api_data()
 		bags_num = self.get_bags_num(api_data)
 		used_provider_space = self.get_bags_size(api_data, decimal_size=3, round_size=2)
-		bags_num_text = bcolors.green_text(bags_num)
-		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
-		text = self.local.translate("bags_num").format(bags_num_text, used_provider_space_text)
-		print(text)
+		bags_num_text = Text(str(bags_num), style="green")
+		used_provider_space_text = Text(f"({used_provider_space} GB)", style="yellow") # TODO
+		field = self.local.translate("bags_num")
+		value = Text.assemble(bags_num_text, " ", used_provider_space_text)
+		return field, value
 	#end define
 
 	def print_disk_space(self):
 		ton_storage = self.local.db.ton_storage
 		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path, decimal_size=3, round_size=2)
-		used_disk_space_text = bcolors.green_text(used_disk_space) # TODO
-		total_disk_space_text = bcolors.yellow_text(total_disk_space)
-		text = self.local.translate("disk_space").format(used_disk_space_text, total_disk_space_text)
-		print(text)
+		used_disk_space_text = Text(str(used_disk_space), style="green") # TODO
+		total_disk_space_text = Text(f"{total_disk_space} GB", style="yellow")
+		field = self.local.translate("disk_space")
+		value = Text.assemble(used_disk_space_text, " / ", total_disk_space_text)
+		return field, value
 	#end define
 
 	def print_port_status(self):
 		storage_config = self.get_storage_config()
 		listen_ip, storage_port = storage_config.ListenAddr.split(':')
-		port_color = bcolors.yellow_text(storage_port, " udp")
+		port_color = Text(f"{storage_port} udp", style="yellow")
 		status = get_check_port_status(module=self)
-		text = self.local.translate("port_status").format(port_color, status)
-		color_print(text)
+		field = self.local.translate("port_status")
+		value = Text.assemble(port_color, ", ", status)
+		return field, value
 	#end define
 
 	def print_service_status(self):
 		service_status = get_service_status(self.service_name)
 		service_uptime = get_service_uptime(self.service_name)
 		service_status_color = get_service_status_color(service_status)
-		service_uptime_color = bcolors.green_text(time2human(service_uptime))
-		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
-		color_print(text)
+		service_uptime_color = Text(time2human(service_uptime), style="green")
+		return Text.assemble(service_status_color, ", ", service_uptime_color)
 	#end define
 
 	def print_git_hash(self):
 		git_hash, git_branch = self.get_my_git_hash_and_branch()
-		git_hash_text = bcolors.yellow_text(git_hash)
-		git_branch_text = bcolors.yellow_text(git_branch)
-		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		git_hash_text = Text(git_hash, style="yellow")
+		git_branch_text = Text(f"({git_branch})", style="yellow")
 		update_status = get_check_update_status(module=self)
+		field = self.local.translate("git_hash")
+		parts = [git_hash_text, " ", git_branch_text]
 		if update_status:
-			text += f", {update_status}"
-		print(text)
+			parts.append(", ")
+			parts.append(update_status)
+		value = Text.assemble(*parts)
+		return field, value
 	#end define
 
 	def get_api_data(self):

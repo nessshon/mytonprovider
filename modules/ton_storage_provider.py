@@ -8,9 +8,10 @@ import pytoniq
 from random import randint
 from asgiref.sync import async_to_sync
 
+from rich.text import Text
+
 from mypylib import (
 	Dict,
-	bcolors,
 	color_print,
 	add2systemd,
 	read_config_from_file,
@@ -40,6 +41,7 @@ from utils import (
 	get_check_update_status,
 	run_subprocess,
 	validate_github_repo,
+	print_panel,
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
@@ -247,92 +249,101 @@ class Module():
 	@publick
 	@async_to_sync
 	async def status(self, args):
-		color_print("{cyan}===[ Local provider status ]==={endc}")
-		self.print_module_name()
-		self.print_provider_pubkey()
-		await self.print_provider_wallet()
-		self.print_storage_cost()
-		self.print_profit()
-		self.print_provider_space()
-		self.print_port_status()
-		self.print_service_status()
-		self.print_git_hash()
+		wallet = await self.get_provider_wallet()
+		body = [
+			self.print_provider_pubkey(),
+			self.print_provider_wallet(wallet),
+			self.print_provider_balance(wallet),
+			self.print_storage_cost(),
+			self.print_profit(),
+			self.print_provider_space(),
+			self.print_port_status(),
+			self.print_git_hash(),
+		]
+		header = self.print_module_name()
+		footer = self.print_service_status()
+		print_panel(body, header, footer)
 	#end define
 
 	def print_module_name(self):
-		module_name = bcolors.yellow_text(self.name)
-		text = self.local.translate("module_name").format(module_name)
-		print(text)
+		return Text(self.name, style="cyan")
 	#end define
 
 	def print_provider_pubkey(self):
 		provider_pubkey = self.get_provider_pubkey()
-		provider_pubkey_text = bcolors.yellow_text(provider_pubkey)
-		text = self.local.translate("provider_pubkey").format(provider_pubkey_text)
-		print(text)
+		field = self.local.translate("provider_pubkey")
+		value = Text(provider_pubkey, style="yellow")
+		return field, value
 	#end define
 
-	async def print_provider_wallet(self):
-		wallet = await self.get_provider_wallet()
-		addr = bcolors.yellow_text(wallet.addr)
-		balance = bcolors.green_text(wallet.balance)
-		addr_text = self.local.translate("provider_wallet").format(addr)
-		balance_text = self.local.translate("provider_balance").format(balance)
-		print(addr_text)
-		print(balance_text)
+	def print_provider_wallet(self, wallet):
+		field = self.local.translate("provider_wallet")
+		value = Text(wallet.addr, style="yellow")
+		return field, value
+	#end define
+
+	def print_provider_balance(self, wallet):
+		field = self.local.translate("provider_balance")
+		value = Text(f"{wallet.balance} TON", style="green")
+		return field, value
 	#end define
 
 	def print_storage_cost(self):
 		storage_cost = self.get_storage_cost()
-		storage_cost_text = bcolors.yellow_text(storage_cost)
-		text = self.local.translate("storage_cost").format(storage_cost_text)
-		print(text)
+		field = self.local.translate("storage_cost")
+		value = Text(f"{storage_cost} TON", style="yellow")
+		return field, value
 	#end define
 
 	def print_profit(self):
 		real_profit, maximum_profit = self.get_profit()
-		real_profit_text = bcolors.green_text(real_profit)
-		max_profit_text = bcolors.yellow_text(maximum_profit)
-		text = self.local.translate("provider_profit").format(real_profit_text, max_profit_text)
-		print(text)
+		real_profit_text = Text(str(real_profit), style="green")
+		max_profit_text = Text(f"{maximum_profit} TON", style="yellow")
+		field = self.local.translate("provider_profit")
+		value = Text.assemble(real_profit_text, " / ", max_profit_text)
+		return field, value
 	#end define
 
 	def print_provider_space(self):
 		used_provider_space = self.get_used_provider_space(decimal_size=3, round_size=2)
 		total_provider_space = self.get_total_provider_space(decimal_size=3, round_size=2)
-		used_provider_space_text = bcolors.green_text(used_provider_space) # TODO
-		total_provider_space_text = bcolors.yellow_text(total_provider_space)
-		text = self.local.translate("provider_space").format(used_provider_space_text, total_provider_space_text)
-		print(text)
+		used_provider_space_text = Text(str(used_provider_space), style="green")
+		total_provider_space_text = Text(f"{total_provider_space} GB", style="yellow")
+		field = self.local.translate("provider_space")
+		value = Text.assemble(used_provider_space_text, " / ", total_provider_space_text)
+		return field, value
 	#end define
 
 	def print_port_status(self):
 		provider_config = self.get_provider_config()
 		listen_ip, provider_port = provider_config.ListenAddr.split(':')
-		port_color = bcolors.yellow_text(provider_port, " udp")
+		port_color = Text(f"{provider_port} udp", style="yellow")
 		status = get_check_port_status(module=self)
-		text = self.local.translate("port_status").format(port_color, status)
-		print(text)
+		field = self.local.translate("port_status")
+		value = Text.assemble(port_color, ", ", status)
+		return field, value
 	#end define
 
 	def print_service_status(self):
 		service_status = get_service_status(self.service_name)
 		service_uptime = get_service_uptime(self.service_name)
 		service_status_color = get_service_status_color(service_status)
-		service_uptime_color = bcolors.green_text(time2human(service_uptime))
-		text = self.local.translate("service_status_and_uptime").format(service_status_color, service_uptime_color)
-		print(text)
+		service_uptime_color = Text(time2human(service_uptime), style="green")
+		return Text.assemble(service_status_color, ", ", service_uptime_color)
 	#end define
 
 	def print_git_hash(self):
 		git_hash, git_branch = self.get_my_git_hash_and_branch()
-		git_hash_text = bcolors.yellow_text(git_hash)
-		git_branch_text = bcolors.yellow_text(git_branch)
-		text = self.local.translate("git_hash").format(git_hash_text, git_branch_text)
+		git_hash_text = Text(git_hash, style="yellow")
+		git_branch_text = Text(f"({git_branch})", style="yellow")
 		update_status = get_check_update_status(module=self)
+		field = self.local.translate("git_hash")
+		parts = [git_hash_text, " ", git_branch_text]
 		if update_status:
-			text += f", {update_status}"
-		print(text)
+			parts.append(", ")
+			parts.append(update_status)
+		value = Text.assemble(*parts)
+		return field, value
 	#end define
 
 	def get_used_provider_space(self, decimal_size, round_size):

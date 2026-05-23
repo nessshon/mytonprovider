@@ -2,5 +2,6 @@ inquirer==3.4.0
 pytoniq==0.1.43
 requests==2.32.3
 asgiref==3.8.1
+rich==15.0.0
 fastcrc
 speedtest-cli
