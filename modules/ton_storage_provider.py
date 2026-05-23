@@ -278,7 +278,7 @@ class Module():
 
 	def print_provider_wallet(self, wallet):
 		field = self.local.translate("provider_wallet")
-		value = Text(wallet.addr, style="yellow")
+		value = Text(wallet.addr, style="cyan")
 		return field, value
 	#end define
 

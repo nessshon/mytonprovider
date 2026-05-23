@@ -50,18 +50,18 @@
 		"zh_TW": "模組名稱: {}"
 	},
 	"bags_num": {
-		"ru": "Количество хранимых контейнеров, размер",
-		"en": "Number of stored containers, size",
+		"ru": "Кол-во хранимых bags",
+		"en": "Stored bags count",
 		"zh_TW": "儲存容器數量、尺寸"
 	},
 	"disk_space": {
-		"ru": "Дисковое пространство занято/всего",
-		"en": "Disk space used/total",
+		"ru": "Диск занято/всего",
+		"en": "Disk used/total",
 		"zh_TW": "已使用磁碟空間/總磁碟空間"
 	},
 	"port_status": {
-		"ru": "Внешний порт и статус",
-		"en": "External port and status",
+		"ru": "Порт и статус",
+		"en": "Port and status",
 		"zh_TW": "外部連接埠和狀態"
 	},
 	"service_status_and_uptime": {
@@ -85,32 +85,32 @@
 		"zh_TW": "提供者的錢包已經註冊"
 	},
 	"provider_pubkey": {
-		"ru": "Публичный ключ провайдера",
-		"en": "Provider's public key",
+		"ru": "Публичный ключ",
+		"en": "Public key",
 		"zh_TW": "提供者的公鑰"
 	},
 	"provider_wallet": {
-		"ru": "Адрес кошелька провайдера",
-		"en": "Provider wallet address",
+		"ru": "Адрес кошелька",
+		"en": "Wallet address",
 		"zh_TW": "提供者錢包地址"
 	},
 	"provider_balance": {
-		"ru": "Баланс кошелька провайдера",
-		"en": "Provider wallet balance",
+		"ru": "Баланс кошелька",
+		"en": "Wallet balance",
 		"zh_TW": "提供者錢包餘額"
 	},
 	"storage_cost": {
-		"ru": "Цена за хранение 200 GB в месяц",
-		"en": "Storage price for 200 GB per month",
+		"ru": "Цена хранения (200 GB/мес)",
+		"en": "Storage price (200 GB/mo)",
 		"zh_TW": "每月 200 GB 的儲存價格"
 	},
 	"provider_profit": {
-		"ru": "Прибыль провайдера в месяц настоящий/максимальный",
-		"en": "Provider's profit per month real/maximum",
+		"ru": "Прибыль в месяц факт/макс",
+		"en": "Monthly profit real/max",
 		"zh_TW": "提供者每月實際/最大利潤"
 	},
 	"provider_space": {
-		"ru": "Пространство провайдера занято/всего",
+		"ru": "Место провайдера занято/всего",
 		"en": "Provider space used/total",
 		"zh_TW": "已使用提供者空間/總計"
 	},
@@ -135,8 +135,8 @@
 		"zh_TW": "資料庫處理速度: {} ops/s"
 	},
 	"cpu_load": {
-		"en": "CPU load average",
-		"ru": "Средняя нагрузка процессора",
+		"en": "CPU load",
+		"ru": "Нагрузка процессора",
 		"zh_TW": "平均 CPU 負載"
 	},
 	"memory_load": {
@@ -145,13 +145,13 @@
 		"zh_TW": "記憶體負載"
 	},
 	"net_load": {
-		"ru": "Средняя нагрузка сети (Mbit/s)",
-		"en": "Network load average (Mbit/s)",
+		"ru": "Нагрузка сети (Mbit/s)",
+		"en": "Network load (Mbit/s)",
 		"zh_TW": "網絡平均負載 (Mbit/s)"
 	},
 	"disks_load": {
-		"ru": "Средняя нагрузка дисков (MB/s)",
-		"en": "Disks load average (MB/s)",
+		"ru": "Нагрузка дисков (MB/s)",
+		"en": "Disks load (MB/s)",
 		"zh_TW": "磁碟平均負載 (MB/s)"
 	},
 	"benchmark_cmd": {
