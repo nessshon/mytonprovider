@@ -371,7 +371,7 @@ def validate_github_repo(author, repo, branch = "HEAD") -> None:
 def print_panel(body, header, footer) -> None:
 	table = Table.grid(padding=(0, 2), expand=True)
 	table.add_column(no_wrap=True)
-	table.add_column(ratio=1, overflow="fold")
+	table.add_column(ratio=1, overflow="ellipsis")
 
 	for row in body:
 		table.add_row(*row)
