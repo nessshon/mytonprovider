@@ -239,11 +239,13 @@ class Module():
 		provider_config = self.get_provider_config()
 		key_b64 = provider_config.ProviderKey
 		privkey, pubkey = split_provider_key(key_b64)
+		privkey_hex = privkey.hex()
 		privkey_b64 = base64.b64encode(privkey).decode("utf-8")
 		wallet = await self.get_provider_wallet()
 
 		print("Address:", wallet.addr)
-		print("Private key:", privkey_b64)
+		print("Private key (hex):", privkey_hex)
+		print("Private key (b64):", privkey_b64)
 	#end define
 
 	@publick
