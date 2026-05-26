@@ -193,10 +193,17 @@ class Module():
 	def get_disks_list(self):
 		data = list()
 		buff = os.listdir("/sys/block/")
-		for item in buff:
-			if "loop" in item:
+		virtual_disks = ["loop", "ram", "zram", "md", "dm-", "fd", "sr"]
+
+		for disk_name in buff:
+			is_virtual = False
+			for name in virtual_disks:
+				if name in disk_name:
+					is_virtual = True
+					break
+			if is_virtual:
 				continue
-			data.append(item)
+			data.append(disk_name)
 		#end for
 		data.sort()
 		return data
