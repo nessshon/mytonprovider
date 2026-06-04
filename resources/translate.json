@@ -44,11 +44,6 @@
 		"en": "Send message to provider list",
 		"zh_TW": "發送訊息到提供者列表"
 	},
-	"module_name": {
-		"ru": "Название модуля: {}",
-		"en": "Module name: {}",
-		"zh_TW": "模組名稱: {}"
-	},
 	"bags_num": {
 		"ru": "Кол-во хранимых bags",
 		"en": "Stored bags count",
@@ -63,11 +58,6 @@
 		"ru": "Порт и статус",
 		"en": "Port and status",
 		"zh_TW": "外部連接埠和狀態"
-	},
-	"service_status_and_uptime": {
-		"ru": "Статус службы и время работы: {}, {}",
-		"en": "Service status and working time: {}, {}",
-		"zh_TW": "服務狀態及開放時間: {}, {}"
 	},
 	"git_hash": {
 		"ru": "Версия пакета",
