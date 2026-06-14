@@ -29,6 +29,7 @@ from utils import (
 	get_color_int,
 	validate_github_repo,
 	print_panel,
+	run_subprocess,
 )
 from server_info import (
 	get_ram_info,
@@ -52,7 +53,7 @@ class Module():
 		self.global_config_name = "global.config.json"
 		self.global_config_dir = "/var/ton"
 		self.global_config_path = f"{self.global_config_dir}/{self.global_config_name}"
-		self.global_config_url = f"https://igroman787.github.io/{self.global_config_name}"
+		self.global_config_url = f"https://ton-blockchain.github.io/{self.global_config_name}"
 	#end define
 
 	@publick
@@ -255,4 +256,14 @@ class Module():
 		args = ["chmod", "+x", file_path]
 		subprocess.run(args)
 	#end define
+
+	def download_global_config(self):
+		self.local.add_log("start download_global_config function", "debug")
+		try:
+			os.makedirs(self.global_config_dir, exist_ok=True)
+			tmp_global_config_path = f"{self.global_config_path}.tmp"
+			run_subprocess(["wget", self.global_config_url, "-O", tmp_global_config_path], timeout=15)
+			os.replace(tmp_global_config_path, self.global_config_path)
+		except Exception as e:
+			self.local.add_log(f"download_global_config error: {e}", "error")
 #end class
