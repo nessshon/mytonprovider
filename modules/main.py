@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 # -*- coding: utf_8 -*-
 
+import json
 import os
-import psutil
+import time
 import subprocess
 
+import psutil
 from rich.text import Text
 
 from mypylib import (
@@ -211,10 +213,11 @@ class Module():
 
 		# Подготовить папки
 		os.makedirs(mconfig_dir, exist_ok=True)
-		os.makedirs(self.global_config_dir, exist_ok=True)
 
 		# Скачать глобал конфиг
-		subprocess.run(["wget", self.global_config_url, "-O", self.global_config_path])
+		self.download_global_config()
+		if not os.path.exists(self.global_config_path):
+			raise Exception(f"failed to download global config from {self.global_config_url}")
 
 		# Создать конфиг
 		mconfig = Dict()
@@ -257,13 +260,30 @@ class Module():
 		subprocess.run(args)
 	#end define
 
+	def validate_global_config(self, path):
+		if os.path.getsize(path) == 0:
+			raise Exception("config is empty")
+		with open(path, 'rt') as file:
+			json.load(file)
+	#end define
+
 	def download_global_config(self):
 		self.local.add_log("start download_global_config function", "debug")
-		try:
-			os.makedirs(self.global_config_dir, exist_ok=True)
-			tmp_global_config_path = f"{self.global_config_path}.tmp"
-			run_subprocess(["wget", self.global_config_url, "-O", tmp_global_config_path], timeout=15)
-			os.replace(tmp_global_config_path, self.global_config_path)
-		except Exception as e:
-			self.local.add_log(f"download_global_config error: {e}", "error")
+		tmp_global_config_path = f"{self.global_config_path}.tmp"
+		download_attempts = 5
+		for attempt in range(1, download_attempts + 1):
+			try:
+				os.makedirs(self.global_config_dir, exist_ok=True)
+				run_subprocess(["wget", self.global_config_url, "-O", tmp_global_config_path], timeout=15)
+				self.validate_global_config(tmp_global_config_path)
+				os.replace(tmp_global_config_path, self.global_config_path)
+				return
+			except Exception as e:
+				self.local.add_log(f"download_global_config error (attempt {attempt}/{download_attempts}): {e}", "error")
+				time.sleep(5)
+			finally:
+				if os.path.exists(tmp_global_config_path):
+					os.remove(tmp_global_config_path)
+		self.local.add_log(f"download_global_config error: download failed after {download_attempts} attempts", "error")
+	#end define
 #end class
