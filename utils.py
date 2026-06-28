@@ -13,6 +13,12 @@ import sys
 
 from urllib.parse import urlparse
 
+from rich.console import Group, Console
+from rich.padding import Padding
+from rich.panel import Panel
+from rich.table import Table
+from rich.text import Text
+
 from mypylib import (
 	Dict,
 	bcolors,
@@ -101,25 +107,21 @@ def reduct(text):
 
 def get_color_int(data, borderline_value, logic, ending=None):
 	if data is None:
-		result = "n/a"
-	elif logic == "more":
-		if data >= borderline_value:
-			result = bcolors.green_text(data, ending)
-		else:
-			result = bcolors.red_text(data, ending)
-	elif logic == "less":
-		if data <= borderline_value:
-			result = bcolors.green_text(data, ending)
-		else:
-			result = bcolors.red_text(data, ending)
-	return result
+		return Text("n/a")
+	ending = ending or ""
+	if logic == "more":
+		ok = data >= borderline_value
+	else:
+		ok = data <= borderline_value
+	style = "green" if ok else "red"
+	return Text(f"{data}{ending}", style=style)
 #end define
 
 def get_service_status_color(input):
 	if input == True:
-		result = bcolors.green_text("working")
+		result = Text("working", style="green")
 	else:
-		result = bcolors.red_text("not working")
+		result = Text("not working", style="red")
 	return result
 #end define
 
@@ -147,9 +149,9 @@ def get_check_port_status(module):
 	if result is None:
 		status = "Clarification"
 	elif result is True:
-		status = bcolors.green_text("Open")
+		status = Text("Open", style="green")
 	elif result is False:
-		status = bcolors.red_text("Close")
+		status = Text("Close", style="red")
 	else:
 		status = "Unknown"
 	return status
@@ -160,7 +162,7 @@ def get_check_update_status(module):
 	if result is None:
 		status = "Clarification"
 	elif result is True:
-		status = bcolors.magenta_text("Update available")
+		status = Text("Update available", "magenta")
 	elif result is False:
 		status = None
 	else:
@@ -365,3 +367,21 @@ def validate_github_repo(author, repo, branch = "HEAD") -> None:
 			) from e
 		# end try
 #end define
+
+def print_panel(body, header, footer) -> None:
+	table = Table.grid(padding=(0, 2), expand=True)
+	table.add_column(no_wrap=True)
+	table.add_column(ratio=1, overflow="ellipsis")
+
+	for row in body:
+		table.add_row(*row)
+	group = Group(Text(""), Padding(table, (0, 2)), Text(""))
+	panel = Panel(
+		group,
+		title=header,
+		subtitle=footer,
+		title_align="left",
+		subtitle_align="right",
+	)
+	console = Console()
+	console.print(panel)

@@ -45,6 +45,9 @@ def init():
 #end define
 
 def init_daemon():
+	main_module = get_module_by_name(local, "main")
+	run_module_method_if_exist(local, main_module, "download_global_config")
+
 	#threading.current_thread().name = "daemon"
 	for module in get_modules(local):
 		# Основной daemon
