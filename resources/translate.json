@@ -74,6 +74,21 @@
 		"en": "Provider wallet already registered",
 		"zh_TW": "提供者的錢包已經註冊"
 	},
+	"not_enough_balance": {
+		"ru": "Недостаточно баланса: {} TON, требуется {} TON",
+		"en": "Not enough balance: {} TON, need {} TON",
+		"zh_TW": "餘額不足: {} TON, 需要 {} TON"
+	},
+	"low_balance_warning": {
+		"ru": "Баланс опустится ниже рекомендуемых 0.2 TON",
+		"en": "Balance will drop below the recommended 0.2 TON",
+		"zh_TW": "餘額將低於建議的 0.2 TON"
+	},
+	"confirm_transfer": {
+		"ru": "Отправить {} TON на {}?",
+		"en": "Send {} TON to {}?",
+		"zh_TW": "發送 {} TON 至 {}?"
+	},
 	"provider_pubkey": {
 		"ru": "Публичный ключ",
 		"en": "Public key",
@@ -158,6 +173,11 @@
 		"ru": "Экспортировать приватный ключ кошелька",
 		"en": "Export wallet private key",
 		"zh_TW": "匯出錢包私鑰"
+	},
+	"wallet_transfer_cmd": {
+		"ru": "Отправить TON с кошелька провайдера",
+		"en": "Send TON from the provider wallet",
+		"zh_TW": "從提供者錢包發送 TON"
 	},
 	"get_cmd": {
 		"ru": "Получить настройки по названию",
