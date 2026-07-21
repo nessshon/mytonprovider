@@ -4,7 +4,14 @@
 import asyncio
 import json
 import time
-from ton_core import NetworkGlobalID, normalize_hash
+from ton_core import (
+	Address,
+	AddressError,
+	DNSCategory,
+	DNSRecordWallet,
+	NetworkGlobalID,
+	normalize_hash,
+)
 from tonutils.clients import LiteBalancer
 from tonutils.types import DEFAULT_ADNL_RETRY_POLICY
 from utils import get_module_by_name
@@ -40,4 +47,15 @@ async def wait_message(client, wallet, msg_hash, end_lt, end_hash, timeout=15):
 					return True
 		await asyncio.sleep(1)
 	raise Exception("wait_msg error: timeout")
+#end define
+
+async def resolve_address(client, raw):
+	try:
+		return Address(raw)
+	except AddressError:
+		pass
+	record = await client.dnsresolve(raw, DNSCategory.WALLET)
+	if not isinstance(record, DNSRecordWallet) or record.value is None:
+		raise Exception(f"Failed to resolve address: {raw}")
+	return record.value
 #end define

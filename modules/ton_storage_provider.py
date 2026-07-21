@@ -4,6 +4,7 @@
 import os
 import base64
 
+import inquirer
 from random import randint
 from asgiref.sync import async_to_sync
 
@@ -29,6 +30,7 @@ from mypylib import (
 from adnl_over_tcp import (
 	get_lite_balancer,
 	wait_message,
+	resolve_address,
 )
 from utils import (
 	get_module_by_name,
@@ -99,6 +101,12 @@ class Module():
 		export_wallet.func = self.export_wallet
 		export_wallet.desc = self.local.translate("export_wallet_cmd")
 		commands.append(export_wallet)
+
+		wallet_transfer = Dict()
+		wallet_transfer.cmd = "wallet_transfer"
+		wallet_transfer.func = self.wallet_transfer
+		wallet_transfer.desc = self.local.translate("wallet_transfer_cmd")
+		commands.append(wallet_transfer)
 
 		return commands
 	#end define
@@ -216,6 +224,43 @@ class Module():
 		print("Address:", wallet.address.to_str(is_bounceable=False))
 		print("Private key (hex):", wallet.private_key.as_hex)
 		print("Private key (b64):", wallet.private_key.as_b64)
+	#end define
+
+	@publick
+	@async_to_sync
+	async def wallet_transfer(self, args):
+		try:
+			destination = args[0]
+			amount = to_nano(float(args[1]))
+			body = " ".join(args[2:]) if len(args) > 2 else None
+		except:
+			color_print("{red}Bad args. Usage:{endc} wallet_transfer <address/domain> <amount> [<comment>]")
+			return
+		#end try
+
+		async with get_lite_balancer(self.local) as client:
+			destination = await resolve_address(client, destination)
+			wallet = await self.get_provider_wallet(client)
+			need_amount = amount + to_nano(0.005)  # gas fee
+			if wallet.balance < need_amount:
+				text = self.local.translate("not_enough_balance").format(to_amount(wallet.balance), to_amount(need_amount))
+				raise Exception(text)
+			if wallet.balance - need_amount < to_nano(0.2):
+				text = self.local.translate("low_balance_warning")
+				color_print(f"{{yellow}}{text}{{endc}}")
+			#end if
+
+			question = self.local.translate("confirm_transfer").format(to_amount(amount), destination.to_str())
+			if not inquirer.confirm(question, default=False):
+				color_print("wallet_transfer - {yellow}Canceled{endc}")
+				return
+			#end if
+
+			end_lt = wallet.last_transaction_lt
+			end_hash = wallet.last_transaction_hash
+			msg = await wallet.transfer(destination, amount, body)
+			await wait_message(client, wallet, msg.normalized_hash, end_lt, end_hash)
+		color_print("wallet_transfer - {green}OK{endc}")
 	#end define
 
 	@publick
