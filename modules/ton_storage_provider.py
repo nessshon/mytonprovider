@@ -4,11 +4,12 @@
 import os
 import base64
 
-import pytoniq
 from random import randint
 from asgiref.sync import async_to_sync
 
 from rich.text import Text
+from ton_core import PrivateKey, to_nano, to_amount
+from tonutils.contracts import WalletV3R2
 
 from mypylib import (
 	Dict,
@@ -27,9 +28,7 @@ from mypylib import (
 )
 from adnl_over_tcp import (
 	get_lite_balancer,
-	wallet_transfer_return_hash,
 	wait_message,
-	get_account,
 )
 from utils import (
 	get_module_by_name,
@@ -45,10 +44,6 @@ from utils import (
 )
 from decorators import publick
 from adnl_over_udp_checker import check_adnl_connection
-from addr_and_key import (
-	get_pubkey_from_privkey,
-	split_provider_key,
-)
 
 
 class Module():
@@ -141,52 +136,35 @@ class Module():
 			color_print(f"{{green}}{text}{{endc}}")
 			return
 		#end define
-
-		# Проверить баланс провайдера
-		wallet = await self.get_provider_wallet()
-		if wallet.balance < 0.03:
-			text = self.local.translate("low_provider_balance")
-			color_print(f"{{red}}{text}{{endc}}")
-			return
-		#end if
-
-		# Зарегистрироваться в списке отправив транзакцию
-		destination = "0:7777777777777777777777777777777777777777777777777777777777777777"
-		provider_pubkey = self.get_provider_pubkey()
-		comment = f"tsp-{provider_pubkey.lower()}"
-		await self.do_register(wallet, destination, comment)
+		async with get_lite_balancer(self.local) as client:
+			wallet = await self.get_provider_wallet(client)
+			if wallet.balance < to_nano(0.03):
+				text = self.local.translate("low_provider_balance")
+				color_print(f"{{red}}{text}{{endc}}")
+				return
+			#end if
+			await self.do_register(client, wallet)
 		color_print("{green}provider regiser - OK{endc}")
 	#end define
 
-	async def do_register(self, wallet, destination, comment):
+	async def do_register(self, client, wallet):
 		self.local.add_log("start do_register function", "debug")
-		account, shard_account = await get_account(self.local, wallet.addr)
-		end_lt = shard_account.last_trans_lt
-		end_hash = shard_account.last_trans_hash.hex()
-
-		msg_hash = await wallet_transfer_return_hash(
-			local=self.local,
-			wallet=wallet,
-			destination=destination,
-			amount=0.01,
-			body=comment,
+		provider_pubkey = self.get_provider_pubkey()
+		end_hash = wallet.last_transaction_hash
+		end_lt = wallet.last_transaction_lt
+		msg = await wallet.transfer(
+			destination="0:7777777777777777777777777777777777777777777777777777777777777777",
+			body=f"tsp-{provider_pubkey.lower()}",
+			amount=to_nano(0.01),
 		)
-		await wait_message(self.local, wallet.addr, msg_hash, end_lt, end_hash)
+		await wait_message(client, wallet, msg.normalized_hash, end_lt, end_hash)
 		self.local.db.ton_storage.provider.is_already_registered = True
 	#end define
 
-	async def get_provider_wallet(self):
-		provider_config = self.get_provider_config()
-		client = get_lite_balancer(self.local)
-		await client.start_up()
-		private_key = base64.b64decode(provider_config.ProviderKey)
-		wallet = Dict()
-		wallet.obj = await pytoniq.WalletV3R2.from_private_key(client, private_key)
-		wallet.addr = wallet.obj.address.to_str(is_bounceable=False)
-		wallet.account = wallet.obj.account
-		wallet.status = wallet.obj.account.state.type_
-		wallet.balance = wallet.obj.balance / 10**9
-		await client.close_all()
+	async def get_provider_wallet(self, client):
+		private_key = PrivateKey(self.get_provider_config().ProviderKey)
+		wallet = WalletV3R2.from_private_key(client, private_key)
+		await wallet.refresh()
 		return wallet
 	#end define
 
@@ -224,34 +202,27 @@ class Module():
 	#end define
 
 	def do_import_wallet(self, privkey):
-		privkey_bytes = base64.b64decode(privkey)
-		pubkey_bytes = get_pubkey_from_privkey(privkey_bytes)
-		provider_key_bytes = privkey_bytes + pubkey_bytes
-
+		private_key = PrivateKey(privkey)
 		provider_config = self.get_provider_config()
-		provider_config.ProviderKey = base64.b64encode(provider_key_bytes).decode("utf-8")
+		provider_config.ProviderKey = private_key.keypair.as_b64
 		self.set_provider_config(provider_config)
 	#end define
 
 	@publick
 	@async_to_sync
 	async def export_wallet(self, args):
-		provider_config = self.get_provider_config()
-		key_b64 = provider_config.ProviderKey
-		privkey, pubkey = split_provider_key(key_b64)
-		privkey_hex = privkey.hex()
-		privkey_b64 = base64.b64encode(privkey).decode("utf-8")
-		wallet = await self.get_provider_wallet()
-
-		print("Address:", wallet.addr)
-		print("Private key (hex):", privkey_hex)
-		print("Private key (b64):", privkey_b64)
+		async with get_lite_balancer(self.local) as client:
+			wallet = await self.get_provider_wallet(client)
+		print("Address:", wallet.address.to_str(is_bounceable=False))
+		print("Private key (hex):", wallet.private_key.as_hex)
+		print("Private key (b64):", wallet.private_key.as_b64)
 	#end define
 
 	@publick
 	@async_to_sync
 	async def status(self, args):
-		wallet = await self.get_provider_wallet()
+		async with get_lite_balancer(self.local) as client:
+			wallet = await self.get_provider_wallet(client)
 		body = [
 			self.print_provider_pubkey(),
 			self.print_provider_wallet(wallet),
@@ -280,13 +251,13 @@ class Module():
 
 	def print_provider_wallet(self, wallet):
 		field = self.local.translate("provider_wallet")
-		value = Text(wallet.addr, style="cyan")
+		value = Text(wallet.address.to_str(is_bounceable=False), style="cyan")
 		return field, value
 	#end define
 
 	def print_provider_balance(self, wallet):
 		field = self.local.translate("provider_balance")
-		value = Text(f"{wallet.balance} TON", style="green")
+		value = Text(f"{to_amount(wallet.balance)} TON", style="green")
 		return field, value
 	#end define
 
