@@ -3,10 +3,16 @@
 
 import sys
 import json
+import signal
+import asyncio
 from getpass import getuser
 from itertools import islice
+from contextlib import suppress
 
-from modules.ls_monitor import LSMonitor
+from ton_core import NetworkGlobalID, load_global_config
+from tonutils.tools.status_monitor import DhtMonitor, LiteServerMonitor
+from tonutils.types import DEFAULT_ADNL_RETRY_POLICY
+
 from mypyconsole.mypyconsole import MyPyConsole
 from mypylib import (
 	MyPyClass,
@@ -81,6 +87,7 @@ def init_console():
 	console.add_item("set", set_settings, local.translate("set_cmd"))
 	console.add_item("modules_list", modules_list, local.translate("modules_list_cmd"))
 	console.add_item("ls_status", ls_status, local.translate("ls_status_cmd"))
+	console.add_item("dht_status", dht_status, local.translate("dht_status_cmd"))
 	console.run()
 #end define
 
@@ -186,8 +193,31 @@ def modules_list(args):
 #end define
 
 def ls_status(args):
-	ls_monitor = LSMonitor(local)
-	ls_monitor.run_ls_status(args)
+	_run_status_monitor(LiteServerMonitor, network=NetworkGlobalID.MAINNET, retry_policy=DEFAULT_ADNL_RETRY_POLICY)
+#end define
+
+def dht_status(args):
+	_run_status_monitor(DhtMonitor)
+#end define
+
+def _run_status_monitor(monitor_class, **kwargs):
+	main_module = get_module_by_name(local, "main")
+	config = load_global_config(main_module.global_config_path)
+	monitor = monitor_class.from_config(config=config, **kwargs)
+
+	async def _run():
+		try:
+			await monitor.run()
+		finally:
+			await monitor.stop()
+	#end define
+
+	old_handler = signal.signal(signal.SIGINT, signal.default_int_handler)
+	try:
+		with suppress(KeyboardInterrupt):
+			asyncio.run(_run())
+	finally:
+		signal.signal(signal.SIGINT, old_handler)
 #end define
 
 
