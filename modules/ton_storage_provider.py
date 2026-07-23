@@ -250,7 +250,7 @@ class Module():
 				color_print(f"{{yellow}}{text}{{endc}}")
 			#end if
 
-			question = self.local.translate("confirm_transfer").format(to_amount(amount), destination.to_str())
+			question = self.local.translate("confirm_transfer").format(to_amount(amount), destination.to_str(is_bounceable=False))
 			if not inquirer.confirm(question, default=False):
 				color_print("wallet_transfer - {yellow}Canceled{endc}")
 				return
