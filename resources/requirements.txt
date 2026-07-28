@@ -3,5 +3,5 @@ fastcrc
 inquirer==3.4.0
 requests==2.32.3
 rich==15.0.0
-speedkit==0.1.0
+speedkit==0.2.0
 tonutils==2.1.1
