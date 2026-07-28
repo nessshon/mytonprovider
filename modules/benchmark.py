@@ -18,7 +18,7 @@ from mypylib import (
 )
 from speedkit import Speedkit
 from decorators import publick
-from utils import run_subprocess
+from utils import run_subprocess, get_module_by_name
 
 
 class Module():
@@ -70,6 +70,9 @@ class Module():
 		disk = self.disk_benchmark()
 		network = self.network_benchmark()
 		self.save_benchmark(disk, network)
+		telemetry_module = get_module_by_name(self.local, "telemetry")
+		if telemetry_module.is_enabled() == True:
+			self.local.try_function(telemetry_module.send_benchmark, args=[telemetry_module.collect_benchmark_data()])
 		return disk, network
 	#end define
 
