@@ -10,9 +10,9 @@
 		"zh_TW": "輸入提供者檔案的儲存位置"
 	},
 	"question_storage_cost": {
-		"ru": "Цена за хранение 200 ГБ в месяц",
-		"en": "Storage price per 200 GB per month",
-		"zh_TW": "每月每 200 GB 的儲存價格"
+		"ru": "Цена за хранение 200 ГБ в месяц (GRAM)",
+		"en": "Storage price per 200 GB per month (GRAM)",
+		"zh_TW": "每月每 200 GB 的儲存價格 (GRAM)"
 	},
 	"question_space_to_provide": {
 		"ru": "Максимальный выделенный размер хранилища (всего: {}, свободно {})",
@@ -20,9 +20,9 @@
 		"zh_TW": "儲存最大分配大小 (磁碟空間: {}, 可用空間: {})"
 	},
 	"question_traffic_cost": {
-		"ru": "Сколько будет стоить 10 GB трафика сети",
-		"en": "How much will 10 GB of network traffic cost",
-		"zh_TW": "10GB的網路流量要花多少錢"
+		"ru": "Сколько будет стоить 10 GB трафика сети (GRAM)",
+		"en": "How much will 10 GB of network traffic cost (GRAM)",
+		"zh_TW": "10GB的網路流量要花多少錢 (GRAM)"
 	},
 	"status_cmd": {
 		"ru": "Показать статусы модулей",
@@ -75,19 +75,19 @@
 		"zh_TW": "提供者的錢包已經註冊"
 	},
 	"not_enough_balance": {
-		"ru": "Недостаточно баланса: {} TON, требуется {} TON",
-		"en": "Not enough balance: {} TON, need {} TON",
-		"zh_TW": "餘額不足: {} TON, 需要 {} TON"
+		"ru": "Недостаточно баланса: {} GRAM, требуется {} GRAM",
+		"en": "Not enough balance: {} GRAM, need {} GRAM",
+		"zh_TW": "餘額不足: {} GRAM, 需要 {} GRAM"
 	},
 	"low_balance_warning": {
-		"ru": "Баланс опустится ниже рекомендуемых 0.2 TON",
-		"en": "Balance will drop below the recommended 0.2 TON",
-		"zh_TW": "餘額將低於建議的 0.2 TON"
+		"ru": "Баланс опустится ниже рекомендуемых 0.2 GRAM",
+		"en": "Balance will drop below the recommended 0.2 GRAM",
+		"zh_TW": "餘額將低於建議的 0.2 GRAM"
 	},
 	"confirm_transfer": {
-		"ru": "Отправить {} TON на {}?",
-		"en": "Send {} TON to {}?",
-		"zh_TW": "發送 {} TON 至 {}?"
+		"ru": "Отправить {} GRAM на {}?",
+		"en": "Send {} GRAM to {}?",
+		"zh_TW": "發送 {} GRAM 至 {}?"
 	},
 	"provider_pubkey": {
 		"ru": "Публичный ключ",
@@ -175,9 +175,9 @@
 		"zh_TW": "匯出錢包私鑰"
 	},
 	"wallet_transfer_cmd": {
-		"ru": "Отправить TON с кошелька провайдера",
-		"en": "Send TON from the provider wallet",
-		"zh_TW": "從提供者錢包發送 TON"
+		"ru": "Отправить GRAM с кошелька провайдера",
+		"en": "Send GRAM from the provider wallet",
+		"zh_TW": "從提供者錢包發送 GRAM"
 	},
 	"get_cmd": {
 		"ru": "Получить настройки по названию",

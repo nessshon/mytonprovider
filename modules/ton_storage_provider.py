@@ -302,21 +302,21 @@ class Module():
 
 	def print_provider_balance(self, wallet):
 		field = self.local.translate("provider_balance")
-		value = Text(f"{to_amount(wallet.balance)} TON", style="green")
+		value = Text(f"{to_amount(wallet.balance)} GRAM", style="green")
 		return field, value
 	#end define
 
 	def print_storage_cost(self):
 		storage_cost = self.get_storage_cost()
 		field = self.local.translate("storage_cost")
-		value = Text(f"{storage_cost} TON", style="yellow")
+		value = Text(f"{storage_cost} GRAM", style="yellow")
 		return field, value
 	#end define
 
 	def print_profit(self):
 		real_profit, maximum_profit = self.get_profit()
 		real_profit_text = Text(str(real_profit), style="green")
-		max_profit_text = Text(f"{maximum_profit} TON", style="yellow")
+		max_profit_text = Text(f"{maximum_profit} GRAM", style="yellow")
 		field = self.local.translate("provider_profit")
 		value = Text.assemble(real_profit_text, " / ", max_profit_text)
 		return field, value
