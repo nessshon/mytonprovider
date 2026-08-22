@@ -296,8 +296,7 @@ class Module():
 
 	def get_next_bag_to_verify(self):
 		api_data = self.get_api_data()
-		bags_list = self.get_bags_list(api_data)
-		if not bags_list:
+		if api_data.bags == None:
 			return None
 
 		bags_verify_state = self.get_bags_verify_state()
@@ -306,8 +305,13 @@ class Module():
 		oldest_bag_id = None
 		oldest_time = now
 
-		for bag_id in bags_list:
-			bag_id = bag_id.upper()
+		for bag in api_data.bags:
+			# Недокачанные BAG'и не проверяем: проверять нечего,
+			# а диск нужен самой загрузке
+			if bag.downloaded < bag.size:
+				continue
+
+			bag_id = bag.bag_id.upper()
 			last_verified = bags_verify_state.get(bag_id, 0)
 			# Проверяем, что с момента последней проверки прошло ≥ 30 дней
 			if now - last_verified >= 30 * 86400:
@@ -340,11 +344,32 @@ class Module():
 			self.local.add_log(f"BAG {bag_id} verification FAILED, redownload started", "warning")
 	#end define
 
+	def get_verify_timeout(self, bag_id):
+		bag_size = 0
+		api_data = self.get_api_data()
+		if api_data.bags != None:
+			for bag in api_data.bags:
+				if bag.bag_id.upper() == bag_id.upper():
+					bag_size = bag.size
+
+		read_speed = 50
+		try:
+			read_speed = float(self.local.db.benchmark.disk.qd1.read)
+		except:
+			pass
+
+		# Проверка читает весь BAG с диска и считает хеши,
+		# берём двойной запас на конкуренцию с раздачей
+		timeout = bag_size /1024 /1024 /read_speed *2 + 120
+		return int(min(timeout, 3600))
+	#end define
+
 	def do_verify_bag(self, bag_id):
 		api = self.local.db.ton_storage.api
 		api_url = f"http://{api.host}:{api.port}/api/v1/verify"
 		data = {"bag_id": bag_id}
-		resp = requests.post(api_url, json=data, timeout=60)
+		timeout = self.get_verify_timeout(bag_id)
+		resp = requests.post(api_url, json=data, timeout=timeout)
 		if resp.status_code != 200:
 			try:
 				resp_data = resp.json()
