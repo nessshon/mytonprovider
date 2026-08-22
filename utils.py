@@ -47,6 +47,53 @@ def convert_to_required_decimal(input_int, decimal_size, round_size):
 	return result
 #end define
 
+def get_byte_scale(input_int):
+	units = ["B", "KB", "MB", "GB"]
+	divisor = 1
+	index = 0
+	while input_int >= divisor *1024 and index < len(units) - 1:
+		divisor = divisor *1024
+		index += 1
+	return divisor, units[index]
+#end define
+
+def format_number(input_float, round_size=2):
+	result = round(input_float, round_size)
+	if result == int(result):
+		return str(int(result))
+	return str(result)
+#end define
+
+def format_bytes(input_int, round_size=2):
+	if input_int is None:
+		return "n/a"
+	divisor, unit = get_byte_scale(input_int)
+	result = format_number(input_int /divisor, round_size)
+	return f"{result} {unit}"
+#end define
+
+def format_bytes_pair(used_int, total_int, round_size=2):
+	if used_int is None or total_int is None:
+		return "n/a", "n/a"
+	divisor, unit = get_byte_scale(total_int)
+	used = format_number(used_int /divisor, round_size)
+	total = format_number(total_int /divisor, round_size)
+	return used, f"{total} {unit}"
+#end define
+
+def format_bytes_per_second(input_int, round_size=2):
+	if input_int is None:
+		return "n/a"
+	return f"{format_bytes(input_int, round_size)}/s"
+#end define
+
+def convert_mibits_to_mbits(input_float, round_size=2):
+	if input_float is None:
+		return None
+	result = input_float *1024**2 /10**6
+	return round(result, round_size)
+#end define
+
 def fix_git_config(git_path):
 	git_path = normpath(git_path)
 	if not isdir(git_path):

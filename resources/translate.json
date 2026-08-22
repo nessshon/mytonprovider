@@ -10,14 +10,14 @@
 		"zh_TW": "輸入提供者檔案的儲存位置"
 	},
 	"question_storage_cost": {
-		"ru": "Цена за хранение 200 ГБ в месяц (GRAM)",
+		"ru": "Цена за хранение 200 GB в месяц (GRAM)",
 		"en": "Storage price per 200 GB per month (GRAM)",
 		"zh_TW": "每月每 200 GB 的儲存價格 (GRAM)"
 	},
 	"question_space_to_provide": {
-		"ru": "Максимальный выделенный размер хранилища (всего: {}, свободно {})",
-		"en": "Storage maximum allocated size (disk space: {}, free {})",
-		"zh_TW": "儲存最大分配大小 (磁碟空間: {}, 可用空間: {})"
+		"ru": "Максимальный выделенный размер хранилища, GB (всего: {}, свободно {})",
+		"en": "Storage maximum allocated size in GB (disk space: {}, free {})",
+		"zh_TW": "儲存最大分配大小 (GB) (磁碟空間: {}, 可用空間: {})"
 	},
 	"question_traffic_cost": {
 		"ru": "Сколько будет стоить 10 GB трафика сети (GRAM)",

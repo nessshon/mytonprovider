@@ -35,6 +35,7 @@ from adnl_over_tcp import (
 from utils import (
 	get_module_by_name,
 	convert_to_required_decimal,
+	format_bytes_pair,
 	fix_git_config,
 	get_service_status_color,
 	get_check_port_status,
@@ -323,10 +324,11 @@ class Module():
 	#end define
 
 	def print_provider_space(self):
-		used_provider_space = self.get_used_provider_space(decimal_size=3, round_size=2)
-		total_provider_space = self.get_total_provider_space(decimal_size=3, round_size=2)
-		used_provider_space_text = Text(str(used_provider_space), style="green")
-		total_provider_space_text = Text(f"{total_provider_space} GB", style="yellow")
+		used_provider_space = self.get_used_provider_space(decimal_size=0, round_size=0)
+		total_provider_space = self.get_total_provider_space(decimal_size=0, round_size=0)
+		used_provider_space, total_provider_space = format_bytes_pair(used_provider_space, total_provider_space)
+		used_provider_space_text = Text(used_provider_space, style="green")
+		total_provider_space_text = Text(total_provider_space, style="yellow")
 		field = self.local.translate("provider_space")
 		value = Text.assemble(used_provider_space_text, " / ", total_provider_space_text)
 		return field, value

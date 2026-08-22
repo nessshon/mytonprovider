@@ -29,13 +29,10 @@ from utils import (
 	set_check_data,
 	get_check_update_status,
 	get_color_int,
+	format_bytes,
 	validate_github_repo,
 	print_panel,
 	run_subprocess,
-)
-from server_info import (
-	get_ram_info,
-	get_swap_info,
 )
 from decorators import publick
 
@@ -101,12 +98,12 @@ class Module():
 	#end define
 
 	def print_memory_load(self):
-		ram = get_ram_info()
-		swap = get_swap_info()
-		ram_usage_text = get_color_int(ram.usage, 100, logic="less", ending=" Gb")
-		ram_usage_percent_text = get_color_int(ram.usage_percent, 90, logic="less", ending="%")
-		swap_usage_text = get_color_int(swap.usage, 100, logic="less", ending=" Gb")
-		swap_usage_percent_text = get_color_int(swap.usage_percent, 90, logic="less", ending="%")
+		ram = psutil.virtual_memory()
+		swap = psutil.swap_memory()
+		ram_usage_text = Text(format_bytes(ram.used), style="green")
+		ram_usage_percent_text = get_color_int(ram.percent, 90, logic="less", ending="%")
+		swap_usage_text = Text(format_bytes(swap.used), style="green")
+		swap_usage_percent_text = get_color_int(swap.percent, 90, logic="less", ending="%")
 		field = self.local.translate("memory_load")
 		value = Text.assemble(
 			Text("ram:[", style="cyan"), ram_usage_text, ", ", ram_usage_percent_text, Text("]", style="cyan"),
@@ -119,7 +116,7 @@ class Module():
 	def print_network_load(self):
 		borderline_value = 300 # 300 Mbit/s
 		statistics_module = get_module_by_name(self.local, "statistics")
-		net_load1, net_load5, net_load15 = statistics_module.get_statistics_data("net_load_avg")
+		net_load1, net_load5, net_load15 = statistics_module.get_network_speed_mbits("net_load_avg")
 		net_load1_text = get_color_int(net_load1, borderline_value, logic="less")
 		net_load5_text = get_color_int(net_load5, borderline_value, logic="less")
 		net_load15_text = get_color_int(net_load15, borderline_value, logic="less")

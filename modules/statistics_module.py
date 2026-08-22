@@ -11,7 +11,7 @@ from mypylib import (
 	color_print
 )
 from decorators import publick
-from utils import convert_to_required_decimal
+from utils import convert_mibits_to_mbits, convert_to_required_decimal, format_bytes
 
 
 class Module():
@@ -62,8 +62,8 @@ class Module():
 			return data
 		#end if
 
-		data.recv = convert_to_required_decimal(zero_day.bytes_recv - comparing_day.bytes_recv, decimal_size=3, round_size=2)
-		data.sent = convert_to_required_decimal(zero_day.bytes_sent - comparing_day.bytes_sent, decimal_size=3, round_size=2)
+		data.recv = zero_day.bytes_recv - comparing_day.bytes_recv
+		data.sent = zero_day.bytes_sent - comparing_day.bytes_sent
 		data.total = data.recv + data.sent
 		return data
 	#end define
@@ -79,10 +79,15 @@ class Module():
 		return commands
 	#end define
 
+	def get_network_speed_mbits(self, name):
+		data = self.get_statistics_data(name)
+		return [convert_mibits_to_mbits(item) for item in data]
+	#end define
+
 	def print_network_status(self, args):
-		net_recv_avg = self.get_statistics_data("net_recv_avg")
-		net_sent_avg = self.get_statistics_data("net_sent_avg")
-		net_load_avg = self.get_statistics_data("net_load_avg")
+		net_recv_avg = self.get_network_speed_mbits("net_recv_avg")
+		net_sent_avg = self.get_network_speed_mbits("net_sent_avg")
+		net_load_avg = self.get_network_speed_mbits("net_load_avg")
 		table = [["Network speed", "Download speed", "Upload speed", "Total speed"]]
 		table += [["1 minute", f"{net_recv_avg[0]} Mbit/s", f"{net_sent_avg[0]} Mbit/s", f"{net_load_avg[0]} Mbit/s"]]
 		table += [["5 minutes", f"{net_recv_avg[1]} Mbit/s", f"{net_sent_avg[1]} Mbit/s", f"{net_load_avg[1]} Mbit/s"]]
@@ -93,10 +98,10 @@ class Module():
 		data1 = self.get_daily_statistics_data(comparing_days=1)
 		data7 = self.get_daily_statistics_data(comparing_days=7)
 		data30 = self.get_daily_statistics_data(comparing_days=30)
-		table = [["Network traffic", "Download bites", "Upload bites", "Total bites"]]
-		table += [["1 day", f"{data1.recv} GB", f"{data1.sent} GB", f"{data1.total} GB"]]
-		table += [["7 days", f"{data7.recv} GB", f"{data7.sent} GB", f"{data7.total} GB"]]
-		table += [["30 days", f"{data30.recv} GB", f"{data30.sent} GB", f"{data30.total} GB"]]
+		table = [["Network traffic", "Downloaded", "Uploaded", "Total"]]
+		table += [["1 day", format_bytes(data1.recv), format_bytes(data1.sent), format_bytes(data1.total)]]
+		table += [["7 days", format_bytes(data7.recv), format_bytes(data7.sent), format_bytes(data7.total)]]
+		table += [["30 days", format_bytes(data30.recv), format_bytes(data30.sent), format_bytes(data30.total)]]
 		print_table(table)
 	#end define
 

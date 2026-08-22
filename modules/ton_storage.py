@@ -32,6 +32,9 @@ from utils import (
 	get_module_by_name,
 	get_disk_space,
 	convert_to_required_decimal,
+	format_bytes,
+	format_bytes_per_second,
+	format_bytes_pair,
 	fix_git_config,
 	reduct,
 	get_service_status_color,
@@ -195,9 +198,9 @@ class Module():
 	def print_bags_num(self):
 		api_data = self.get_api_data()
 		bags_num = self.get_bags_num(api_data)
-		used_provider_space = self.get_bags_size(api_data, decimal_size=3, round_size=2)
+		used_provider_space = self.get_bags_size(api_data, decimal_size=0, round_size=0)
 		bags_num_text = Text(str(bags_num), style="green")
-		used_provider_space_text = Text(f"({used_provider_space} GB)", style="yellow") # TODO
+		used_provider_space_text = Text(f"({format_bytes(used_provider_space)})", style="yellow")
 		field = self.local.translate("bags_num")
 		value = Text.assemble(bags_num_text, " ", used_provider_space_text)
 		return field, value
@@ -205,9 +208,10 @@ class Module():
 
 	def print_disk_space(self):
 		ton_storage = self.local.db.ton_storage
-		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path, decimal_size=3, round_size=2)
-		used_disk_space_text = Text(str(used_disk_space), style="green") # TODO
-		total_disk_space_text = Text(f"{total_disk_space} GB", style="yellow")
+		total_disk_space, used_disk_space, free_disk_space = get_disk_space(ton_storage.storage_path, decimal_size=0, round_size=0)
+		used_disk_space, total_disk_space = format_bytes_pair(used_disk_space, total_disk_space)
+		used_disk_space_text = Text(used_disk_space, style="green")
+		total_disk_space_text = Text(total_disk_space, style="yellow")
 		field = self.local.translate("disk_space")
 		value = Text.assemble(used_disk_space_text, " / ", total_disk_space_text)
 		return field, value
@@ -444,13 +448,10 @@ class Module():
 		for bag in api_data.bags:
 			bag_id = reduct(bag.bag_id)
 			progress = self.get_progress(bag)
-			size = convert_to_required_decimal(bag.size, decimal_size=3, round_size=2)
-			download_speed = convert_to_required_decimal(bag.download_speed, decimal_size=2, round_size=2)
-			upload_speed = convert_to_required_decimal(bag.upload_speed, decimal_size=2, round_size=2)
 			progress_text = f"{progress}%"
-			size_text = f"{size} GB"
-			download_speed_text = f"{download_speed} MB/s"
-			upload_speed_text = f"{upload_speed} MB/s"
+			size_text = format_bytes(bag.size)
+			download_speed_text = format_bytes_per_second(bag.download_speed)
+			upload_speed_text = format_bytes_per_second(bag.upload_speed)
 			last_verified = bags_verify_state.get(bag.bag_id.upper(), 0)
 			if last_verified == 0:
 				last_verified_text = "never"
