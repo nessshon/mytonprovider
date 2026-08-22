@@ -61,7 +61,7 @@ class Module():
 		print()
 		table = list()
 		table += [["Test type", "Download (Mbit/s)", "Upload (Mbit/s)"]]
-		table += [["Speedtest", network.download //1024**2, network.upload //1024**2]]
+		table += [["Speedtest", network.download //10**6, network.upload //10**6]]
 		print_table(table)
 	#end define
 
