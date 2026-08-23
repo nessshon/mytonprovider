@@ -18,7 +18,7 @@ from mypylib import (
 )
 from speedkit import Speedkit
 from decorators import publick
-from utils import run_subprocess, get_module_by_name
+from utils import run_subprocess, get_module_by_name, format_number
 
 
 class Module():
@@ -61,7 +61,7 @@ class Module():
 		print()
 		table = list()
 		table += [["Test type", "Download (Mbit/s)", "Upload (Mbit/s)"]]
-		table += [["Speedtest", network.download //10**6, network.upload //10**6]]
+		table += [["Speedtest", format_number(network.download /10**6), format_number(network.upload /10**6)]]
 		print_table(table)
 	#end define
 
