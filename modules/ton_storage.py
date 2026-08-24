@@ -18,7 +18,6 @@ from mypylib import (
 	get_own_ip,
 	get_git_hash,
 	get_git_branch,
-	print_table,
 	get_service_status,
 	get_service_uptime,
 	time2human,
@@ -36,7 +35,7 @@ from utils import (
 	format_bytes_per_second,
 	format_bytes_pair,
 	fix_git_config,
-	reduct,
+	print_table,
 	get_service_status_color,
 	get_check_port_status,
 	set_check_data,
@@ -78,7 +77,7 @@ class Module():
 		""" Remove BAGs that the provider process did not removed """
 		api_data = self.get_api_data()
 		bags_list = self.get_bags_list(api_data)
-		bags_dir = f"{self.local.db.ton_storage.storage_path}/provider"
+		bags_dir = self.get_bags_dir()
 		for bag_id in os.listdir(bags_dir):
 			if len(bag_id) != 64:
 				continue
@@ -118,17 +117,11 @@ class Module():
 	@publick
 	def get_console_commands(self):
 		commands = list()
-		bags_list = Dict()
-		bags_list.cmd = "bags_list"
-		bags_list.func = self.print_bags_list
-		bags_list.desc = self.local.translate("bags_list_cmd")
-		commands.append(bags_list)
-
-		verify_bag = Dict()
-		verify_bag.cmd = "verify_bag"
-		verify_bag.func = self.cmd_verify_bag
-		verify_bag.desc = self.local.translate("verify_bag_cmd")
-		commands.append(verify_bag)
+		bags = Dict()
+		bags.cmd = "bags"
+		bags.func = self.cmd_bags
+		bags.desc = self.local.translate("bags_cmd")
+		commands.append(bags)
 
 		storage_log = Dict()
 		storage_log.cmd = "storage_log"
@@ -249,13 +242,12 @@ class Module():
 		return field, value
 	#end define
 
-	def get_api_data(self):
-		api = self.local.db.ton_storage.api
-		api_url = f"http://{api.host}:{api.port}/api/v1/list"
-		resp = requests.get(api_url, timeout=0.3)
-		if resp.status_code != 200:
-			raise Exception(f"Failed to get provider api data from {api_url}")
-		return Dict(resp.json())
+	def get_bags_dir(self):
+		return f"{self.local.db.ton_storage.storage_path}/provider"
+	#end define
+
+	def get_api_data(self, timeout=0.3):
+		return self.storage_api("list", timeout=timeout)
 	#end define
 
 	def get_bags_num(self, api_data):
@@ -350,11 +342,10 @@ class Module():
 
 	def get_verify_timeout(self, bag_id):
 		bag_size = 0
-		api_data = self.get_api_data()
-		if api_data.bags != None:
-			for bag in api_data.bags:
-				if bag.bag_id.upper() == bag_id.upper():
-					bag_size = bag.size
+		try:
+			bag_size = self.get_bag_details(bag_id).size or 0
+		except:
+			pass
 
 		read_speed = 50
 		try:
@@ -369,33 +360,53 @@ class Module():
 	#end define
 
 	def do_verify_bag(self, bag_id):
-		api = self.local.db.ton_storage.api
-		api_url = f"http://{api.host}:{api.port}/api/v1/verify"
-		data = {"bag_id": bag_id}
 		timeout = self.get_verify_timeout(bag_id)
-		resp = requests.post(api_url, json=data, timeout=timeout)
-		if resp.status_code != 200:
-			try:
-				resp_data = resp.json()
-				error = resp_data.get("error", "unknown error")
-			except:
-				error = resp.text
-			raise Exception(f"Failed to verify bag {bag_id}: HTTP {resp.status_code} ({error})")
-		result = resp.json()
+		result = self.storage_api("verify", {"bag_id": bag_id}, timeout=timeout)
 		return result.get("ok", False)
 	#end define
 
-	def cmd_verify_bag(self, args):
+	def storage_api(self, path, data=None, timeout=3):
+		api = self.local.db.ton_storage.api
+		api_url = f"http://{api.host}:{api.port}/api/v1/{path}"
+		if data is None:
+			resp = requests.get(api_url, timeout=timeout)
+		else:
+			resp = requests.post(api_url, json=data, timeout=timeout)
+		if resp.status_code != 200:
+			raise Exception(f"storage api error: {path} -> HTTP {resp.status_code} ({self.get_api_error(resp)})")
+		return Dict(resp.json())
+	#end define
+
+	def get_api_error(self, resp):
 		try:
-			bag_id = args[0].upper()
+			return resp.json().get("error", "unknown error")
 		except:
-			color_print("{red}Bad args. Usage:{endc} verify_bag <bag_id>")
-			return
+			return resp.text
+	#end define
 
-		if len(bag_id) != 64:
-			color_print("{red}Error: bag_id must be 64 characters{endc}")
-			return
+	def get_bag_details(self, bag_id):
+		return self.storage_api(f"details?bag_id={bag_id}")
+	#end define
 
+	def do_add_bag(self, bag_id):
+		os.makedirs(self.get_bags_dir(), exist_ok=True)
+		# relative path, as the provider daemon sends it - resolves from the daemon workdir
+		data = {"bag_id": bag_id, "path": "provider", "download_all": True}
+		self.storage_api("add", data, timeout=10)
+	#end define
+
+	def do_remove_bag(self, bag_id, with_files):
+		self.storage_api("remove", {"bag_id": bag_id, "with_files": with_files}, timeout=60)
+	#end define
+
+	def do_stop_bag(self, bag_id):
+		self.storage_api("stop", {"bag_id": bag_id}, timeout=10)
+	#end define
+
+	def cmd_bags_verify(self, args):
+		bag_id = self.get_bag_id_from_args(args, "bags verify <bag_id>")
+		if bag_id is None:
+			return
 		color_print(f"Verifying BAG: {{yellow}}{bag_id}{{endc}}")
 		try:
 			result = self.do_verify_bag(bag_id)
@@ -409,12 +420,7 @@ class Module():
 	#end define
 
 	def set_log_level(self, verbosity):
-		api = self.local.db.ton_storage.api
-		api_url = f"http://{api.host}:{api.port}/api/v1/logger"
-		data = {"verbosity": verbosity}
-		resp = requests.post(api_url, json=data, timeout=3)
-		if resp.status_code != 200:
-			raise Exception(f"Failed to set log level: HTTP {resp.status_code}")
+		self.storage_api("logger", {"verbosity": verbosity})
 		return True
 	#end define
 
@@ -437,16 +443,43 @@ class Module():
 			color_print(f"{{red}}Error: {ex}{{endc}}")
 	#end define
 
-	@publick
-	def print_bags_list(self, args):
-		api_data = self.get_api_data()
+	def cmd_bags(self, args):
+		subcommands = Dict()
+		subcommands.list = self.cmd_bags_list
+		subcommands.info = self.cmd_bags_info
+		subcommands.add = self.cmd_bags_add
+		subcommands.remove = self.cmd_bags_remove
+		subcommands.stop = self.cmd_bags_stop
+		subcommands.verify = self.cmd_bags_verify
+		subcommand = args[0] if args else None
+		func = subcommands.get(subcommand)
+		if func is None:
+			color_print("{red}Bad args. Usage:{endc} bags <list|info|add|remove|stop|verify> [args]")
+			return
+		func(args[1:])
+	#end define
+
+	def get_bag_id_from_args(self, args, usage):
+		try:
+			bag_id = args[0].upper()
+		except:
+			color_print(f"{{red}}Bad args. Usage:{{endc}} {usage}")
+			return None
+		if len(bag_id) != 64:
+			color_print("{red}Error: bag_id must be 64 characters{endc}")
+			return None
+		return bag_id
+	#end define
+
+	def cmd_bags_list(self, args):
+		api_data = self.get_api_data(timeout=3)
 		if api_data.bags == None:
 			print("no data")
 			return
 		bags_verify_state = self.get_bags_verify_state()
 		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed", "Last verified"]]
 		for bag in api_data.bags:
-			bag_id = reduct(bag.bag_id)
+			bag_id_text = Text(bag.bag_id, style=self.get_bag_status_color(bag))
 			progress = self.get_progress(bag)
 			progress_text = f"{progress}%"
 			size_text = format_bytes(bag.size)
@@ -457,8 +490,91 @@ class Module():
 				last_verified_text = "never"
 			else:
 				last_verified_text = timeago(last_verified)
-			table += [[bag_id, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text, last_verified_text]]
+			table += [[bag_id_text, progress_text, size_text, bag.files_count, bag.peers, download_speed_text, upload_speed_text, last_verified_text]]
 		print_table(table)
+	#end define
+
+	def get_bag_status_color(self, bag):
+		if not bag.active:
+			return "yellow"
+		if bag.download_all == False:
+			return "bright_black"
+		if bag.completed:
+			return "cyan"
+		return "green"
+	#end define
+
+	def get_bag_status_text(self, bag):
+		if not bag.active:
+			return "stopped"
+		if bag.download_all == False:
+			return "idle"
+		if not bag.completed:
+			return "downloading"
+		if bag.seeding:
+			return "seeding"
+		return "completed"
+	#end define
+
+	def cmd_bags_info(self, args):
+		bag_id = self.get_bag_id_from_args(args, "bags info <bag_id>")
+		if bag_id is None:
+			return
+		bag = self.get_bag_details(bag_id)
+		color = self.get_bag_status_color(bag)
+		last_verified = self.get_bags_verify_state().get(bag_id, 0)
+		if last_verified == 0:
+			last_verified_text = "never"
+		else:
+			last_verified_text = timeago(last_verified)
+		body = [
+			("Bag id", Text(bag.bag_id, style=color)),
+			("Status", Text(self.get_bag_status_text(bag), style=color)),
+			("Description", Text(bag.description or "-")),
+			("Path", Text(bag.path or "-")),
+			("Size", format_bytes(bag.size)),
+			("Progress", f"{self.get_progress(bag)}%"),
+			("Files", str(bag.files_count)),
+			("Peers", str(len(bag.peers or []))),
+			("Download speed", format_bytes_per_second(bag.download_speed)),
+			("Upload speed", format_bytes_per_second(bag.upload_speed)),
+			("Last verified", last_verified_text),
+		]
+		header = Text("bag info", style="cyan")
+		print_panel(body, header, None)
+	#end define
+
+	def cmd_bags_add(self, args):
+		bag_id = self.get_bag_id_from_args(args, "bags add <bag_id>")
+		if bag_id is None:
+			return
+		try:
+			self.do_add_bag(bag_id)
+			color_print(f"{{green}}BAG added, download started:{{endc}} {bag_id}")
+		except Exception as ex:
+			color_print(f"{{red}}Error: {ex}{{endc}}")
+	#end define
+
+	def cmd_bags_remove(self, args):
+		bag_id = self.get_bag_id_from_args(args, "bags remove <bag_id>")
+		if bag_id is None:
+			return
+		try:
+			self.do_remove_bag(bag_id, True)
+			color_print(f"{{green}}BAG removed:{{endc}} {bag_id}")
+		except Exception as ex:
+			color_print(f"{{red}}Error: {ex}{{endc}}")
+	#end define
+
+	def cmd_bags_stop(self, args):
+		bag_id = self.get_bag_id_from_args(args, "bags stop <bag_id>")
+		if bag_id is None:
+			return
+		try:
+			self.do_stop_bag(bag_id)
+			color_print(f"{{green}}BAG stopped:{{endc}} {bag_id}")
+		except Exception as ex:
+			color_print(f"{{red}}Error: {ex}{{endc}}")
 	#end define
 
 	def get_progress(self, bag):

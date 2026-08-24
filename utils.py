@@ -142,16 +142,6 @@ def parse_input_args():
 	return args
 #end define
 
-def reduct(text):
-	if text is None:
-		return
-	if len(text) < 16:
-		return text
-	end = len(text)
-	result = text[0:6] + "..." + text[end - 6:end]
-	return result
-#end define
-
 def get_color_int(data, borderline_value, logic, ending=None):
 	if data is None:
 		return Text("n/a")
@@ -432,3 +422,28 @@ def print_panel(body, header, footer) -> None:
 	)
 	console = Console()
 	console.print(panel)
+
+def get_cell_text(cell):
+	if isinstance(cell, Text):
+		return cell.plain
+	return str(cell)
+#end define
+
+def print_table(rows) -> None:
+	header, *body = rows
+	console = Console()
+	widths = [max(len(get_cell_text(row[index])) for row in rows) for index in range(len(header))]
+	total_width = sum(widths) + 3 *len(widths) + 1
+	first_width = widths[0]
+	if not console.is_terminal:
+		console = Console(width=total_width)
+	elif total_width > console.width:
+		first_width = max(widths[0] - (total_width - console.width), len(get_cell_text(header[0])))
+	table = Table()
+	table.add_column(str(header[0]), no_wrap=True, overflow="ellipsis", width=first_width)
+	for name in header[1:]:
+		table.add_column(str(name), no_wrap=True)
+	for row in body:
+		table.add_row(*[cell if isinstance(cell, Text) else str(cell) for cell in row])
+	console.print(table)
+#end define

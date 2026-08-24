@@ -7,11 +7,14 @@ from mypylib import (
 	Dict,
 	get_timestamp,
 	get_internet_interface_name,
-	print_table,
-	color_print
 )
 from decorators import publick
-from utils import convert_mibits_to_mbits, convert_to_required_decimal, format_bytes
+from utils import (
+	convert_mibits_to_mbits,
+	convert_to_required_decimal,
+	format_bytes,
+	print_table,
+)
 
 
 class Module():

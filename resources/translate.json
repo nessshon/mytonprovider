@@ -34,10 +34,10 @@
 		"en": "Update the specified module",
 		"zh_TW": "更新指定模組"
 	},
-	"bags_list_cmd": {
-		"ru": "Показать список хранимых контейнеров",
-		"en": "Show list of stored containers",
-		"zh_TW": "顯示儲存容器列表"
+	"bags_cmd": {
+		"ru": "Управление бэгами: list, info, add, remove, stop, verify",
+		"en": "Manage bags: list, info, add, remove, stop, verify",
+		"zh_TW": "管理 bags：list、info、add、remove、stop、verify"
 	},
 	"register_cmd": {
 		"ru": "Послать сообщение в список провайдеров",
@@ -213,11 +213,6 @@
 		"ru": "Отобразить статус DHT-нод",
 		"en": "Display DHT node status",
 		"zh_TW": "顯示 DHT 節點狀態"
-	},
-	"verify_bag_cmd": {
-		"ru": "Проверить целостность бэга",
-		"en": "Verify bag integrity",
-		"zh_TW": "驗證 bag 完整性"
 	},
 	"storage_log_cmd": {
 		"ru": "Установить уровень логирования ton-storage",

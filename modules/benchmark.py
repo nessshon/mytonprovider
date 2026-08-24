@@ -11,14 +11,18 @@ from mypylib import (
 	bcolors,
 	run_as_root,
 	color_print,
-	print_table,
 	get_timestamp,
 	timestamp2datetime,
 	timeago
 )
 from speedkit import Speedkit
 from decorators import publick
-from utils import run_subprocess, get_module_by_name, format_number
+from utils import (
+	run_subprocess,
+	get_module_by_name,
+	format_number,
+	print_table,
+)
 
 
 class Module():

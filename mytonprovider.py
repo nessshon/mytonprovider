@@ -19,10 +19,10 @@ from mypylib import (
 	run_as_root,
 	color_print,
 	thr_sleep,
-	print_table,
 )
 from utils import (
 	get_modules,
+	print_table,
 	get_module_by_name,
 	import_commands,
 	import_modules,
