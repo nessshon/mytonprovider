@@ -16,7 +16,7 @@ from mypylib import (
 	timestamp2datetime,
 	timeago
 )
-from speedtest import Speedtest
+from speedkit import Speedkit
 from decorators import publick
 from utils import run_subprocess
 
@@ -99,14 +99,9 @@ class Module():
 	#end define
 
 	def network_benchmark(self):
-		speedtest = Speedtest()
-
-		self.local.add_log("start Speedtest download test", "debug")
-		speedtest.download()
-
-		self.local.add_log("start Speedtest upload test", "debug")
-		speedtest.upload()
-		return Dict(speedtest.results.dict())
+		self.local.add_log("start Speedkit network test", "debug")
+		result = Speedkit().run()
+		return Dict(result.to_dict())
 	#end define
 
 	def disk_benchmark(self):
