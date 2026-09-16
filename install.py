@@ -59,7 +59,7 @@ def validate_cost(answers, cost):
 #end define
 
 def ignore_storage(answers):
-	if "ton-storage" in answers["utils"]:
+	if "ton-storage" in answers["utils"] or "ton-dht-server" in answers["utils"]:
 		return False
 	return True
 #end define

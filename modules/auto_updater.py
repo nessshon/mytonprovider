@@ -12,6 +12,7 @@ from mypylib import (
 	get_git_branch,
 )
 from utils import (
+	get_modules,
 	run_module_method_if_exist,
 	run_subprocess
 )
@@ -33,7 +34,7 @@ class Module():
 	#end define
 
 	def update_modules(self):
-		for module in self.local.buffer.modules:
+		for module in get_modules(self.local):
 			self.local.add_log(f"check module {module.name}")
 			self.check_update_module(module)
 	#end define
