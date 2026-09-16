@@ -199,6 +199,16 @@
 		"en": "Set ton-storage log level",
 		"zh_TW": "設定 ton-storage 日誌等級"
 	},
+	"dht_server_stored_keys": {
+		"ru": "Кол-во хранимых ключей",
+		"en": "Stored keys count",
+		"zh_TW": "儲存的鍵數量"
+	},
+	"dht_server_active_peers": {
+		"ru": "Кол-во активных пиров",
+		"en": "Active peers count",
+		"zh_TW": "活躍節點數量"
+	},
 	"123": {
 		"ru": "aaa",
 		"en": "bbb",
