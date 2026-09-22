@@ -226,6 +226,10 @@ class Module():
 	#end define
 
 	def install(self, install_args, install_answers):
+		if install_answers.storage_path == None:
+			raise Exception("install error: storage_path is not set")
+		#end if
+
 		metrics_host = "127.0.0.1"
 		udp_port = randint(1024, 65000)
 		metrics_port = randint(1024, 65000)
