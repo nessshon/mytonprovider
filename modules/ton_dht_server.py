@@ -37,6 +37,7 @@ from utils import (
 from decorators import publick
 from addr_and_key import get_pubkey_from_privkey
 from adnl_over_udp_checker import check_adnl_connection
+from server_info import get_ram_info
 
 
 class Module():
@@ -150,7 +151,6 @@ class Module():
 		value = Text(str(active_peers), style="green")
 		return field, value
 	#end define
-	#end define
 
 	def print_port_status(self):
 		dht_server_config = self.get_dht_server_config()
@@ -226,8 +226,8 @@ class Module():
 	#end define
 
 	def install(self, install_args, install_answers):
-		udp_port = randint(1024, 65000)
 		metrics_host = "127.0.0.1"
+		udp_port = randint(1024, 65000)
 		metrics_port = randint(1024, 65000)
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
@@ -258,9 +258,12 @@ class Module():
 
 		# edit dht server config
 		public_ip = get_own_ip()
+		ram_gigabytes = round(get_ram_info().total *10**9 /1024**3)
+
 		dht_server_config.listen_addr = f"0.0.0.0:{udp_port}"
 		dht_server_config.public_addr = f"{public_ip}:{udp_port}"
 		dht_server_config.global_config_path = main_module.global_config_path
+		dht_server_config.max_keys = max(100000, ram_gigabytes *100000)
 		dht_server_config.storage.path = dht_server_db_path
 
 		dht_server_config.metrics.enabled = True
