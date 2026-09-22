@@ -170,6 +170,12 @@ def create_questions():
 def main():
 	# install_args: user, src_dir, bin_dir, venvs_dir, venv_path, src_path
 	install_args = parse_input_args()
+	if install_args.module != None:
+		need_module = get_module_by_name(local, install_args.module)
+		need_module.install(install_args, get_save_answers())
+		return
+	#end if
+
 	questions = create_questions()
 	install_answers = Dict(inquirer.prompt(questions))
 	need_modules_names = install_answers.get("utils")
