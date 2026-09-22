@@ -68,7 +68,7 @@ class Module():
 		update_args = run_module_method_if_exist(self.local, module, "get_update_args", user=user, restart_service=True)
 		if update_args is None:
 			return
-		stdout = run_subprocess(update_args, timeout=60)
+		stdout = run_subprocess(update_args, timeout=5 * 60)
 		self.local.add_log(f"Update {module.name} - OK")
 	#end define
 
