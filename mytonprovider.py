@@ -177,6 +177,8 @@ def install(args):
 	# Запускаем установку от root
 	exit_code = run_as_root(install_cmd)
 	if exit_code == 0:
+		if module_name not in local.db.install_answers.utils:
+			local.db.install_answers.utils.append(module_name)
 		run_as_root(["systemctl", "restart", "mytonproviderd"])
 		text = f"Install {module_name} - {{green}}OK{{endc}}"
 	else:
