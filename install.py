@@ -13,6 +13,7 @@ from mypylib import (
 from utils import (
 	import_modules,
 	get_modules_names,
+	sort_modules,
 	get_module_by_name,
 	init_localization,
 	get_disk_space
@@ -180,11 +181,14 @@ def main():
 	install_answers = Dict(inquirer.prompt(questions))
 	need_modules_names = install_answers.get("utils")
 	need_modules_names += get_modules_names(local, mandatory=True)
-	need_modules_names.sort()
 	#print("need_modules_names:", need_modules_names)
 
+	need_modules = list()
 	for need_module_name in need_modules_names:
 		need_module = get_module_by_name(local, need_module_name)
+		need_modules.append(need_module)
+
+	for need_module in sort_modules(need_modules):
 		method = getattr(need_module, "install", None)
 		if method == None:
 			continue

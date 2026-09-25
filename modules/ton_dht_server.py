@@ -46,6 +46,7 @@ class Module():
 		self.service_name = self.name
 		self.local = local
 		self.mandatory = False
+		self.depends_on = ["main"]
 		self.local.add_log(f"{self.name} module init done", "debug")
 
 		self.go_package = Dict()

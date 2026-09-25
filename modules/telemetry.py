@@ -36,6 +36,7 @@ class Module():
 		self.name = "telemetry"
 		self.local = local
 		self.mandatory = False
+		self.depends_on = ["main"]
 		self.daemon_interval = 60
 		self.telemetry_url = "https://mytonprovider.org/api/v1/providers"
 		self.benchmark_url = "https://mytonprovider.org/api/v1/benchmarks"
