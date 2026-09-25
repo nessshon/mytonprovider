@@ -9,7 +9,7 @@ ENDC='\033[0m'
 systemctl stop mytonproviderd
 systemctl stop ton-storage
 systemctl stop ton-storage-provider
-systemctl stop ton-dht-server
+systemctl stop dht-server
 systemctl stop adnl-tunnel
 
 rm -rf /var/storage
@@ -28,7 +28,7 @@ rm -rf /etc/systemd/system/mytonproviderd.service
 rm -rf /etc/systemd/system/mytonprovider-updater.service
 rm -rf /etc/systemd/system/ton-storage.service
 rm -rf /etc/systemd/system/ton-storage-provider.service
-rm -rf /etc/systemd/system/ton-dht-server.service
+rm -rf /etc/systemd/system/dht-server.service
 rm -rf /etc/systemd/system/ton-tunnel-provider.service
 
 systemctl daemon-reload
