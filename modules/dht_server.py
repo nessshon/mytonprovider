@@ -243,7 +243,7 @@ class Module():
 
 		# Склонировать исходники и скомпилировать бинарники
 		upgrade_args = self.get_update_args(install_args.src_path)
-		run_subprocess(upgrade_args, timeout=5 * 60)
+		run_subprocess(upgrade_args, timeout=2 * 60)
 
 		# Подготовить папку
 		os.makedirs(dht_server_path, exist_ok=True)
