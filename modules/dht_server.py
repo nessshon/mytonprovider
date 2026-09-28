@@ -42,7 +42,7 @@ from server_info import get_ram_info
 
 class Module():
 	def __init__(self, local):
-		self.name = "ton-dht-server"
+		self.name = "dht-server"
 		self.service_name = self.name
 		self.local = local
 		self.mandatory = False
@@ -90,8 +90,8 @@ class Module():
 	#end define
 
 	def get_dht_server_config(self):
-		ton_dht_server = self.local.db.ton_dht_server
-		dht_server_config = read_config_from_file(ton_dht_server.config_path)
+		dht_server = self.local.db.dht_server
+		dht_server_config = read_config_from_file(dht_server.config_path)
 		return dht_server_config
 	#end define
 
@@ -237,7 +237,7 @@ class Module():
 
 		mconfig_dir = f"/home/{install_args.user}/.local/share/mytonprovider"
 		mconfig_path = f"{mconfig_dir}/mytonprovider.db"
-		dht_server_path = f"{install_answers.storage_path}/dht_server"
+		dht_server_path = f"{install_answers.storage_path}/dht-server"
 		dht_server_db_path = f"{dht_server_path}/db"
 		dht_server_config_path = f"{dht_server_path}/config.json"
 
@@ -281,10 +281,10 @@ class Module():
 		mconfig = read_config_from_file(mconfig_path)
 
 		# edit mconfig config
-		ton_dht_server = Dict()
-		ton_dht_server.config_path = dht_server_config_path
-		ton_dht_server.src_dir = install_args.src_dir
-		mconfig.ton_dht_server = ton_dht_server
+		dht_server = Dict()
+		dht_server.config_path = dht_server_config_path
+		dht_server.src_dir = install_args.src_dir
+		mconfig.dht_server = dht_server
 
 		# write mconfig
 		write_config_to_file(config_path=mconfig_path, data=mconfig)
