@@ -13,6 +13,7 @@ from mypylib import (
 from utils import (
 	import_modules,
 	get_modules_names,
+	is_module_enabled,
 	get_module_by_name,
 	init_localization,
 	get_disk_space
@@ -180,11 +181,19 @@ def main():
 	install_answers = Dict(inquirer.prompt(questions))
 	need_modules_names = install_answers.get("utils")
 	need_modules_names += get_modules_names(local, mandatory=True)
-	need_modules_names.sort()
 	#print("need_modules_names:", need_modules_names)
 
 	for need_module_name in need_modules_names:
 		need_module = get_module_by_name(local, need_module_name)
+		for depend_name in getattr(need_module, "depends_on", list()):
+			depend_module = get_module_by_name(local, depend_name)
+			if depend_name not in need_modules_names and is_module_enabled(depend_module) == False:
+				print(f"Module {need_module.name} requires {depend_name}")
+				sys.exit(1)
+
+	for need_module in local.buffer.modules:
+		if need_module.name not in need_modules_names:
+			continue
 		method = getattr(need_module, "install", None)
 		if method == None:
 			continue

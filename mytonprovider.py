@@ -21,6 +21,7 @@ from utils import (
 	import_commands,
 	import_modules,
 	run_module_method_if_exist,
+	is_module_enabled,
 	init_localization,
 	set_check_data,
 	get_module_type,
@@ -167,6 +168,12 @@ def install(args):
 		color_print(f"{{red}}Module {module_name} is already installed{{endc}}")
 		return
 	#end if
+
+	for depend_name in getattr(module, "depends_on", list()):
+		depend_module = get_module_by_name(local, depend_name)
+		if is_module_enabled(depend_module) == False:
+			color_print(f"{{red}}Module {module_name} requires {depend_name}{{endc}}")
+			return
 
 	install_args = local.db.install_args
 	install_cmd = [f"{install_args.venv_path}/bin/python3", f"{install_args.src_path}/install.py"]
