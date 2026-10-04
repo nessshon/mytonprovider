@@ -7,6 +7,7 @@ from random import randint
 
 import requests
 from rich.text import Text
+from ton_core import PrivateKey
 
 from mypylib import (
 	Dict,
@@ -35,7 +36,6 @@ from utils import (
 	print_panel,
 )
 from decorators import publick
-from addr_and_key import get_pubkey_from_privkey
 from adnl_over_udp_checker import check_adnl_connection
 from server_info import get_ram_info
 
@@ -97,8 +97,8 @@ class Module():
 
 	def get_server_pubkey(self):
 		dht_server_config = self.get_dht_server_config()
-		private_key_bytes = base64.b64decode(dht_server_config.private_key_seed)
-		server_pubkey = get_pubkey_from_privkey(private_key_bytes).hex().upper()
+		private_key = PrivateKey(base64.b64decode(dht_server_config.private_key_seed))
+		server_pubkey = private_key.public_key.as_bytes.hex().upper()
 		return server_pubkey
 	#end define
 
