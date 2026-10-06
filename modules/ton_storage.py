@@ -479,7 +479,8 @@ class Module():
 			return
 		bags_verify_state = self.get_bags_verify_state()
 		table = [["Bag id", "Progress", "Size", "Files", "Peers", "Download speed", "Upload speed", "Last verified"]]
-		for bag in api_data.bags:
+		# storage отдаёт бэги от новых к старым, выводим новые снизу
+		for bag in api_data.bags[::-1]:
 			bag_id_text = Text(bag.bag_id, style=self.get_bag_status_color(bag))
 			progress = self.get_progress(bag)
 			progress_text = f"{progress}%"
