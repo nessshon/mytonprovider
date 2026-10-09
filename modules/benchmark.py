@@ -131,23 +131,27 @@ class Module():
 		result.qd64.name = "RND-4K-QD64"
 		result.qd1.name = "RND-4K-QD1"
 
-		self.local.add_log("start RND-4K-QD64 read test", "debug")
-		qd64_read_result = run_subprocess(qd64_read_args, timeout=60)
+		try:
+			self.local.add_log("start RND-4K-QD64 read test", "debug")
+			qd64_read_result = run_subprocess(qd64_read_args, timeout=60)
 
-		self.local.add_log("start RND-4K-QD64 write test", "debug")
-		qd64_write_result = run_subprocess(qd64_write_args, timeout=60)
+			self.local.add_log("start RND-4K-QD64 write test", "debug")
+			qd64_write_result = run_subprocess(qd64_write_args, timeout=60)
 
-		self.local.add_log("start RND-4K-QD1 read test", "debug")
-		qd1_read_result = run_subprocess(qd1_read_args, timeout=60)
+			self.local.add_log("start RND-4K-QD1 read test", "debug")
+			qd1_read_result = run_subprocess(qd1_read_args, timeout=60)
 
-		self.local.add_log("start RND-4K-QD1 write test", "debug")
-		qd1_write_result = run_subprocess(qd1_write_args, timeout=60)
+			self.local.add_log("start RND-4K-QD1 write test", "debug")
+			qd1_write_result = run_subprocess(qd1_write_args, timeout=60)
+		finally:
+			if os.path.exists(test_file):
+				os.remove(test_file)
+		#end try
 
 		result.qd64.read, result.qd64.read_iops = self.parse_fio_result(qd64_read_result, mode="read")
 		result.qd64.write, result.qd64.write_iops = self.parse_fio_result(qd64_write_result, mode="write")
 		result.qd1.read, result.qd1.read_iops = self.parse_fio_result(qd1_read_result, mode="read")
 		result.qd1.write, result.qd1.write_iops = self.parse_fio_result(qd1_write_result, mode="write")
-		os.remove(test_file)
 
 		return result
 	#end define
