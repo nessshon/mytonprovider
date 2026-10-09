@@ -132,16 +132,16 @@ class Module():
 		result.qd1.name = "RND-4K-QD1"
 
 		self.local.add_log("start RND-4K-QD64 read test", "debug")
-		qd64_read_result = run_subprocess(qd64_read_args, timeout=30)
+		qd64_read_result = run_subprocess(qd64_read_args, timeout=60)
 
 		self.local.add_log("start RND-4K-QD64 write test", "debug")
-		qd64_write_result = run_subprocess(qd64_write_args, timeout=30)
+		qd64_write_result = run_subprocess(qd64_write_args, timeout=60)
 
 		self.local.add_log("start RND-4K-QD1 read test", "debug")
-		qd1_read_result = run_subprocess(qd1_read_args, timeout=30)
+		qd1_read_result = run_subprocess(qd1_read_args, timeout=60)
 
 		self.local.add_log("start RND-4K-QD1 write test", "debug")
-		qd1_write_result = run_subprocess(qd1_write_args, timeout=30)
+		qd1_write_result = run_subprocess(qd1_write_args, timeout=60)
 
 		result.qd64.read, result.qd64.read_iops = self.parse_fio_result(qd64_read_result, mode="read")
 		result.qd64.write, result.qd64.write_iops = self.parse_fio_result(qd64_write_result, mode="write")
