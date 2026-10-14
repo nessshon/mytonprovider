@@ -184,6 +184,11 @@
 		"en": "Send GRAM from the provider wallet",
 		"zh_TW": "從提供者錢包發送 GRAM"
 	},
+	"set_storage_cost_cmd": {
+		"ru": "Задать цену за хранение 200 GB в месяц (GRAM)",
+		"en": "Set storage price for 200 GB per month (GRAM)",
+		"zh_TW": "設定每月每 200 GB 的儲存價格 (GRAM)"
+	},
 	"get_cmd": {
 		"ru": "Получить настройки по названию",
 		"en": "Get settings by name",

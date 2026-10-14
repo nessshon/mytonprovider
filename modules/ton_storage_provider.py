@@ -26,6 +26,7 @@ from mypylib import (
 	time2human,
 	check_git_update,
 	get_git_author_and_repo,
+	run_as_root,
 )
 from adnl_over_tcp import (
 	get_lite_balancer,
@@ -109,6 +110,12 @@ class Module():
 		wallet_transfer.func = self.wallet_transfer
 		wallet_transfer.desc = self.local.translate("wallet_transfer_cmd")
 		commands.append(wallet_transfer)
+
+		set_storage_cost = Dict()
+		set_storage_cost.cmd = "set_storage_cost"
+		set_storage_cost.func = self.set_storage_cost
+		set_storage_cost.desc = self.local.translate("set_storage_cost_cmd")
+		commands.append(set_storage_cost)
 
 		return commands
 	#end define
@@ -263,6 +270,28 @@ class Module():
 			msg = await wallet.transfer(destination, amount, body)
 			await wait_message(client, wallet, msg.normalized_hash, end_lt, end_hash)
 		color_print("wallet_transfer - {green}OK{endc}")
+	#end define
+
+	@publick
+	def set_storage_cost(self, args):
+		try:
+			storage_cost = float(args[0])
+			if storage_cost <= 0:
+				raise ValueError
+		except:
+			color_print("{red}Bad args. Usage:{endc} set_storage_cost <storage-cost>")
+			return
+		#end try
+
+		self.local.db.install_answers.storage_cost = args[0]
+		provider_config = self.get_provider_config()
+		provider_config.MinRatePerMBDay = self.calculate_MinRatePerMBDay(storage_cost)
+		provider_config.MaxSpan = self.calculate_MaxSpan(storage_cost)
+		self.set_provider_config(provider_config)
+
+		# tonutils-storage-provider reads MinRatePerMBDay only at startup (cmd/main.go)
+		run_as_root(["systemctl", "restart", self.service_name])
+		color_print("set_storage_cost - {green}OK{endc}")
 	#end define
 
 	@publick
